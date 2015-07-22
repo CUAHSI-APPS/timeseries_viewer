@@ -1,0 +1,163 @@
+from django.shortcuts import render
+from utilities import *
+from tethys_apps.sdk.gizmos import Button
+from tethys_gizmos.gizmo_options import *
+from owslib.wps import WebProcessingService
+from owslib.wps import printInputOutput
+from tethys_apps.sdk import get_wps_service_engine
+from owslib.wps import monitorExecution
+from owslib.wps import WPSExecution
+from datetime import datetime
+import urllib
+import json
+#Base_Url_HydroShare REST API
+url_base='http://{0}.hydroshare.org/hsapi/resource/{1}/files/{2}'
+
+##Call in Rest style
+def restcall(request,branch,res_id,filename):
+
+    print "restcall",branch,res_id,filename
+    url_wml= url_base.format(branch,res_id,filename)
+
+    response = urllib2.urlopen(url_wml)
+
+    html = response.read()
+
+    timeseries_plot = chartPara(html,filename)
+
+    context = {"timeseries_plot":timeseries_plot}
+
+    return render(request, 'refts_viewer/home.html', context)
+
+#Normal Get or Post Request
+#http://dev.hydroshare.org/hsapi/resource/72b1d67d415b4d949293b1e46d02367d/files/referencetimeseries-2_23_2015-wml_2_0.wml/
+def home(request):
+
+    filename=None
+    res_id=None
+    url_wml=None
+    branch=None
+    name = None
+    show_time = False
+    no_url = False
+    output_converter = None
+
+
+    #Trying to use WPS. No success
+    # wps_engine = WebProcessingService('http://localhost:8383/wps/WebProcessingService', verbose=False, skip_caps=True)
+    # wps_engine.getcapabilities()
+    # process_id = 'org.n52.wps.server.r.timeSeriesConverter'
+    # inputs = [ ('url', 'www.lego.com'),
+    #        ('interval', 'week'),
+    #        ('stat','mean')
+    #          ]
+    # output = 'output'
+    # execution = wps_engine.execute(process_id, inputs, output)
+    # describe = wps_engine.describeprocess('org.n52.wps.server.r.timeSeriesConverter')
+    # monitorExecution(execution)
+    #site1 = describe.title
+    #for error in execution.errors:
+        #output = error
+
+    # test of reading wml 1
+    html11 = "http://worldwater.byu.edu/app/index.php/byu_test_justin/services/cuahsi_1_1.asmx/GetValuesObject?location=byu_test_justin:B-Lw&variable=byu_test_justin:WATER&startDate=&endDate="
+
+
+    response1 = urllib2.urlopen(html11)
+    html1 = response1.read()
+    root = etree.XML(html1)
+    ts = []
+    ts = parse_1_0_and_1_1(root)
+    #output_converter = "asfffd"
+    output_converter = test(root)
+    name = "Hello"
+    # end of test
+
+
+
+
+    url_wps = 'http://localhost:8383/wps/WebProcessingService'
+    process_input = '<?xml+version="1.0"+encoding="UTF-8"+standalone="yes"?><wps:Execute+service="WPS"+version="1.0.0"++xmlns:wps="http://www.opengis.net/wps/1.0.0"+xmlns:ows="http://www.opengis.net/ows/1.1"++xmlns:xlink="http://www.w3.org/1999/xlink"+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"++xsi:schemaLocation="http://www.opengis.net/wps/1.0.0++http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd">++<ows:Identifier>org.n52.wps.server.r.timeSeriesConverter</ows:Identifier>++<wps:DataInputs>++++<wps:Input>++++++<ows:Identifier>url</ows:Identifier>++++++<wps:Data>++++++++<wps:text>hello</wps:text>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>interval</ows:Identifier>++++++<wps:Data>++++++++<wps:text>Hello+world!</wps:text>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>stat</ows:Identifier>++++++<wps:Data>++++++++<wps:text>Hello+world!</wps:text>++++++</wps:Data>++++</wps:Input>++</wps:DataInputs>++<wps:ResponseForm>++++<wps:ResponseDocument+storeExecuteResponse="false">++++++<wps:Output+asReference="false">++++++++<ows:Identifier>output</ows:Identifier>++++++</wps:Output>++++</wps:ResponseDocument>++</wps:ResponseForm></wps:Execute>'
+    wps_request = urllib2.Request(url_wps,process_input)
+    wps_open = urllib2.urlopen(wps_request)
+    wps_read = wps_open.read()
+
+    plot = TimeSeriesConverter(wps_read)
+
+
+
+
+    text_input_options = TextInput(display_text='Enter URL of Water ML data',
+                                   name='name-input')
+
+    select_input2 = SelectInput(display_text='Select a new time frame',
+                            name='select1',
+                            multiple=False,
+                            options=[('Minute', '1'), ('Hourly', '2'), ('Daily', '3'), ('Weekly','4'), ('Monthly', '5'), ('Yearly','6')],
+                            original=['Two'])
+    if url_wml is None:
+	    filename = 'KiWIS-WML2-Example.wml'
+	    url_wml='http://www.waterml2.org/KiWIS-WML2-Example.wml'
+	    no_url = True
+	    response = urllib2.urlopen(url_wml)
+    	    html = response.read()
+
+    	    timeseries_plot = chartPara(html,filename)
+
+
+    if request.POST and 'name-input' in request.POST:
+	       url_wml = request.POST['name-input']
+	       filename = 'Current Time Series'
+	       response = urllib2.urlopen(url_wml)
+    	       html = response.read()
+
+    	       timeseries_plot = chartPara(html,filename)
+	      # site1 = timeseries_plot["test"]
+
+   # if request.POST and 'select1' in request.POST:
+	    #   name = request.POST['select1']
+    show_time = True
+
+
+    
+
+    context = {"timeseries_plot":timeseries_plot,
+'plot':plot,
+'text_input_options':text_input_options,
+'name':name,
+'select_input2': select_input2,
+'show_time':show_time,
+'no_url':no_url,
+'output_converter':output_converter}
+    
+    return render(request, 'refts_viewer/home.html', context)
+
+
+def request_demo(request):
+
+    name = ''
+
+    # Define Gizmo Options
+    text_input_options = TextInput(display_text='Enter Name',
+                                   name='name-input')
+    text_input_options_res_id = {'display_text': 'Res ID',
+                          'name': 'res_id',
+                            'initial': '5df7c67f65a74db1997dfd92f3c86cd7'}
+
+    text_input_options_filename = {'display_text': 'Filename',
+                          'name': 'filename',
+                          'initial': 'Untitledresource-3_20_2015-wml_2_0.wml'
+                          }
+	
+  
+
+    # Create template context dictionary
+    context = {'name': name,
+               'text_input_options_res_id': text_input_options_res_id,
+               'text_input_options_filename':text_input_options_filename,
+               'a123':'123a',
+	       'text_input_options':text_input_options             
+               }
+
+    return render(request, 'refts_viewer/request_demo.html',context)
+
