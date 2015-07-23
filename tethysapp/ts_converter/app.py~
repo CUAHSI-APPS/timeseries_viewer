@@ -10,7 +10,7 @@ class TsConverter(TethysAppBase):
     index = 'ts_converter:home'
     icon = 'ts_converter/images/icon.gif'
     package = 'ts_converter'
-    root_url = 'ts_converter'
+    root_url = 'ts-converter'
     color = '#f1c40f'
         
     def url_maps(self):
@@ -19,7 +19,9 @@ class TsConverter(TethysAppBase):
         """
         UrlMap = url_map_maker(self.root_url)
 
-        url_maps = (UrlMap(name='home',
+        url_maps = (
+
+                    UrlMap(name='home',
                            url='ts_converter/',
                            controller='ts_converter.controllers.home'),
 

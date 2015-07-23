@@ -61,7 +61,7 @@ def parse_1_0_and_1_1(root):
         if 'timeSeriesResponse' in root.tag:
             time_series = root[1]
             ts = etree.tostring(time_series)
-            values = {}
+            values = OrderedDict()
             for_graph = []
             for_highchart = []
 
@@ -126,10 +126,8 @@ def parse_1_0_and_1_1(root):
                 values_str = data[i]
                 t= datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S')
                 value_float = float(values_str)
-                item.append([t,value_float])
-                for_highchart.append(item)
-
-
+                #item.append([t,value_float])
+                for_highchart.append([t,value_float])
 
             smallest_time = list(values.keys())[0]
             for t in list(values.keys()):
@@ -321,6 +319,7 @@ def TimeSeriesConverter(xml_data):
         split = final.split()
         data= []
 
+
         time = split[::2]
         value = split[1::2]
         item = []
@@ -382,9 +381,10 @@ def TimeSeriesConverter(xml_data):
                          'height': '500px'}
 
 
-    return timeseries_plot
+    return  timeseries_plot
 
 def test(root):
+    #test of graphing water ml 1
      try:
         if 'timeSeriesResponse' in root.tag:
             time_series = root[1]
@@ -458,10 +458,6 @@ def test(root):
                 value_float = float(values_str)
                 item.append([t,value_float])
                 for_highchart.append(item)
-                time = dates
-
-
-
 
             smallest_time = list(values.keys())[0]
             for t in list(values.keys()):

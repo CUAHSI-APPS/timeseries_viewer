@@ -2,35 +2,39 @@
 {% load tethys_gizmos %}
 
 {% block app_navigation_items %}
+<form method="post">
+{% csrf_token %}
+{% gizmo text_input text_input_options %}
+<input type="submit" name="url_submit" class="btn btn-default">
 
-  <li>
-    <a href="{% url 'refts_viewer:request_demo' %}">Request Demo</a>
-  </li>
+{% gizmo select_input select_interval %}
 
+
+{% gizmo select_input select_stat %}
+
+
+</form>
 {% endblock %}
 
 {% block app_content %}
   <h1>Welcome to Time Series Viewer</h1>
-<form method="post">
-     <h1>  </h1>
 
-  {% csrf_token %}
-  {% gizmo text_input text_input_options %}
-  <input type="submit" name="name-form-submit" class="btn btn-default">
+     <h1>{{name}}   </h1>
 
 
-{% gizmo highcharts_plot_view output_converter%}
+
+
 {% gizmo highcharts_plot_view timeseries_plot%}
-
-{% gizmo select_input select_input2 %}
-<input type="submit" name="Calculate" class="btn btn-default">
-
 {% gizmo highcharts_plot_view plot%}
 
 
 
 
-</form>
+
+
+
+
+
 {% endblock %}
 {% block app_actions %}
   <a href="" class="btn btn-default">Next</a>
