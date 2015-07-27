@@ -267,6 +267,7 @@ def parse_2_0(root):
                 item=[time_obj,val_obj]
                 for_highchart.append(item)
             values = dict(zip(keys, vals))
+
             for k, v in values.items():
                 t = time_to_int(k)
                 for_graph.append({'x': t, 'y': float(v)})
@@ -353,6 +354,7 @@ def TimeSeriesConverter(xml_data):
                 'title': {
                     'text': x_title_text
                 }
+
             },
             'yAxis': {
                 'title': {

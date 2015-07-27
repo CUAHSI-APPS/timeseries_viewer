@@ -11,7 +11,7 @@ from datetime import datetime
 import urllib2
 import urllib
 import json
-
+# -- coding: utf-8--
 
 #Base_Url_HydroShare REST API
 url_base='http://{0}.hydroshare.org/hsapi/resource/{1}/files/{2}'
@@ -34,6 +34,8 @@ def restcall(request,branch,res_id,filename):
 
 #Normal Get or Post Request
 #http://dev.hydroshare.org/hsapi/resource/72b1d67d415b4d949293b1e46d02367d/files/referencetimeseries-2_23_2015-wml_2_0.wml/
+
+
 def home(request):
 
     filename=None
@@ -45,26 +47,25 @@ def home(request):
     no_url = False
     output_converter = None
 
-
-
-
-
-
     text_input_options = TextInput(display_text='Enter URL of Water ML data',
                                    name='url_name')
 
     select_interval = SelectInput(display_text='Select a new time frame',
                             name='select_interval',
                             multiple=False,
-                            options=[('Weekly','weekly'), ('Monthly', 'monthly'), ('Yearly','yearly')],
+                            options=[('Select a new interval', 'default'),('Daily', 'daily'),('Weekly','weekly'), ('Monthly', 'monthly'), ('Yearly','yearly')],
                             original=['Two'])
     select_stat = SelectInput(display_text='Select a statistics function',
                             name='select_stat',
                             multiple=False,
-                            options=[('Mean', '1'), ('Median','2')],
+                            options=[('Select a statistics function', 'no_select'),('Mean', 'mean'), ('Median','median')],
                             original=['Two'])
 
 
+    if request.POST['select_interval']=='default' or request.POST[select_stat] == 'no_select':
+        name = 'matthew'
+
+    #plotting the unaltered time seres
     if request.POST and 'url_name' in request.POST:
 	       url_wml = request.POST['url_name']
 	       filename = 'Current Time Series'
@@ -72,12 +73,9 @@ def home(request):
     	       html = response.read()
     	       timeseries_plot = chartPara(html,filename)
 
-    if request.POST and 'select_interval' in request.POST:
-       name= request.POST['select_interval']
 
     show_time = True
-
-    #Converted Time series
+    #this is the default chart if no values are given
     if url_wml is None:
         filename = 'KiWIS-WML2-Example.wml'
         url_wml='http://www.waterml2.org/KiWIS-WML2-Example.wml'
@@ -90,8 +88,10 @@ def home(request):
     else:
         url_wps = 'http://localhost:8383/wps/WebProcessingService'
         url_user = url_wml
-        interval = request.POST['select_interval']
-        stat = "median"
+       # interval = request.POST['select_interval']
+        interval = "daily"
+        #stat = request.POST['select_stat']
+        stat = "mean"
         #replace "=" with "!" and "&" with "|"
         #url_user = 'http://worldwater.byu.edu/app/index.php/byu_test_justin/services/cuahsi_1_1.asmx/GetValuesObject?location!byu_test_justin:B-Lw~variable!byu_test_justin:WATER~startDate!~endDate!'
         url_user = url_user.replace('=', '!')
@@ -103,11 +103,6 @@ def home(request):
         wps_read = wps_open.read()
 
         plot = TimeSeriesConverter(wps_read)
-
-
-
-
-    
 
     context = {"timeseries_plot":timeseries_plot,
 'plot':plot,
