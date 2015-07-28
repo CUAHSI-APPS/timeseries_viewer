@@ -169,7 +169,7 @@ def chartPara(html, filename):
 
     title_text=filename
     x_title_text = "Time"
-    y_title_text = "Measures'"
+    y_title_text = "Measurements"
     serise_text=filename
 
     # Timeseries plot example
@@ -334,10 +334,10 @@ def TimeSeriesConverter(xml_data):
                 jim =time_int
                 item.append([time_int,value_float])
 
-        title_text="testing converter"
+        title_text="Converted Time Series"
         x_title_text = "Time"
-        y_title_text = "Measures'"
-        serise_text="testing"
+        y_title_text = "Measurements"
+        serise_text="Converted Time Series"
 
         # Timeseries plot example
         timeseries_plot_object = {
@@ -468,8 +468,8 @@ def test(root):
 
             title_text="Testing WaterML 1"
             x_title_text = "Time"
-            y_title_text = "Measures'"
-            serise_text="testing"
+            y_title_text = "Measures"
+            serise_text="New Time Series"
 
             # Timeseries plot example
             timeseries_plot_object = {

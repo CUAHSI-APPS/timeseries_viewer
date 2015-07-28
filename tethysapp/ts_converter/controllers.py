@@ -62,8 +62,8 @@ def home(request):
                             original=['Two'])
 
 
-    if request.POST['select_interval']=='default' or request.POST[select_stat] == 'no_select':
-        name = 'matthew'
+    #if request.POST and request.POST['select_interval']=='default' or request.POST['select_stat'] == 'no_select':
+        #url_wml = None
 
     #plotting the unaltered time seres
     if request.POST and 'url_name' in request.POST:
@@ -86,12 +86,12 @@ def home(request):
         plot = chartPara(html,filename)
 
     else:
-        url_wps = 'http://localhost:8383/wps/WebProcessingService'
+        url_wps = 'http://localhost:8282/wps/WebProcessingService'
         url_user = url_wml
-       # interval = request.POST['select_interval']
-        interval = "daily"
-        #stat = request.POST['select_stat']
-        stat = "mean"
+        interval = request.POST['select_interval']
+        #interval = "daily"
+        stat = request.POST['select_stat']
+        #stat = "mean"
         #replace "=" with "!" and "&" with "|"
         #url_user = 'http://worldwater.byu.edu/app/index.php/byu_test_justin/services/cuahsi_1_1.asmx/GetValuesObject?location!byu_test_justin:B-Lw~variable!byu_test_justin:WATER~startDate!~endDate!'
         url_user = url_user.replace('=', '!')
