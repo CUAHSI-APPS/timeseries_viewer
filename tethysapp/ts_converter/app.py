@@ -23,8 +23,9 @@ class TsConverter(TethysAppBase):
                            url='ts_converter/',
                            controller='ts_converter.controllers.home'),
 
-
-
+                    UrlMap(name='View_R_Code',
+                           url='View_R_Code',
+                           controller='ts_converter.controllers.View_R_Code')
 
 
         )
