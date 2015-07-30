@@ -157,27 +157,11 @@ def parse_1_0_and_1_1(root):
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
 
 # Prepare for Chart Parameters
-def chartPara(ts):
-
-    # #print (html)
-    #
-    # root = etree.XML(html)
-    # wml_version = get_version(root)
-    #
-    # ts={}
-    # if convert == True:
-    #   ts =
-    # elif convert == False:
-    #     if wml_version == '1':
-    #         ts = parse_1_0_and_1_1(root)
-    #     elif wml_version == '2.0':
-    #         ts = parse_2_0(root)
-    #
-    # #print ts
+def chartPara(ts,ts_original):
 
     title_text= "testing123"
-    x_title_text = "Time"
-    y_title_text = ts['units']
+    x_title_text = "Time Period"
+    y_title_text = ts_original['units']
     serise_text="testing123"
 
     # Timeseries plot example
@@ -353,58 +337,6 @@ def TimeSeriesConverter(xml_data):
 
                }
 
-    #     title_text="Converted Time Series"
-    #     x_title_text = "Time"
-    #     y_title_text = "Measurements"
-    #     serise_text="Converted Time Series"
-    #
-    #     # Timeseries plot example
-    #     timeseries_plot_object = {
-    #         'chart': {
-    #             'type': 'area',
-    #             'zoomType': 'x'
-    #         },
-    #         'title': {
-    #             'text': title_text
-    #         },
-    #         'xAxis': {
-    #             'maxZoom': 3 * 24 * 3600000, # 30 days in milliseconds
-    #             'type': 'datetime',
-    #             'title': {
-    #                 'text': x_title_text
-    #             }
-    #
-    #         },
-    #         'yAxis': {
-    #             'title': {
-    #                 'text': y_title_text
-    #             }
-    #         },
-    #         'legend': {
-    #             'layout': 'vertical',
-    #             'align': 'right',
-    #             'verticalAlign': 'top',
-    #             'x': -350,
-    #             'y': 125,
-    #             'floating': True,
-    #             'borderWidth': 1,
-    #             'backgroundColor': '#FFFFFF'
-    #         },
-    #         'series': [{
-    #             'name': serise_text,
-    #             'data': item
-    #         }]
-    #     }
-    #
-    #
-    #     timeseries_plot = {'highcharts_object': timeseries_plot_object,
-    #                      'width': '500px',
-    #                      'height': '500px'}
-    #
-    #
-    # return  timeseries_plot
-
-
 def Original_Checker(html, filename):
     #print (html)
 
@@ -412,8 +344,6 @@ def Original_Checker(html, filename):
     wml_version = get_version(root)
 
     ts={}
-
-
     if wml_version == '1':
         return parse_1_0_and_1_1(root)
     elif wml_version == '2.0':

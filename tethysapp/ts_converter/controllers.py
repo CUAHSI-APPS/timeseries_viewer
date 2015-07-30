@@ -71,8 +71,9 @@ def home(request):
 	       filename = 'Current Time Series'
 	       response = urllib2.urlopen(url_wml)
     	       html = response.read()
-    	       graph_info = Original_Checker(html,filename)
-               timeseries_plot = chartPara(graph_info)
+    	       graph_original = Original_Checker(html,filename)
+               name = graph_original['units']
+               timeseries_plot = chartPara(graph_original,graph_original)
                save_url = request.POST['url_name']
     else:
         save_url = "Please enter Url"
@@ -88,13 +89,10 @@ def home(request):
         response = urllib2.urlopen(url_wml)
      	html = response.read()
      	graph_info = Original_Checker(html,filename)
-        timeseries_plot = chartPara(graph_info)
-
-
-
+        timeseries_plot = chartPara(graph_info,graph_info)
 
         graph_info2 = Original_Checker(html,filename)
-        plot = chartPara(graph_info2)
+        plot = chartPara(graph_info2,graph_info2)
 
     # Plotting the altered time series
     else:
@@ -114,11 +112,12 @@ def home(request):
         wps_read = wps_open.read()
 
         graph_info =TimeSeriesConverter(wps_read)
-        plot = chartPara(graph_info)
+        plot = chartPara(graph_info,graph_original)
 
     text_input_options = TextInput(display_text='Enter URL of Water ML data',
                                    name='url_name',
-                                   initial = save1_url)
+                                   initial = save1_url,
+                                   attributes= "width: 1000")
 
     select_interval = SelectInput(display_text='Select a new time frame',
                             name='select_interval',
