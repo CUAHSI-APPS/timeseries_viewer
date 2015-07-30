@@ -71,7 +71,8 @@ def home(request):
 	       filename = 'Current Time Series'
 	       response = urllib2.urlopen(url_wml)
     	       html = response.read()
-    	       timeseries_plot = chartPara(html,filename)
+    	       graph_info = Original_Checker(html,filename)
+               timeseries_plot = chartPara(graph_info)
                save_url = request.POST['url_name']
     else:
         save_url = "Please enter Url"
@@ -86,8 +87,14 @@ def home(request):
         no_url = True
         response = urllib2.urlopen(url_wml)
      	html = response.read()
-     	timeseries_plot = chartPara(html,filename)
-        plot = chartPara(html,filename)
+     	graph_info = Original_Checker(html,filename)
+        timeseries_plot = chartPara(graph_info)
+
+
+
+
+        graph_info2 = Original_Checker(html,filename)
+        plot = chartPara(graph_info2)
 
     # Plotting the altered time series
     else:
@@ -101,13 +108,13 @@ def home(request):
         #url_user = 'http://worldwater.byu.edu/app/index.php/byu_test_justin/services/cuahsi_1_1.asmx/GetValuesObject?location!byu_test_justin:B-Lw~variable!byu_test_justin:WATER~startDate!~endDate!'
         url_user = url_user.replace('=', '!')
         url_user = url_user.replace('&', '~')
-        process_input = '<?xml+version="1.0"+encoding="UTF-8"+standalone="yes"?><wps:Execute+service="WPS"+version="1.0.0"++xmlns:wps="http://www.opengis.net/wps/1.0.0"+xmlns:ows="http://www.opengis.net/ows/1.1"++xmlns:xlink="http://www.w3.org/1999/xlink"+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"++xsi:schemaLocation="http://www.opengis.net/wps/1.0.0++http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd">++<ows:Identifier>org.n52.wps.server.r.timeSeriesConverter</ows:Identifier>++<wps:DataInputs>++++<wps:Input>++++++<ows:Identifier>url</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+url_user+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>interval</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+interval+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>stat</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+stat+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++</wps:DataInputs>++<wps:ResponseForm>++++<wps:ResponseDocument+storeExecuteResponse="false">++++++<wps:Output+asReference="false">++++++++<ows:Identifier>output</ows:Identifier>++++++</wps:Output>++++</wps:ResponseDocument>++</wps:ResponseForm></wps:Execute>'
+        process_input = '<?xml+version="1.0"+encoding="UTF-8"+standalone="yes"?><wps:Execute+service="WPS"+version="1.0.0"++xmlns:wps="http://www.opengis.net/wps/1.0.0"+xmlns:ows="http://www.opengis.net/ows/1.1"++xmlns:xlink="http://www.w3.org/1999/xlink"+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"++xsi:schemaLocation="http://www.opengis.net/wps/1.0.0++http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd">++<ows:Identifier>org.n52.wps.server.r.convert-time-series</ows:Identifier>++<wps:DataInputs>++++<wps:Input>++++++<ows:Identifier>url</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+url_user+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>interval</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+interval+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>stat</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+stat+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++</wps:DataInputs>++<wps:ResponseForm>++++<wps:ResponseDocument+storeExecuteResponse="false">++++++<wps:Output+asReference="false">++++++++<ows:Identifier>output</ows:Identifier>++++++</wps:Output>++++</wps:ResponseDocument>++</wps:ResponseForm></wps:Execute>'
         wps_request = urllib2.Request(url_wps,process_input)
         wps_open = urllib2.urlopen(wps_request)
         wps_read = wps_open.read()
 
-
-        plot = TimeSeriesConverter(wps_read)
+        graph_info =TimeSeriesConverter(wps_read)
+        plot = chartPara(graph_info)
 
     text_input_options = TextInput(display_text='Enter URL of Water ML data',
                                    name='url_name',

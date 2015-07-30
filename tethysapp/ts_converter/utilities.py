@@ -125,7 +125,12 @@ def parse_1_0_and_1_1(root):
                 time_str = dates[i]
                 values_str = data[i]
                 t= datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S')
-                value_float = float(values_str)
+
+                if values_str == "-9999.0": #check to see if there are null values in the time series
+                    value_float = None
+                else:
+                    value_float = float(values_str)
+
                 #item.append([t,value_float])
                 for_highchart.append([t,value_float])
 
@@ -152,25 +157,28 @@ def parse_1_0_and_1_1(root):
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
 
 # Prepare for Chart Parameters
-def chartPara(html, filename):
+def chartPara(ts):
 
-    #print (html)
+    # #print (html)
+    #
+    # root = etree.XML(html)
+    # wml_version = get_version(root)
+    #
+    # ts={}
+    # if convert == True:
+    #   ts =
+    # elif convert == False:
+    #     if wml_version == '1':
+    #         ts = parse_1_0_and_1_1(root)
+    #     elif wml_version == '2.0':
+    #         ts = parse_2_0(root)
+    #
+    # #print ts
 
-    root = etree.XML(html)
-    wml_version = get_version(root)
-
-    ts={}
-    if wml_version == '1':
-        ts = parse_1_0_and_1_1(root)
-    elif wml_version == '2.0':
-        ts = parse_2_0(root)
-
-    #print ts
-
-    title_text=filename
+    title_text= "testing123"
     x_title_text = "Time"
-    y_title_text = "Measurements"
-    serise_text=filename
+    y_title_text = ts['units']
+    serise_text="testing123"
 
     # Timeseries plot example
     timeseries_plot_object = {
@@ -263,7 +271,12 @@ def parse_2_0(root):
             for i in range(0,len(keys)):
                 time_str=keys[i]
                 time_obj=time_str_to_datetime(time_str)
-                val_obj=float(vals[i])
+
+                if vals[i] == "-9999.0":
+                    val_obj = None
+                else:
+                    val_obj=float(vals[i])
+
                 item=[time_obj,val_obj]
                 for_highchart.append(item)
             values = dict(zip(keys, vals))
@@ -319,6 +332,7 @@ def TimeSeriesConverter(xml_data):
         final = new[0:location2]
         split = final.split()
         data= []
+        for_highchart =[]
 
 
         time = split[::2]
@@ -327,194 +341,80 @@ def TimeSeriesConverter(xml_data):
         for i in range(0,len(time)):
                 time_str = time[i]
                 value_str = value[i]
-
-                value_float = float(value_str)
+                if value_str == "NA": #check to see if there are null values in the time series
+                    value_float = None
+                else:
+                    value_float = float(value_str)
 
                 time_int = datetime.strptime(time_str, '%Y-%m-%d')
-                jim =time_int
-                item.append([time_int,value_float])
+                for_highchart.append([time_int,value_float])
+        return {
+                    'for_highchart':for_highchart,
 
-        title_text="Converted Time Series"
-        x_title_text = "Time"
-        y_title_text = "Measurements"
-        serise_text="Converted Time Series"
+               }
 
-        # Timeseries plot example
-        timeseries_plot_object = {
-            'chart': {
-                'type': 'area',
-                'zoomType': 'x'
-            },
-            'title': {
-                'text': title_text
-            },
-            'xAxis': {
-                'maxZoom': 3 * 24 * 3600000, # 30 days in milliseconds
-                'type': 'datetime',
-                'title': {
-                    'text': x_title_text
-                }
-
-            },
-            'yAxis': {
-                'title': {
-                    'text': y_title_text
-                }
-            },
-            'legend': {
-                'layout': 'vertical',
-                'align': 'right',
-                'verticalAlign': 'top',
-                'x': -350,
-                'y': 125,
-                'floating': True,
-                'borderWidth': 1,
-                'backgroundColor': '#FFFFFF'
-            },
-            'series': [{
-                'name': serise_text,
-                'data': item
-            }]
-        }
-
-
-        timeseries_plot = {'highcharts_object': timeseries_plot_object,
-                         'width': '500px',
-                         'height': '500px'}
-
-
-    return  timeseries_plot
-
-def test(root):
-    #test of graphing water ml 1
-     try:
-        if 'timeSeriesResponse' in root.tag:
-            time_series = root[1]
-            ts = etree.tostring(time_series)
-            values = OrderedDict()
-            for_graph = []
-            for_highchart = []
-
-            units, site_name, variable_name, latitude, longitude, methodCode, method, QCcode, QClevel = None, None, None, None, None, None, None, None, None
-            unit_is_set = False
-            methodCode_set = False
-            QCcode_set = False
-            for element in root.iter():
-                brack_lock = -1
-                if '}' in element.tag:
-                    brack_lock = element.tag.index('}')  #The namespace in the tag is enclosed in {}.
-                tag = element.tag[brack_lock+1:]     #Takes only actual tag, no namespace
-                if 'unitName' == tag:  # in the xml there is a unit for the value, then for time. just take the first
-                    if not unit_is_set:
-                        units = element.text
-                        unit_is_set = True
-                if 'value' == tag:
-                    values[element.attrib['dateTime']] = element.text
-                    #time = [element.attrib['dateTime']]
-                    #time = element.text
-                    if not methodCode_set:
-                        for a in element.attrib:
-                            if 'methodCode' in a:
-                                methodCode = element.attrib[a]
-                                methodCode_set = True
-                            if 'qualityControlLevelCode' in a:
-                                QCcode = element.attrib[a]
-                                QCcode_set = True
-                if 'siteName' == tag:
-                    site_name = element.text
-                if 'variableName' == tag:
-                    variable_name = element.text
-                if 'latitude' == tag:
-                    latitude = element.text
-                if 'longitude' == tag:
-                    longitude = element.text
-            if methodCode == 1:
-                method = 'No method specified'
-            else:
-                method = 'Unknown method'
-
-            if QCcode == 0:
-                QClevel = "Raw Data"
-            elif QCcode == 1:
-                QClevel = "Quality Controlled Data"
-            elif QCcode == 2:
-                QClevel = "Derived Products"
-            elif QCcode == 3:
-                QClevel = "Interpreted Products"
-            elif QCcode == 4:
-                QClevel = "Knowledge Products"
-            else:
-                QClevel = 'Unknown'
+    #     title_text="Converted Time Series"
+    #     x_title_text = "Time"
+    #     y_title_text = "Measurements"
+    #     serise_text="Converted Time Series"
+    #
+    #     # Timeseries plot example
+    #     timeseries_plot_object = {
+    #         'chart': {
+    #             'type': 'area',
+    #             'zoomType': 'x'
+    #         },
+    #         'title': {
+    #             'text': title_text
+    #         },
+    #         'xAxis': {
+    #             'maxZoom': 3 * 24 * 3600000, # 30 days in milliseconds
+    #             'type': 'datetime',
+    #             'title': {
+    #                 'text': x_title_text
+    #             }
+    #
+    #         },
+    #         'yAxis': {
+    #             'title': {
+    #                 'text': y_title_text
+    #             }
+    #         },
+    #         'legend': {
+    #             'layout': 'vertical',
+    #             'align': 'right',
+    #             'verticalAlign': 'top',
+    #             'x': -350,
+    #             'y': 125,
+    #             'floating': True,
+    #             'borderWidth': 1,
+    #             'backgroundColor': '#FFFFFF'
+    #         },
+    #         'series': [{
+    #             'name': serise_text,
+    #             'data': item
+    #         }]
+    #     }
+    #
+    #
+    #     timeseries_plot = {'highcharts_object': timeseries_plot_object,
+    #                      'width': '500px',
+    #                      'height': '500px'}
+    #
+    #
+    # return  timeseries_plot
 
 
-            dates = []
-            data = []
-            item = []
-            for k, v in values.items():
-                dates = values.keys()
-                data = values.values()
-            for i in range(0,len(dates)):
-                time_str = dates[i]
-                values_str = data[i]
-                t= datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S')
-                value_float = float(values_str)
-                item.append([t,value_float])
-                for_highchart.append(item)
+def Original_Checker(html, filename):
+    #print (html)
 
-            smallest_time = list(values.keys())[0]
-            for t in list(values.keys()):
-                if t < smallest_time:
-                    smallest_time = t
+    root = etree.XML(html)
+    wml_version = get_version(root)
 
-            title_text="Testing WaterML 1"
-            x_title_text = "Time"
-            y_title_text = "Measures"
-            serise_text="New Time Series"
-
-            # Timeseries plot example
-            timeseries_plot_object = {
-                'chart': {
-                    'type': 'area',
-                    'zoomType': 'x'
-                },
-                'title': {
-                    'text': title_text
-                },
-                'xAxis': {
-                    'maxZoom': 3 * 24 * 3600000, # 30 days in milliseconds
-                    'type': 'datetime',
-                    'title': {
-                        'text': x_title_text
-                    }
-                },
-                'yAxis': {
-                    'title': {
-                        'text': y_title_text
-                    }
-                },
-                'legend': {
-                    'layout': 'vertical',
-                    'align': 'right',
-                    'verticalAlign': 'top',
-                    'x': -350,
-                    'y': 125,
-                    'floating': True,
-                    'borderWidth': 1,
-                    'backgroundColor': '#FFFFFF'
-                },
-                'series': [{
-                    'name': serise_text,
-                    'data': item
-                }]
-            }
+    ts={}
 
 
-            timeseries_plot = {'highcharts_object': timeseries_plot_object,
-                         'width': '500px',
-                         'height': '500px'}
-        return timeseries_plot
-     except:
-      print "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
-      return "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
-
-
+    if wml_version == '1':
+        return parse_1_0_and_1_1(root)
+    elif wml_version == '2.0':
+        return parse_2_0(root)

@@ -10,14 +10,14 @@
 {% gizmo text_input text_input_options %}
 
 
-<input type="submit" name="url_submit" class="btn btn-default">
+
 
 
 
 {% gizmo select_input select_interval %}
 {% gizmo select_input select_stat %}
-
-
+<input type="submit" name="url_submit" class="btn btn-default">
+<p></p>
 <a href="{% url 'ts_converter:View_R_Code' %} " class = "btn btn-default">View R Code</a>
 </form>
 {% endblock %}
