@@ -6,35 +6,48 @@
 <form method="post">
 
 {% csrf_token %}
+{% gizmo button run %}
 
 
-
-
-
+{% gizmo text_input text_input_options %}
+{% gizmo button add_ts %}
 
 
 
 {% gizmo select_input select_interval %}
 {% gizmo select_input select_stat %}
 <input type="submit" name="url_submit" class="btn btn-default">
+
 <p></p>
 <a href="{% url 'ts_converter:View_R_Code' %} " class = "btn btn-default">View R Code</a>
 
-
+{% gizmo button download %}
 </form>
 {% endblock %}
 
+
+
+
 {% block app_content %}
+<form method="post">
+{% csrf_token %}
+
+
+</form>
+
+
   <h1>Welcome to Time Series Converter</h1>
-{% gizmo text_input text_input_options %}
+
+
+
       <h1>{{name}}  </h1>
-{% gizmo highcharts_plot_view timeseries_plot%}
+
 
 
 {% gizmo highcharts_plot_view plot%}
 
 
-<input type="submit" name="download_R" class="btn btn-default">
+
 
 {% endblock %}
 

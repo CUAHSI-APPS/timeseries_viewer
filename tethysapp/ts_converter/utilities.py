@@ -7,9 +7,10 @@ from lxml import etree
 from datetime import datetime
 from datetime import timedelta
 from dateutil import parser
-
+import csv
 from collections import OrderedDict
 import re
+from django.http import HttpResponse
 
 def get_persistent_store_engine(persistent_store_name):
     """
@@ -157,7 +158,7 @@ def parse_1_0_and_1_1(root):
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
 
 # Prepare for Chart Parameters
-def chartPara(ts,ts_original):
+def chartPara(ts_original,for_highcharts):
 
     title_text= "testing123"
     x_title_text = "Time Period"
@@ -167,7 +168,7 @@ def chartPara(ts,ts_original):
     # Timeseries plot example
     timeseries_plot_object = {
         'chart': {
-            'type': 'area',
+            'type': 'line',
             'zoomType': 'x'
         },
         'title': {
@@ -187,24 +188,30 @@ def chartPara(ts,ts_original):
         },
         'legend': {
             'layout': 'vertical',
-            'align': 'right',
+            'align': 'left',
             'verticalAlign': 'top',
-            'x': -350,
+            'x': 0,
             'y': 125,
-            'floating': True,
+            'floating': False,
             'borderWidth': 1,
             'backgroundColor': '#FFFFFF'
         },
-        'series': [{
-            'name': serise_text,
-            'data':ts['for_highchart']
-        }]
+        'series': for_highcharts,
+
+        'exporting':
+            {
+            'csv': '{dateFormat: %Y-%m-%d}'
+            },
+
+
     }
 
     
     timeseries_plot = {'highcharts_object': timeseries_plot_object,
                      'width': '500px',
-                     'height': '500px'}
+                     'height': '500px',
+                    'attributes':'$("#getcsv").click(function () {alert(chart.getCSV());'
+                       }
 
 
     return timeseries_plot
@@ -337,7 +344,7 @@ def TimeSeriesConverter(xml_data):
 
                }
 
-def Original_Checker(html, filename):
+def Original_Checker(html):
     #print (html)
 
     root = etree.XML(html)
@@ -348,3 +355,15 @@ def Original_Checker(html, filename):
         return parse_1_0_and_1_1(root)
     elif wml_version == '2.0':
         return parse_2_0(root)
+
+def download_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
+    writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
+    joe="aasdffsd"
+    return response
+
+

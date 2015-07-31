@@ -14,11 +14,11 @@ library(lubridate)
 #server <- 'http://hydrodata.info/chmi-h/cuahsi_1_1.asmx/GetValuesObject?location=CHMI-H:140&variable=CHMI-H:TEPLOTA&startDate=2015-07-01&endDate=2015-07-10&authToken='
 #server <- 'http://worldwater.byu.edu/app/index.php/byu_test_justin/services/cuahsi_1_1.asmx/GetValuesObject?location=byu_test_justin:B-Lw&variable=byu_test_justin:WATER&startDate=&endDate='
 
-#server <- 'http://hydrodata.info/chmi-h/cuahsi_1_1.asmx/GetValuesObject?location=CHMI-H:841&variable=CHMI-H:SRAZKY&startDate=2015-07-01&endDate=2015-07-10&authToken='
+#url <- 'http://hydrodata.info/chmi-h/cuahsi_1_1.asmx/GetValuesObject?location=CHMI-H:140&variable=CHMI-H:TEPLOTA&startDate=2015-07-01&endDate=2015-07-10&authToken='
 #NA values
-server <-'http://hydrodata.info/chmi-d/cuahsi_1_1.asmx/GetValuesObject?location=CHMI-D:171&variable=CHMI-D:PRUTOK&startDate=2014-07-01&endDate=2015-07-30&authToken='
+#server <-'http://hydrodata.info/chmi-d/cuahsi_1_1.asmx/GetValuesObject?location=CHMI-D:171&variable=CHMI-D:PRUTOK&startDate=2014-07-01&endDate=2015-07-30&authToken='
 #stat <- 'mean'
-interval <- "weekly"
+#interval <- "weekly"
 #url <- 'http://worldwater.byu.edu/app/index.php/byu_test_justin/services/cuahsi_1_1.asmx/GetValues?location=byu_test_justin:B-Lw&variable=byu_test_justin:WATER&startDate=&endDate='
 
 server <- gsub("!", "=", url)
