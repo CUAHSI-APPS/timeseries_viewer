@@ -198,10 +198,7 @@ def chartPara(ts_original,for_highcharts):
         },
         'series': for_highcharts,
 
-        'exporting':
-            {
-            'csv': '{dateFormat: %Y-%m-%d}'
-            },
+
 
 
     }
@@ -209,8 +206,8 @@ def chartPara(ts_original,for_highcharts):
     
     timeseries_plot = {'highcharts_object': timeseries_plot_object,
                      'width': '500px',
-                     'height': '500px',
-                    'attributes':'$("#getcsv").click(function () {alert(chart.getCSV());'
+                     'height': '500px'
+
                        }
 
 
@@ -366,4 +363,8 @@ def download_csv(request):
     joe="aasdffsd"
     return response
 
+def url_store(url):
+    list_url =[]
+    list_url.append(url)
 
+    return list_url

@@ -14,7 +14,7 @@ library(lubridate)
 #server <- 'http://hydrodata.info/chmi-h/cuahsi_1_1.asmx/GetValuesObject?location=CHMI-H:140&variable=CHMI-H:TEPLOTA&startDate=2015-07-01&endDate=2015-07-10&authToken='
 #server <- 'http://worldwater.byu.edu/app/index.php/byu_test_justin/services/cuahsi_1_1.asmx/GetValuesObject?location=byu_test_justin:B-Lw&variable=byu_test_justin:WATER&startDate=&endDate='
 
-#url <- 'http://hydrodata.info/chmi-h/cuahsi_1_1.asmx/GetValuesObject?location=CHMI-H:140&variable=CHMI-H:TEPLOTA&startDate=2015-07-01&endDate=2015-07-10&authToken='
+url <- 'http://hydrodata.info/chmi-h/cuahsi_1_1.asmx/GetValuesObject?location=CHMI-H:140&variable=CHMI-H:TEPLOTA&startDate=2015-07-01&endDate=2015-07-10&authToken='
 #NA values
 #server <-'http://hydrodata.info/chmi-d/cuahsi_1_1.asmx/GetValuesObject?location=CHMI-D:171&variable=CHMI-D:PRUTOK&startDate=2014-07-01&endDate=2015-07-30&authToken='
 #stat <- 'mean'
@@ -64,10 +64,10 @@ if (interval == "yearly")
 }
 
 #plot(ts_weekly)
-#plot(ts)
+plot(ts)
 #plot(ts_monthly)
-#plot(ts_daily)
-#plot(final_ts)
+plot(ts_daily)
+plot(final_ts)
 #rm(list=ls())
 #write the output
 output <- "Weekly Values"
