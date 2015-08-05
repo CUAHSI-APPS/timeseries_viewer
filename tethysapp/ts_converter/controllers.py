@@ -33,22 +33,7 @@ def restcall(request,branch,res_id,filename):
 #http://dev.hydroshare.org/hsapi/resource/72b1d67d415b4d949293b1e46d02367d/files/referencetimeseries-2_23_2015-wml_2_0.wml/
 
 def View_R_Code(request):
-    display_r =[]
-
-    session = SessionMaker1()
-    script1 = session.query(rscript).all()
-    for script in script1:
-        display_r.append(script.rscript)
-    if display_r[0] == "Converter":
-        r = urllib2.urlopen('http://127.0.0.1:8282/wps/R/scripts/timeSeriesConverter.R')
-
-    elif display_r[0] =="Gap":
-        r = urllib2.urlopen('http://127.0.0.1:8282/wps/R/scripts/timeSeriesGapFiller.R')
-    r_html = r.read()
-    r_code = r_html
-    context = {'r_code':r_code,
-
-              }
+    context = View_R()
     return render(request, 'ts_converter/View_R_Code.html', context)
 
 def home(request):
@@ -65,8 +50,8 @@ def home(request):
     r_script = None
     script_test =[]
     legend = []
-
-
+    download_bool = False
+    string_download = None
 
     if request.POST and "select_r" in request.POST:
         session = SessionMaker1()
@@ -78,6 +63,9 @@ def home(request):
         session.add(script)
         session.commit()
         session.close()
+        r = View_R()
+
+        R_info = r['r_code']
 
     if request.POST:
         r_script = request.POST['select_r_script']
@@ -123,7 +111,7 @@ def home(request):
 
 
     if request.POST and "run" in request.POST:
-
+        download_bool = True
         #this is the default chart if no values are given
         if url_list is None:
             filename = 'KiWIS-WML2-Example.wml'
@@ -176,8 +164,11 @@ def home(request):
 
                 test_run = run_wps(process_id,input,output)
 
+                download_link = test_run[1]
+                string_download = ''.join(download_link)
 
-                graph_info =TimeSeriesConverter(test_run)#prepares data for graphing
+
+                graph_info =TimeSeriesConverter(test_run[0])#prepares data for graphing
                 number_ts.append({'name':graph_original['site_name']+' Convertered','data':graph_info['for_highchart']})
                 legend.append(graph_original['site_name']+' Convertered')
             plot = chartPara(graph_original,number_ts)#plots graph data
@@ -243,8 +234,10 @@ def home(request):
 'clear_all_ts':clear_all_ts,
 'graph':graph,
 'legend':legend,
-'select_r':select_r
-
+'select_r':select_r,
+'string_download':string_download,
+'download_bool':download_bool,
+'R_info':R_info
 }
     
     return render(request, 'ts_converter/home.html', context)
@@ -303,7 +296,7 @@ def run_wps(process_id,input,output):
     # final_data = read_final_data(final_output_url)
 
     #return [final_output_url, final_data]
-    return wps_read1
+    return [wps_read1, split]
 
 
 def read_final_data(url):
@@ -315,3 +308,20 @@ def read_final_data(url):
         rows.append(row)
 
     return rows
+
+def View_R():
+    display_r =[]
+
+    session = SessionMaker1()
+    script1 = session.query(rscript).all()
+    for script in script1:
+        display_r.append(script.rscript)
+    if display_r[0] == "Converter":
+        my_url = "http://127.0.0.1:8282/wps/R/scripts/timeSeriesConverter.R"
+    elif display_r[0] =="Gap":
+        my_url = 'http://127.0.0.1:8282/wps/R/scripts/timeSeriesGapFiller.R'
+    r = urllib2.urlopen(my_url)
+    r_html = r.read()
+    r_code = r_html
+
+    return  {'r_code':r_code,'my_url':my_url}

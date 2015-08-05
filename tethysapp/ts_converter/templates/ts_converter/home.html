@@ -3,7 +3,7 @@
 
 {% block app_navigation_items %}
 
-<form method="post">
+<div method="post">
 
 {% csrf_token %}
  <h1>Legend</h1>
@@ -16,14 +16,10 @@
 
 
 {% gizmo text_input text_input_options %}
-{% gizmo button graph %}
+
 {% gizmo button add_ts %}
+    <p></p>
 {% gizmo button clear_all_ts %}
-
-
-
-
-
 
  <h1>R-Scripts</h1>
 
@@ -32,26 +28,38 @@
 <p></p>
 <a href="{% url 'ts_converter:View_R_Code' %} " class = "btn btn-default">View R Code</a>
 
-{% gizmo button download %}
+
+
 {% endblock %}
-
-
 
 
 {% block app_content %}
  <h1>Welcome to HydroScriptR</h1>
 
-
-
       <h1>{{name}}  </h1>
+{%if download_bool%}
+    <a href="{{string_download}}" class = "btn btn-default">Download Data</a>
+{%endif%}
+    {% csrf_token %}
 
-{% csrf_token %}
+{% gizmo button graph %}
 {% gizmo highcharts_plot_view plot%}
-{% gizmo button run %}
+
+
+<div id = "info">
+ <pre><code>{{R_info}}</code></pre>
+
+</div>
+
+<div id = "function">
 {% gizmo select_input select_interval %}
 {% gizmo select_input select_stat %}
+</div>
+
+{% gizmo button run %}
 
 
+</table>
 
 </form>
 

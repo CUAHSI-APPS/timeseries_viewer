@@ -5,7 +5,9 @@
 <form method="post">
 {% csrf_token %}
 <p><a href="{% url 'ts_converter:home' %} " class = "btn btn-default">Home</a></p>
-<a href = "http://127.0.0.1:8282/wps/R/scripts/timeSeriesConverter.R" class = "btn btn-default">Download R Script</a>
+
+
+<a href = "{{ my_url}}" class = "btn btn-default">Download R Script</a>
 
 </form>
 {% endblock %}
