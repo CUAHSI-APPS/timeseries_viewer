@@ -38,8 +38,14 @@ class TsConverter(TethysAppBase):
         """
         stores = (PersistentStore(name='urls_db',
                                   initializer='init_stores:init_urls_db',
+                                  spatial=False),
+
+                  PersistentStore(name='rscript_db',
+                                  initializer='init_stores:init_rscript_db',
                                   spatial=False
-                ),
+                                                )
+
+
         )
 
         return stores

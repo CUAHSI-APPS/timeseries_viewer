@@ -6,47 +6,60 @@
 <form method="post">
 
 {% csrf_token %}
-{% gizmo button run %}
+ <h1>Legend</h1>
+    {%for ts in legend%}
+    <ul>
+        <li>{{ts}}</li>
+    </ul>
+    {%endfor%}
+
 
 
 {% gizmo text_input text_input_options %}
+{% gizmo button graph %}
 {% gizmo button add_ts %}
 {% gizmo button clear_all_ts %}
 
 
 
 
-{% gizmo select_input select_interval %}
-{% gizmo select_input select_stat %}
 
 
+ <h1>R-Scripts</h1>
+
+{% gizmo select_input select_r_script %}
+    {% gizmo button select_r %}
 <p></p>
 <a href="{% url 'ts_converter:View_R_Code' %} " class = "btn btn-default">View R Code</a>
 
 {% gizmo button download %}
-</form>
 {% endblock %}
 
 
 
 
 {% block app_content %}
-<form method="post">
-{% csrf_token %}
-
-
-</form>
-
-
-  <h1>Welcome to Time Series Converter</h1>
+ <h1>Welcome to HydroScriptR</h1>
 
 
 
       <h1>{{name}}  </h1>
 
-
-
+{% csrf_token %}
 {% gizmo highcharts_plot_view plot%}
+{% gizmo button run %}
+{% gizmo select_input select_interval %}
+{% gizmo select_input select_stat %}
+
+
+
+</form>
+
+
+
+
+
+
 
 
 

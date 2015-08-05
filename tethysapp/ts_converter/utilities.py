@@ -136,12 +136,16 @@ def parse_1_0_and_1_1(root):
                 for_highchart.append([t,value_float])
 
             smallest_time = list(values.keys())[0]
+            largest_time =  list(values.keys())[0]
             for t in list(values.keys()):
                 if t < smallest_time:
                     smallest_time = t
+                if t>largest_time:
+                    largest_time = t
             return {'time_series': ts,
                     'site_name': site_name,
                     'start_date': smallest_time,
+                    'end_date':largest_time,
                     'variable_name': variable_name,
                     'units': units,
                     'values': values,
@@ -160,7 +164,7 @@ def parse_1_0_and_1_1(root):
 # Prepare for Chart Parameters
 def chartPara(ts_original,for_highcharts):
 
-    title_text= "testing123"
+    title_text= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date']
     x_title_text = "Time Period"
     y_title_text = ts_original['units']
     serise_text="testing123"
@@ -197,13 +201,7 @@ def chartPara(ts_original,for_highcharts):
             'backgroundColor': '#FFFFFF'
         },
         'series': for_highcharts,
-
-
-
-
     }
-
-    
     timeseries_plot = {'highcharts_object': timeseries_plot_object,
                      'width': '500px',
                      'height': '500px'
@@ -273,13 +271,17 @@ def parse_2_0(root):
                 t = time_to_int(k)
                 for_graph.append({'x': t, 'y': float(v)})
             smallest_time = list(values.keys())[0]
+            largest_time = list(values.keys())[0]
             for t in list(values.keys()):
                 if t < smallest_time:
                     smallest_time = t
+                if t> largest_time:
+                    largest_time = t
 	    test = "testingkkkk"	   
             return {'time_series': ts,
                     'site_name': site_name,
                     'start_date': smallest_time,
+                    'end_date':largest_time,
                     'variable_name': variable_name,
                     'units': units,
                     'values': values,
@@ -298,48 +300,45 @@ def parse_2_0(root):
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
 
 
-def TimeSeriesConverter(xml_data):
+def TimeSeriesConverter(string_data):
     data = None
     counter = None
-    xml_string = str(xml_data)
-    root = etree.fromstring(xml_string)
-    converted_file = xml_data
-    # the values are not seperate elements
-    # for element in root.iter():
-    #     if 'ComplexData' in element.tag:
-    #         converted_file = 1
-    #         data = element.text
+    #xml_string = str(xml_data)
+    #root = etree.fromstring(xml_string)
+    #converted_file = xml_data
 
     #using strings
-    if '<wps:ComplexData encoding="UTF-8" mimeType="text/plain">' in xml_string:
-        tag = '<wps:ComplexData encoding="UTF-8" mimeType="text/plain">'
-        location = xml_string.find(tag)
-        new= xml_string[location+len(tag):len(xml_string)]
-        tag2 = '<'
-        location2 = new.find(tag2)
-        final = new[0:location2]
-        split = final.split()
-        data= []
-        for_highchart =[]
+    # if '<wps:ComplexData encoding="UTF-8" mimeType="text/plain">' in xml_string:
+    #     tag = '<wps:ComplexData encoding="UTF-8" mimeType="text/plain">'
+    #     location = xml_string.find(tag)
+    #     new= xml_string[location+len(tag):len(xml_string)]
+    #     tag2 = '<'
+    #     location2 = new.find(tag2)
+    #     final = new[0:location2]
+    #     split = final.split()
+    #     data= []
+    for_highchart =[]
+    split = string_data.split()
+
+    time = split[::2]
+    value = split[1::2]
+    item = []
 
 
-        time = split[::2]
-        value = split[1::2]
-        item = []
-        for i in range(0,len(time)):
-                time_str = time[i]
-                value_str = value[i]
-                if value_str == "NA": #check to see if there are null values in the time series
-                    value_float = None
-                else:
-                    value_float = float(value_str)
 
-                time_int = datetime.strptime(time_str, '%Y-%m-%d')
-                for_highchart.append([time_int,value_float])
-        return {
+    for i in range(0,len(time)):
+            time_str = time[i]
+            value_str = value[i]
+            if value_str == "NA": #check to see if there are null values in the time series
+                 value_float = None
+            else:
+                value_float = float(value_str)
+
+            time_int = datetime.strptime(time_str, '%Y-%m-%d')
+            for_highchart.append([time_int,value_float])
+    return {
                     'for_highchart':for_highchart,
-
-               }
+           }
 
 def Original_Checker(html):
     #print (html)
