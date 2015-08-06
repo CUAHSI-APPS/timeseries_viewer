@@ -17,8 +17,6 @@ import json
 
 #Base_Url_HydroShare REST API
 url_base='http://{0}.hydroshare.org/hsapi/resource/{1}/files/{2}'
-
-
 ##Call in Rest style
 def restcall(request,branch,res_id,filename):
     print "restcall",branch,res_id,filename
@@ -28,10 +26,8 @@ def restcall(request,branch,res_id,filename):
     timeseries_plot = chartPara(html,filename)
     context = {"timeseries_plot":timeseries_plot}
     return render(request, 'ts_converter/home.html', context)
-
 #Normal Get or Post Request
 #http://dev.hydroshare.org/hsapi/resource/72b1d67d415b4d949293b1e46d02367d/files/referencetimeseries-2_23_2015-wml_2_0.wml/
-
 def View_R_Code(request):
     context = View_R()
     return render(request, 'ts_converter/View_R_Code.html', context)
@@ -67,22 +63,12 @@ def home(request):
         r1 = r['r_code']
         test1 = "wps.in"
 
-
         for m in re.finditer(test1,r1):
             print m
             counter = counter+1
 
-
-
-
-
-
-
     if request.POST:
         r_script = request.POST['select_r_script']
-
-
-
     if request.POST and "add_ts" in request.POST:
         if request.POST['url_name'] != "":
             session = SessionMaker()
@@ -91,16 +77,13 @@ def home(request):
             session.commit()
             session.close()
 
-
     session = SessionMaker()
     urls = session.query(URL).all()
-
-    for url in urls:
+    for url in urls:#creates a list of timeseries data and displays the results in the legend
         url_list.append(url.url)
         response = urllib2.urlopen(url.url)
         html = response.read()
         graph_original = Original_Checker(html)
-
         legend.append(graph_original['site_name'])
     session.close()
 
@@ -113,9 +96,7 @@ def home(request):
             html = response.read()
             graph_original = Original_Checker(html)
             number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
-
         plot = chartPara(graph_original,number_ts)#plots graph data
-
 
     if request.POST and "clear_all_ts" in request.POST:
         session = SessionMaker()
@@ -150,51 +131,33 @@ def home(request):
                 html = response.read()
                 graph_original = Original_Checker(html)
                 number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
-                legend.append(graph_original['site_name'])
-
-
                 url_user = str(x)
                 url_user = url_user.replace('=', '!')
                 url_user = url_user.replace('&', '~')
-
                 if r_script == "Converter":
                     interval = str(request.POST['select_interval'])
                     stat = str(request.POST['select_stat'])
                     process_id = 'org.n52.wps.server.r.convert-time-series'
                     input = [("url",url_user),("interval",interval),("stat",stat)]
                     output = "output"
-
                     #process_input = '<?xml+version="1.0"+encoding="UTF-8"+standalone="yes"?><wps:Execute+service="WPS"+version="1.0.0"++xmlns:wps="http://www.opengis.net/wps/1.0.0"+xmlns:ows="http://www.opengis.net/ows/1.1"++xmlns:xlink="http://www.w3.org/1999/xlink"+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"++xsi:schemaLocation="http://www.opengis.net/wps/1.0.0++http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd">++<ows:Identifier>org.n52.wps.server.r.convert-time-series</ows:Identifier>++<wps:DataInputs>++++<wps:Input>++++++<ows:Identifier>url</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+url_user+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>interval</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+interval+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>stat</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+stat+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++</wps:DataInputs>++<wps:ResponseForm>++++<wps:ResponseDocument+storeExecuteResponse="false">++++++<wps:Output+asReference="false">++++++++<ows:Identifier>output</ows:Identifier>++++++</wps:Output>++++</wps:ResponseDocument>++</wps:ResponseForm></wps:Execute>'
                 elif r_script =="Gap":
                    process_id = 'org.n52.wps.server.r.timeSeriesGapFiller'
                    input = [("url",url_user)]
                    output = "output"
-
-
-
                    #process_input = '<?xml+version="1.0"+encoding="UTF-8"+standalone="yes"?><wps:Execute+service="WPS"+version="1.0.0"++xmlns:wps="http://www.opengis.net/wps/1.0.0"+xmlns:ows="http://www.opengis.net/ows/1.1"++xmlns:xlink="http://www.w3.org/1999/xlink"+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"++xsi:schemaLocation="http://www.opengis.net/wps/1.0.0++http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd">++<ows:Identifier>org.n52.wps.server.r.timeSeriesGapFiller</ows:Identifier>++<wps:DataInputs>++++<wps:Input>++++++<ows:Identifier>url</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+url_user+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++</wps:DataInputs>++<wps:ResponseForm>++++<wps:ResponseDocument+storeExecuteResponse="false">++++++<wps:Output+asReference="false">++++++++<ows:Identifier>output</ows:Identifier>++++++</wps:Output>++++</wps:ResponseDocument>++</wps:ResponseForm></wps:Execute>'
                 #graphs the new time series
                 #wps_request = urllib2.Request(url_wps,process_input)
                 #wps_open = urllib2.urlopen(wps_request)
                 #wps_read = wps_open.read()
                 #graph_info =TimeSeriesConverter(wps_read)#prepares data for graphing
-
                 test_run = run_wps(process_id,input,output)
-
                 download_link = test_run[1]
                 string_download = ''.join(download_link)
-
-
                 graph_info =TimeSeriesConverter(test_run[0])#prepares data for graphing
                 number_ts.append({'name':graph_original['site_name']+' Convertered','data':graph_info['for_highchart']})
                 legend.append(graph_original['site_name']+' Convertered')
             plot = chartPara(graph_original,number_ts)#plots graph data
-
-    if request.POST and "download" in request.POST:
-
-
-                name = download_csv("larry")
-
 
     text_input_options = TextInput(display_text='Enter URL of Water ML data',
                                    name='url_name',
@@ -234,7 +197,6 @@ def home(request):
                        name='select_r',
                        submit=True)
 
-
     context = {
 'plot':plot,
 'text_input_options':text_input_options,
@@ -247,14 +209,12 @@ def home(request):
 'output_converter':output_converter,
 'add_ts':add_ts,
 'run':run,
-'download':download,
 'clear_all_ts':clear_all_ts,
 'graph':graph,
 'legend':legend,
 'select_r':select_r,
 'string_download':string_download,
 'download_bool':download_bool
-
 }
     
     return render(request, 'ts_converter/home.html', context)
