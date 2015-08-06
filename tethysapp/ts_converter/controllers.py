@@ -152,7 +152,7 @@ def home(request):
                 number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
                 legend.append(graph_original['site_name'])
 
-                url_wps = 'http://localhost:8282/wps/WebProcessingService'
+
                 url_user = str(x)
                 url_user = url_user.replace('=', '!')
                 url_user = url_user.replace('&', '~')
@@ -280,7 +280,7 @@ def run_wps(process_id,input,output):
     request = execution.request
     #set store executeresponse to false
     request = request.replace('storeExecuteResponse="true"', 'storeExecuteResponse="false"')
-    url_wps = 'http://localhost:8282/wps/WebProcessingService'
+    url_wps = 'http://appsdev.hydroshare.org:8282/wps/WebProcessingService'
 
     wps_request = urllib2.Request(url_wps,request)
     wps_open = urllib2.urlopen(wps_request)
@@ -334,9 +334,9 @@ def View_R():
     for script in script1:
         display_r.append(script.rscript)
     if display_r[0] == "Converter":
-        my_url = "http://127.0.0.1:8282/wps/R/scripts/timeSeriesConverter.R"
+        my_url = "http://appsdev.hydroshare.org:8282/wps/R/scripts/timeSeriesConverter.R"
     elif display_r[0] =="Gap":
-        my_url = 'http://127.0.0.1:8282/wps/R/scripts/timeSeriesGapFiller.R'
+        my_url = 'http://appsdev.hydroshare.org:8282/wps/R/scripts/timeSeriesGapFiller.R'
     r = urllib2.urlopen(my_url)
     r_html = r.read()
     r_code = r_html
