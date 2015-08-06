@@ -113,7 +113,7 @@ def home(request):
         #this is the default chart if no values are given
         if url_list is None:
             filename = 'KiWIS-WML2-Example.wml'
-            url_wml='http://www.waterml2.org/KiWIS-WML2-Example.wml'
+            url_wml='http://hydrodata.info/chmi-h/cuahsi_1_1.asmx/GetValuesObject?location=CHMI-H:140&variable=CHMI-H:TEPLOTA&startDate=2015-07-01&endDate=2015-07-10&authToken='
             no_url = True
             response = urllib2.urlopen(url_wml)
             html = response.read()
