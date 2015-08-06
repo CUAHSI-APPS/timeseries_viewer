@@ -64,8 +64,19 @@ def home(request):
         session.commit()
         session.close()
         r = View_R()
+        r1 = r['r_code']
+        test1 = "wps.in"
 
-        R_info = r['r_code']
+
+        for m in re.finditer(test1,r1):
+            print m
+            counter = counter+1
+
+
+
+
+
+
 
     if request.POST:
         r_script = request.POST['select_r_script']
@@ -80,10 +91,17 @@ def home(request):
             session.commit()
             session.close()
 
+
     session = SessionMaker()
     urls = session.query(URL).all()
+
     for url in urls:
         url_list.append(url.url)
+        response = urllib2.urlopen(url.url)
+        html = response.read()
+        graph_original = Original_Checker(html)
+
+        legend.append(graph_original['site_name'])
     session.close()
 
     if request.POST and "graph" in request.POST:
@@ -91,12 +109,11 @@ def home(request):
             counter = counter +1#counter for testing
             #graphs the original time series
             url_wml = x
-
             response = urllib2.urlopen(url_wml)
             html = response.read()
             graph_original = Original_Checker(html)
             number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
-            legend.append(graph_original['site_name'])
+
         plot = chartPara(graph_original,number_ts)#plots graph data
 
 
@@ -107,7 +124,7 @@ def home(request):
              session.delete(url)
              session.commit()
         session.close()
-
+        legend = None
 
 
     if request.POST and "run" in request.POST:
@@ -236,8 +253,8 @@ def home(request):
 'legend':legend,
 'select_r':select_r,
 'string_download':string_download,
-'download_bool':download_bool,
-'R_info':R_info
+'download_bool':download_bool
+
 }
     
     return render(request, 'ts_converter/home.html', context)

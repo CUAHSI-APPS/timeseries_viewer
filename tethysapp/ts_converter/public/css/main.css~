@@ -1,0 +1,18 @@
+#url_name {
+width:500px;
+}
+
+#info {
+float:right;
+width:50%;
+height:100%;
+}
+
+#function {
+float:right;
+width: 50%;
+height:100%;
+}
+
+
+

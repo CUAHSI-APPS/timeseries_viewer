@@ -1,9 +1,9 @@
 {% extends "ts_converter/base.html" %}
+{% load staticfiles%}
 {% load tethys_gizmos %}
 
 {% block app_navigation_items %}
-
-<div method="post">
+<form method="post">
 
 {% csrf_token %}
  <h1>Legend</h1>
@@ -12,10 +12,6 @@
         <li>{{ts}}</li>
     </ul>
     {%endfor%}
-
-
-
-{% gizmo text_input text_input_options %}
 
 {% gizmo button add_ts %}
     <p></p>
@@ -27,49 +23,39 @@
     {% gizmo button select_r %}
 <p></p>
 <a href="{% url 'ts_converter:View_R_Code' %} " class = "btn btn-default">View R Code</a>
-
-
-
 {% endblock %}
 
 
 {% block app_content %}
  <h1>Welcome to HydroScriptR</h1>
-
+{% gizmo text_input text_input_options %}
       <h1>{{name}}  </h1>
 {%if download_bool%}
     <a href="{{string_download}}" class = "btn btn-default">Download Data</a>
 {%endif%}
-    {% csrf_token %}
+{% csrf_token %}
 
 {% gizmo button graph %}
 {% gizmo highcharts_plot_view plot%}
 
 
 <div id = "info">
- <pre><code>{{R_info}}</code></pre>
 
+   <p></p>
+    <p>dsf</p>
+    <p>sdfa</p>
+    <p>asdf</p>
+    <p>asdf</p>
+    <p>dfasfdf</p>
 </div>
 
 <div id = "function">
 {% gizmo select_input select_interval %}
 {% gizmo select_input select_stat %}
+{% gizmo button run %}
 </div>
 
-{% gizmo button run %}
-
-
-</table>
-
 </form>
-
-
-
-
-
-
-
-
 
 
 {% endblock %}
@@ -78,6 +64,6 @@
 
   <a href="" class="btn btn-default">Next</a>
   <a href="" class="btn btn-default">Back</a>
-  
+
 {% endblock %}
 
