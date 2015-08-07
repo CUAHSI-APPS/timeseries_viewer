@@ -6,6 +6,7 @@ from owslib.wps import printInputOutput
 from owslib.wps import monitorExecution
 from owslib.wps import WPSExecution
 from tethys_apps.sdk import list_wps_service_engines
+import sys
 import requests
 import csv
 from datetime import datetime
@@ -48,6 +49,7 @@ def home(request):
     legend = []
     download_bool = False
     string_download = None
+    url_data_validation=[]
 
     if request.POST and "select_r" in request.POST:
         session = SessionMaker1()
@@ -70,12 +72,25 @@ def home(request):
     if request.POST:
         r_script = request.POST['select_r_script']
     if request.POST and "add_ts" in request.POST:
+
         if request.POST['url_name'] != "":
-            session = SessionMaker()
-            url1 = URL(url = request.POST['url_name'])
-            session.add(url1)
-            session.commit()
-            session.close()
+            try:
+                response = urllib2.urlopen(request.POST['url_name'])
+                html = response.read()
+                graph_original = Original_Checker(html)
+                url_data_validation.append(graph_original['site_name'])
+                session = SessionMaker()
+                url1 = URL(url = request.POST['url_name'])
+                session.add(url1)
+                session.commit()
+                session.close()
+            except etree.XMLSyntaxError as e: #checks to see if data is an xml
+                print "Error:Not XML"
+                #quit("not valid xml")
+            except ValueError, e: #checks to see if Url is valid
+                print "Error:invalid Url"
+            except TypeError, e: #checks to see if xml is formatted correctly
+                print "Error:string indices must be integers not str"
 
     session = SessionMaker()
     urls = session.query(URL).all()
@@ -159,6 +174,7 @@ def home(request):
                 legend.append(graph_original['site_name']+' Convertered')
             plot = chartPara(graph_original,number_ts)#plots graph data
 
+
     text_input_options = TextInput(display_text='Enter URL of Water ML data',
                                    name='url_name',
                                     )
@@ -214,7 +230,9 @@ def home(request):
 'legend':legend,
 'select_r':select_r,
 'string_download':string_download,
-'download_bool':download_bool
+'download_bool':download_bool,
+'r_script':r_script
+
 }
     
     return render(request, 'ts_converter/home.html', context)
