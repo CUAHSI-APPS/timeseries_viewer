@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="4c79509a-9421-4a63-9d83-6abe6036c28c" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/controllers.py" afterPath="$PROJECT_DIR$/tethysapp/ts_converter/controllers.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/home.html" afterPath="$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/home.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/convert-time-series.R" afterPath="$PROJECT_DIR$/convert-time-series.R" />
     </list>
     <ignored path="tethysapp-ts_converter.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -29,8 +28,8 @@
       <file leaf-file-name="controllers.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/controllers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.5325444">
-              <caret line="92" column="69" selection-start-line="92" selection-start-column="69" selection-end-line="92" selection-end-column="69" />
+            <state vertical-scroll-proportion="0.48964497">
+              <caret line="154" column="75" selection-start-line="154" selection-start-column="75" selection-end-line="154" selection-end-column="75" />
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
                 <element signature="e#700#1018#0" expanded="false" />
@@ -42,8 +41,8 @@
       <file leaf-file-name="home.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/home.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-28.0">
-              <caret line="50" column="0" selection-start-line="50" selection-start-column="0" selection-end-line="50" selection-end-column="0" />
+            <state vertical-scroll-proportion="-14.25">
+              <caret line="37" column="24" selection-start-line="37" selection-start-column="24" selection-end-line="37" selection-end-column="24" />
               <folding />
             </state>
           </provider>
@@ -131,8 +130,8 @@
         <option value="$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/View_R_Code.html" />
         <option value="$PROJECT_DIR$/tethysapp/ts_converter/init_stores.py" />
         <option value="$PROJECT_DIR$/tethysapp/ts_converter/utilities.py" />
-        <option value="$PROJECT_DIR$/tethysapp/ts_converter/controllers.py" />
         <option value="$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/home.html" />
+        <option value="$PROJECT_DIR$/tethysapp/ts_converter/controllers.py" />
       </list>
     </option>
   </component>
@@ -897,16 +896,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/home.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-28.0">
-          <caret line="50" column="0" selection-start-line="50" selection-start-column="0" selection-end-line="50" selection-end-column="0" />
+        <state vertical-scroll-proportion="-14.25">
+          <caret line="37" column="24" selection-start-line="37" selection-start-column="24" selection-end-line="37" selection-end-column="24" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/controllers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.5325444">
-          <caret line="92" column="69" selection-start-line="92" selection-start-column="69" selection-end-line="92" selection-end-column="69" />
+        <state vertical-scroll-proportion="0.48964497">
+          <caret line="154" column="75" selection-start-line="154" selection-start-column="75" selection-end-line="154" selection-end-column="75" />
           <folding>
             <element signature="e#0#35#0" expanded="true" />
             <element signature="e#700#1018#0" expanded="false" />

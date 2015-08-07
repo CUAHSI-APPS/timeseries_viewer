@@ -152,7 +152,7 @@ def home(request):
                 if r_script == "Converter":
                     interval = str(request.POST['select_interval'])
                     stat = str(request.POST['select_stat'])
-                    process_id = 'org.n52.wps.server.r.convert-time-series'
+                    process_id = 'org.n52.wps.server.r.timeSeriesConverter2'
                     input = [("url",url_user),("interval",interval),("stat",stat)]
                     output = "output"
                     #process_input = '<?xml+version="1.0"+encoding="UTF-8"+standalone="yes"?><wps:Execute+service="WPS"+version="1.0.0"++xmlns:wps="http://www.opengis.net/wps/1.0.0"+xmlns:ows="http://www.opengis.net/ows/1.1"++xmlns:xlink="http://www.w3.org/1999/xlink"+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"++xsi:schemaLocation="http://www.opengis.net/wps/1.0.0++http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd">++<ows:Identifier>org.n52.wps.server.r.convert-time-series</ows:Identifier>++<wps:DataInputs>++++<wps:Input>++++++<ows:Identifier>url</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+url_user+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>interval</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+interval+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>stat</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+stat+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++</wps:DataInputs>++<wps:ResponseForm>++++<wps:ResponseDocument+storeExecuteResponse="false">++++++<wps:Output+asReference="false">++++++++<ows:Identifier>output</ows:Identifier>++++++</wps:Output>++++</wps:ResponseDocument>++</wps:ResponseForm></wps:Execute>'
@@ -240,8 +240,11 @@ def home(request):
 def run_wps(process_id,input,output):
 
     #choose the first wps engine
-    wps_engines = list_wps_service_engines()
-    my_engine = wps_engines[0]
+    my_engine = WebProcessingService('http://appsdev.hydroshare.org:8282/wps/WebProcessingService', verbose=False, skip_caps=True)
+    my_engine.getcapabilities()
+
+    #wps_engines = list_wps_service_engines()
+    #my_engine = wps_engines[0]
 
     #choose the r.time-series-converter
 
