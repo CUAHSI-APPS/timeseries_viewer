@@ -50,6 +50,7 @@ def home(request):
     download_bool = False
     string_download = None
     url_data_validation=[]
+    Current_r = "Select an R script"
 
     if request.POST and "select_r" in request.POST:
         session = SessionMaker1()
@@ -63,16 +64,17 @@ def home(request):
         session.close()
         r = View_R()
         r1 = r['r_code']
+        #code to locate the inputs of the r script
         test1 = "wps.in"
-
+        Current_r = request.POST['select_r_script']
         for m in re.finditer(test1,r1):
             print m
             counter = counter+1
 
     if request.POST:
-        r_script = request.POST['select_r_script']
+        Current_r = request.POST['select_r_script']
     if request.POST and "add_ts" in request.POST:
-
+        Current_r = request.POST['select_r_script']
         if request.POST['url_name'] != "":
             try:
                 response = urllib2.urlopen(request.POST['url_name'])
@@ -94,6 +96,8 @@ def home(request):
 
     session = SessionMaker()
     urls = session.query(URL).all()
+
+
     for url in urls:#creates a list of timeseries data and displays the results in the legend
         url_list.append(url.url)
         response = urllib2.urlopen(url.url)
@@ -112,6 +116,7 @@ def home(request):
             graph_original = Original_Checker(html)
             number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
         plot = chartPara(graph_original,number_ts)#plots graph data
+        Current_r = request.POST['select_r_script']
 
     if request.POST and "clear_all_ts" in request.POST:
         session = SessionMaker()
@@ -121,10 +126,12 @@ def home(request):
              session.commit()
         session.close()
         legend = None
+        Current_r = request.POST['select_r_script']
 
 
     if request.POST and "run" in request.POST:
         download_bool = True
+        Current_r = request.POST['select_r_script']
         #this is the default chart if no values are given
         if url_list is None:
             filename = 'KiWIS-WML2-Example.wml'
@@ -149,14 +156,14 @@ def home(request):
                 url_user = str(x)
                 url_user = url_user.replace('=', '!')
                 url_user = url_user.replace('&', '~')
-                if r_script == "Converter":
+                if Current_r == "Time Series Converter":
                     interval = str(request.POST['select_interval'])
                     stat = str(request.POST['select_stat'])
                     process_id = 'org.n52.wps.server.r.timeSeriesConverter2'
                     input = [("url",url_user),("interval",interval),("stat",stat)]
                     output = "output"
                     #process_input = '<?xml+version="1.0"+encoding="UTF-8"+standalone="yes"?><wps:Execute+service="WPS"+version="1.0.0"++xmlns:wps="http://www.opengis.net/wps/1.0.0"+xmlns:ows="http://www.opengis.net/ows/1.1"++xmlns:xlink="http://www.w3.org/1999/xlink"+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"++xsi:schemaLocation="http://www.opengis.net/wps/1.0.0++http://schemas.opengis.net/wps/1.0.0/wpsExecute_request.xsd">++<ows:Identifier>org.n52.wps.server.r.convert-time-series</ows:Identifier>++<wps:DataInputs>++++<wps:Input>++++++<ows:Identifier>url</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+url_user+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>interval</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+interval+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++++<wps:Input>++++++<ows:Identifier>stat</ows:Identifier>++++++<wps:Data>++++++++<wps:LiteralData>'+stat+'</wps:LiteralData>++++++</wps:Data>++++</wps:Input>++</wps:DataInputs>++<wps:ResponseForm>++++<wps:ResponseDocument+storeExecuteResponse="false">++++++<wps:Output+asReference="false">++++++++<ows:Identifier>output</ows:Identifier>++++++</wps:Output>++++</wps:ResponseDocument>++</wps:ResponseForm></wps:Execute>'
-                elif r_script =="Gap":
+                elif Current_r =="Gap Filler":
                    process_id = 'org.n52.wps.server.r.timeSeriesGapFiller'
                    input = [("url",url_user)]
                    output = "output"
@@ -175,7 +182,7 @@ def home(request):
             plot = chartPara(graph_original,number_ts)#plots graph data
 
 
-    text_input_options = TextInput(display_text='Enter URL of Water ML data',
+    text_input_options = TextInput(display_text='Enter URL of Water ML data and click "Add a Time Series"',
                                    name='url_name',
                                     )
 
@@ -192,7 +199,7 @@ def home(request):
     select_r_script = SelectInput(display_text='Select a R Script',
                             name='select_r_script',
                             multiple=False,
-                            options=[('Select a R Script', 'no_select'),('Time Series Converter', 'Converter'), ('Gap Filler','Gap')],
+                            options=[(Current_r, Current_r),('Time Series Converter', 'Time Series Converter'), ('Gap Filler','Gap Filler')],
                             original=['Two'])
     add_ts = Button(display_text='Add a Time Series',
                        name='add_ts',
@@ -231,7 +238,7 @@ def home(request):
 'select_r':select_r,
 'string_download':string_download,
 'download_bool':download_bool,
-'r_script':r_script
+'Current_r': Current_r
 
 }
     
@@ -314,9 +321,9 @@ def View_R():
     script1 = session.query(rscript).all()
     for script in script1:
         display_r.append(script.rscript)
-    if display_r[0] == "Converter":
+    if display_r[0] == "Time Series Converter":
         my_url = "http://appsdev.hydroshare.org:8282/wps/R/scripts/timeSeriesConverter.R"
-    elif display_r[0] =="Gap":
+    elif display_r[0] =="Gap Filler":
         my_url = 'http://appsdev.hydroshare.org:8282/wps/R/scripts/timeSeriesGapFiller.R'
     r = urllib2.urlopen(my_url)
     r_html = r.read()

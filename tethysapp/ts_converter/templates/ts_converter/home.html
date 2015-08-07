@@ -34,7 +34,7 @@
     <a href="{{string_download}}" class = "btn btn-default">Download Data</a>
 {%endif%}
 {% csrf_token %}
-<h1>{{r_script}}</h1>
+
 {% gizmo button graph %}
 {% gizmo highcharts_plot_view plot%}
 
@@ -44,12 +44,15 @@
 </div>
 
 <div id = "function">
-{%if r_script == "Converter" %}
+{%if Current_r == "Time Series Converter" %}
+    <h1>Required Input</h1>
     {% gizmo select_input select_interval %}
     {% gizmo select_input select_stat %}
 {%endif%}
 
-{% gizmo button run %}
+{%if Current_r != "Select an R script"%}
+    {% gizmo button run %}
+{%endif%}
 </div>
 
 </form>
