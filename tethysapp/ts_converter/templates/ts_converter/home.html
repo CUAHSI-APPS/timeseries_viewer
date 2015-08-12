@@ -13,22 +13,32 @@
     </ul>
     {%endfor%}
 
-{% gizmo button add_ts %}
+
     <p></p>
-{% gizmo button clear_all_ts %}
+
 
  <h1>R-Scripts</h1>
 
 {% gizmo select_input select_r_script %}
     {% gizmo button select_r %}
-<p></p>
+
 <a href="{% url 'ts_converter:View_R_Code' %} " class = "btn btn-default">View R Code</a>
 {% endblock %}
 
 
 {% block app_content %}
  <h1>Welcome to HydroScriptR</h1>
-{% gizmo text_input text_input_options %}
+{%gizmo button water_ml%}{%gizmo button hydroshare%}
+<p></p>
+{%if show_hydroshare = True%}
+    {% gizmo text_input hydroshare_resource %}
+    {% gizmo text_input hydroshare_file %}
+{%endif%}
+{%if show_waterml = True%}
+    {% gizmo text_input text_input_options %}
+{%endif%}
+
+{% gizmo button add_ts %}{% gizmo button clear_all_ts %}
 
 {%if download_bool%}
     <a href="{{string_download}}" class = "btn btn-default">Download Data</a>
@@ -45,7 +55,7 @@
 
 <div id = "function">
 {%if Current_r == "Time Series Converter" %}
-    <h1>Required Input</h1>
+    <h1>Required Input for {{Current_r}}</h1>
     {% gizmo select_input select_interval %}
     {% gizmo select_input select_stat %}
 {%endif%}

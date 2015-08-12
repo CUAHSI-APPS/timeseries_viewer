@@ -6,12 +6,17 @@ from owslib.wps import printInputOutput
 from owslib.wps import monitorExecution
 from owslib.wps import WPSExecution
 from tethys_apps.sdk import list_wps_service_engines
+import xml.etree.ElementTree as ET
 import sys
 import requests
 import csv
 from datetime import datetime
 import urllib2
 from .model import engine, SessionMaker, Base, URL,rscript,SessionMaker1,Base1,engine1
+from hs_restclient import HydroShare
+import dicttoxml
+import ast
+
 import urllib
 import json
 # -- coding: utf-8--
@@ -51,6 +56,143 @@ def home(request):
     string_download = None
     url_data_validation=[]
     Current_r = "Select an R script"
+    show_hydroshare = False
+    show_waterml = False
+
+    if request.POST and 'hydroshare' in request.POST:
+        show_hydroshare = True
+    if request.POST and 'water_ml' in request.POST:
+        show_waterml = True
+
+
+    #test for downloading hydroshare
+    hs = HydroShare()
+    name =hs.getResourceFile("b29ac5ce06914752aaac74685ba0f682","DemoReferencedTimeSeries-wml_1.xml")
+    jim =[]
+    for thing in name:
+        jim.append(thing)
+    xml = ''.join(jim)
+
+
+    graph_original = Original_Checker(xml)# this is the common element between hydroshare resource and water ml url
+    number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
+    plot = chartPara(graph_original,number_ts)#plots graph data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    if request.POST:
+        Current_r = request.POST['select_r_script']
+
+    if request.POST and "hydroshare_resource" in request.POST and "hydroshare_file" in request.POST:
+        resouce = request.POST['hydroshare_resource']
+        file = request.POST['hydroshare_file']
+
+    if request.POST and "add_ts" in request.POST:
+        Current_r = request.POST['select_r_script']
+        if request.POST.get('hydroshare_resource') != None and request.POST.get('hydroshare_file')!= None:
+            try:
+                hs = HydroShare()
+                hs_text =hs.getResourceFile("b29ac5ce06914752aaac74685ba0f682","DemoReferencedTimeSeries-wml_1.xml")
+                hs_lst =[]
+                for line in hs_text:
+                    hs_lst.append(line)
+                xml = ''.join(hs_lst)
+                graph_original = Original_Checker(xml)
+                session = SessionMaker()
+                url1 = URL(url = xml)
+                session.add(url1)
+                session.commit()
+                session.close()
+            except etree.XMLSyntaxError as e: #checks to see if data is an xml
+                print "Error:Not XML"
+                #quit("not valid xml")
+            except ValueError, e: #checks to see if Url is valid
+                print "Error:invalid Url"
+            except TypeError, e: #checks to see if xml is formatted correctly
+                print "Error:string indices must be integers not str"
+        if request.POST['url_name'] != "":
+            try:
+                response = urllib2.urlopen(request.POST['url_name'])
+                html = response.read()
+                graph_original = Original_Checker(html)
+                url_data_validation.append(graph_original['site_name'])
+                session = SessionMaker()
+                url1 = URL(url = str(graph_original))
+                session.add(url1)
+                session.commit()
+                session.close()
+            except etree.XMLSyntaxError as e: #checks to see if data is an xml
+                print "Error:Not XML"
+                #quit("not valid xml")
+            except ValueError, e: #checks to see if Url is valid
+                print "Error:invalid Url"
+            except TypeError, e: #checks to see if xml is formatted correctly
+                print "Error:string indices must be integers not str"
+
+    session = SessionMaker()
+    urls = session.query(URL).all()
+    for url in urls:#creates a list of timeseries data and displays the results in the legend
+            # url_list.append(url.url)
+            # response = urllib2.urlopen(url.url)
+            # html = response.read()
+            graph_original = url.url
+            graph_original1 = ast.literal_eval(graph_original)
+            print (graph_original1)
+            legend.append(graph_original1['site_name'])
+    session.close()
+
+
+
+    if request.POST and "clear_all_ts" in request.POST:
+        session = SessionMaker()
+        urls = session.query(URL).all()
+        for url in urls:
+             session.delete(url)
+             session.commit()
+        session.close()
+        legend = None
+        url_list =[]
+        Current_r = request.POST['select_r_script']
+
+    if len(url_list) ==0:
+        print "empty"
+    else:
+        for x in url_list:
+            counter = counter +1#counter for testing
+            #graphs the original time series
+            graph_original = x
+            # response = urllib2.urlopen(url_wml)
+            # html = response.read()
+            # graph_original = Original_Checker(html)
+            number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
+        plot = chartPara(graph_original,number_ts)#plots graph data
+
+    # if request.POST and "graph" in request.POST:
+    #     for x in url_list:
+    #         counter = counter +1#counter for testing
+    #         #graphs the original time series
+    #         url_wml = x
+    #         response = urllib2.urlopen(url_wml)
+    #         html = response.read()
+    #         graph_original = Original_Checker(html)
+    #         number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
+    #     plot = chartPara(graph_original,number_ts)#plots graph data
+    #     Current_r = request.POST['select_r_script']
 
     if request.POST and "select_r" in request.POST:
         session = SessionMaker1()
@@ -71,67 +213,16 @@ def home(request):
             print m
             counter = counter+1
 
-    if request.POST:
-        Current_r = request.POST['select_r_script']
-    if request.POST and "add_ts" in request.POST:
-        Current_r = request.POST['select_r_script']
-        if request.POST['url_name'] != "":
-            try:
-                response = urllib2.urlopen(request.POST['url_name'])
-                html = response.read()
-                graph_original = Original_Checker(html)
-                url_data_validation.append(graph_original['site_name'])
-                session = SessionMaker()
-                url1 = URL(url = request.POST['url_name'])
-                session.add(url1)
-                session.commit()
-                session.close()
-            except etree.XMLSyntaxError as e: #checks to see if data is an xml
-                print "Error:Not XML"
-                #quit("not valid xml")
-            except ValueError, e: #checks to see if Url is valid
-                print "Error:invalid Url"
-            except TypeError, e: #checks to see if xml is formatted correctly
-                print "Error:string indices must be integers not str"
-
-    session = SessionMaker()
-    urls = session.query(URL).all()
-
-
-    for url in urls:#creates a list of timeseries data and displays the results in the legend
-        url_list.append(url.url)
-        response = urllib2.urlopen(url.url)
-        html = response.read()
-        graph_original = Original_Checker(html)
-        legend.append(graph_original['site_name'])
-    session.close()
-
-    if request.POST and "graph" in request.POST:
-        for x in url_list:
-            counter = counter +1#counter for testing
-            #graphs the original time series
-            url_wml = x
-            response = urllib2.urlopen(url_wml)
-            html = response.read()
-            graph_original = Original_Checker(html)
-            number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
-        plot = chartPara(graph_original,number_ts)#plots graph data
-        Current_r = request.POST['select_r_script']
-
-    if request.POST and "clear_all_ts" in request.POST:
-        session = SessionMaker()
-        urls = session.query(URL).all()
-        for url in urls:
-             session.delete(url)
-             session.commit()
-        session.close()
-        legend = None
-        Current_r = request.POST['select_r_script']
-
 
     if request.POST and "run" in request.POST:
         download_bool = True
-        Current_r = request.POST['select_r_script']
+        display_r=[]
+
+        session = SessionMaker1()
+        script1 = session.query(rscript).all()
+        for script in script1:
+            display_r.append(script.rscript)
+        Current_r = display_r[0]
         #this is the default chart if no values are given
         if url_list is None:
             filename = 'KiWIS-WML2-Example.wml'
@@ -148,11 +239,11 @@ def home(request):
             for x in url_list:
                 counter = counter +1#counter for testing
                 #graphs the original time series
-                url_wml = x
-                response = urllib2.urlopen(url_wml)
-                html = response.read()
-                graph_original = Original_Checker(html)
-                number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
+                graph_original = x
+                # response = urllib2.urlopen(url_wml)
+                # html = response.read()
+                #graph_original = Original_Checker(html)
+                #number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
                 url_user = str(x)
                 url_user = url_user.replace('=', '!')
                 url_user = url_user.replace('&', '~')
@@ -185,6 +276,12 @@ def home(request):
     text_input_options = TextInput(display_text='Enter URL of Water ML data and click "Add a Time Series"',
                                    name='url_name',
                                     )
+    hydroshare_resource = TextInput(display_text='Enter Hydroshare Resouce ID',
+                                   name='hydroshare_resource',
+                                    )
+    hydroshare_file = TextInput(display_text='Enter file name of Hydroshare Resource',
+                                   name='hydroshare_file',
+                                    )
 
     select_interval = SelectInput(display_text='Select a new time frame',
                             name='select_interval',
@@ -199,8 +296,14 @@ def home(request):
     select_r_script = SelectInput(display_text='Select a R Script',
                             name='select_r_script',
                             multiple=False,
-                            options=[(Current_r, Current_r),('Time Series Converter', 'Time Series Converter'), ('Gap Filler','Gap Filler')],
+                            options=[("Select an R script", "Select an R script"),('Time Series Converter', 'Time Series Converter'), ('Gap Filler','Gap Filler')],
                             original=['Two'])
+    hydroshare = Button(display_text ="Upload Hydroshare Resource",
+                        name ='hydroshare',
+                        submit = True)
+    water_ml = Button(display_text ="Upload water ml url",
+                        name ='water_ml',
+                        submit = True)
     add_ts = Button(display_text='Add a Time Series',
                        name='add_ts',
                        submit=True)
@@ -238,7 +341,15 @@ def home(request):
 'select_r':select_r,
 'string_download':string_download,
 'download_bool':download_bool,
-'Current_r': Current_r
+'Current_r': Current_r,
+'hydroshare':hydroshare,
+'show_hydroshare':show_hydroshare,
+'hydroshare_file':hydroshare_file,
+'hydroshare_resource':hydroshare_resource,
+'water_ml':water_ml,
+'show_waterml':show_waterml
+
+
 
 }
     

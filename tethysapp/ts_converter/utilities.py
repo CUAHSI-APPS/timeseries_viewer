@@ -59,7 +59,7 @@ def time_to_int(t):
 
 def parse_1_0_and_1_1(root):
     try:
-        if 'timeSeriesResponse' in root.tag:
+        if 'timeSeriesResponse' in root.tag or 'timeSeries' in root.tag:
             time_series = root[1]
             ts = etree.tostring(time_series)
             values = OrderedDict()
@@ -214,6 +214,7 @@ def chartPara(ts_original,for_highcharts):
 
 
 def parse_2_0(root):
+
     try:
         if 'Collection' in root.tag:
             ts = etree.tostring(root)
@@ -344,6 +345,7 @@ def Original_Checker(html):
     #print (html)
 
     root = etree.XML(html)
+
     wml_version = get_version(root)
 
     ts={}
