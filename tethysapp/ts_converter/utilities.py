@@ -127,7 +127,7 @@ def parse_1_0_and_1_1(root):
                 values_str = data[i]
                 t= datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S')
 
-                if values_str == "-9999.0": #check to see if there are null values in the time series
+                if values_str == "-9999.0" or values_str == "-9999": #check to see if there are null values in the time series
                     value_float = None
                 else:
                     value_float = float(values_str)
@@ -259,7 +259,7 @@ def parse_2_0(root):
                 time_str=keys[i]
                 time_obj=time_str_to_datetime(time_str)
 
-                if vals[i] == "-9999.0":
+                if vals[i] == "-9999.0"or vals[i]=="-9999":
                     val_obj = None
                 else:
                     val_obj=float(vals[i])

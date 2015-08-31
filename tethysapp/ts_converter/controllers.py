@@ -66,17 +66,15 @@ def home(request):
 
 
     #test for downloading hydroshare
-    hs = HydroShare()
-    name =hs.getResourceFile("b29ac5ce06914752aaac74685ba0f682","DemoReferencedTimeSeries-wml_1.xml")
-    jim =[]
-    for thing in name:
-        jim.append(thing)
-    xml = ''.join(jim)
-
-
-    graph_original = Original_Checker(xml)# this is the common element between hydroshare resource and water ml url
-    number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
-    plot = chartPara(graph_original,number_ts)#plots graph data
+    # hs = HydroShare()
+    # name =hs.getResourceFile("b29ac5ce06914752aaac74685ba0f682","DemoReferencedTimeSeries-wml_1.xml")
+    # jim =[]
+    # for thing in name:
+    #     jim.append(thing)
+    # xml = ''.join(jim)
+    # graph_original = Original_Checker(xml)# this is the common element between hydroshare resource and water ml url
+    # number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
+    # plot = chartPara(graph_original,number_ts)#plots graph data
 
 
 
@@ -132,7 +130,8 @@ def home(request):
                 graph_original = Original_Checker(html)
                 url_data_validation.append(graph_original['site_name'])
                 session = SessionMaker()
-                url1 = URL(url = str(graph_original))
+                #url1 = URL(url = str(graph_original)) changed before trip
+                url1 = URL(url = request.POST['url_name'])
                 session.add(url1)
                 session.commit()
                 session.close()
@@ -147,13 +146,14 @@ def home(request):
     session = SessionMaker()
     urls = session.query(URL).all()
     for url in urls:#creates a list of timeseries data and displays the results in the legend
-            # url_list.append(url.url)
-            # response = urllib2.urlopen(url.url)
-            # html = response.read()
-            graph_original = url.url
-            graph_original1 = ast.literal_eval(graph_original)
-            print (graph_original1)
+            url_list.append(url.url)
+            response = urllib2.urlopen(url.url)
+            html = response.read()
+            #graph_original = url.url
+            #graph_original1 = ast.literal_eval(graph_original)#this displays the whole document
+            graph_original1 = Original_Checker(html)
             legend.append(graph_original1['site_name'])
+            #yay = "ii"
     session.close()
 
 
@@ -175,10 +175,11 @@ def home(request):
         for x in url_list:
             counter = counter +1#counter for testing
             #graphs the original time series
-            graph_original = x
-            # response = urllib2.urlopen(url_wml)
-            # html = response.read()
-            # graph_original = Original_Checker(html)
+
+
+            response = urllib2.urlopen(x)
+            html = response.read()
+            graph_original = Original_Checker(html)
             number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
         plot = chartPara(graph_original,number_ts)#plots graph data
 
@@ -239,10 +240,10 @@ def home(request):
             for x in url_list:
                 counter = counter +1#counter for testing
                 #graphs the original time series
-                graph_original = x
-                # response = urllib2.urlopen(url_wml)
-                # html = response.read()
-                #graph_original = Original_Checker(html)
+                
+                response = urllib2.urlopen(x)
+                html = response.read()
+                graph_original = Original_Checker(html)
                 #number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
                 url_user = str(x)
                 url_user = url_user.replace('=', '!')
@@ -268,6 +269,7 @@ def home(request):
                 download_link = test_run[1]
                 string_download = ''.join(download_link)
                 graph_info =TimeSeriesConverter(test_run[0])#prepares data for graphing
+                print graph_info['for_highchart']
                 number_ts.append({'name':graph_original['site_name']+' Convertered','data':graph_info['for_highchart']})
                 legend.append(graph_original['site_name']+' Convertered')
             plot = chartPara(graph_original,number_ts)#plots graph data
