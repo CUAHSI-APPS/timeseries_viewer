@@ -325,8 +325,6 @@ def TimeSeriesConverter(string_data):
     value = split[1::2]
     item = []
 
-
-
     for i in range(0,len(time)):
             time_str = time[i]
             value_str = value[i]
@@ -342,30 +340,9 @@ def TimeSeriesConverter(string_data):
            }
 
 def Original_Checker(html):
-    #print (html)
-
     root = etree.XML(html)
-
     wml_version = get_version(root)
-
-    ts={}
     if wml_version == '1':
         return parse_1_0_and_1_1(root)
     elif wml_version == '2.0':
         return parse_2_0(root)
-
-def download_csv(request):
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="somefilename.csv"'
-
-    writer = csv.writer(response)
-    writer.writerow(['First row', 'Foo', 'Bar', 'Baz'])
-    writer.writerow(['Second row', 'A', 'B', 'C', '"Testing"', "Here's a quote"])
-    joe="aasdffsd"
-    return response
-
-def url_store(url):
-    list_url =[]
-    list_url.append(url)
-
-    return list_url

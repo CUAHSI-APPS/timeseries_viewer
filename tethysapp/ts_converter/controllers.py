@@ -13,7 +13,7 @@ import csv
 from datetime import datetime
 import urllib2
 from .model import engine, SessionMaker, Base, URL,rscript,SessionMaker1,Base1,engine1
-from hs_restclient import HydroShare
+from hs_restclient import HydroShare, HydroShareAuthBasic
 import dicttoxml
 import ast
 
@@ -72,7 +72,10 @@ def home(request):
     # for thing in name:
     #     jim.append(thing)
     # xml = ''.join(jim)
-    # graph_original = Original_Checker(xml)# this is the common element between hydroshare resource and water ml url
+
+    # response = urllib2.urlopen("https://www.hydroshare.org/resource/b29ac5ce06914752aaac74685ba0f682/data/contents/DemoReferencedTimeSeries-wml_2_0.xml")
+    # html = response.read()
+    # graph_original = Original_Checker(html)# this is the common element between hydroshare resource and water ml url
     # number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
     # plot = chartPara(graph_original,number_ts)#plots graph data
 
@@ -105,14 +108,19 @@ def home(request):
         if request.POST.get('hydroshare_resource') != None and request.POST.get('hydroshare_file')!= None:
             try:
                 hs = HydroShare()
-                hs_text =hs.getResourceFile("b29ac5ce06914752aaac74685ba0f682","DemoReferencedTimeSeries-wml_1.xml")
-                hs_lst =[]
-                for line in hs_text:
-                    hs_lst.append(line)
-                xml = ''.join(hs_lst)
-                graph_original = Original_Checker(xml)
+                hs_resource = request.POST['hydroshare_resource']
+                hs_file = request.POST['hydroshare_file']
+
+                #hs_text =hs.getResourceFile("b29ac5ce06914752aaac74685ba0f682","DemoReferencedTimeSeries-wml_1.xml")
+                hs_text =hs.getResourceFile(hs_resource,hs_file)
+                # hs_lst =[] This was an old methond to extract the data from the resource. Probably obsolete
+                # for line in hs_text:
+                #     hs_lst.append(line)
+                # xml = ''.join(hs_lst)
+                url_hs_resource = "https://www.hydroshare.org/resource/"+hs_resource+"/data/contents/"+hs_file
+                #graph_original = Original_Checker(xml)
                 session = SessionMaker()
-                url1 = URL(url = xml)
+                url1 = URL(url = url_hs_resource)
                 session.add(url1)
                 session.commit()
                 session.close()
@@ -123,7 +131,7 @@ def home(request):
                 print "Error:invalid Url"
             except TypeError, e: #checks to see if xml is formatted correctly
                 print "Error:string indices must be integers not str"
-        if request.POST['url_name'] != "":
+        if request.POST.get('url_name') != None:
             try:
                 response = urllib2.urlopen(request.POST['url_name'])
                 html = response.read()
@@ -175,8 +183,6 @@ def home(request):
         for x in url_list:
             counter = counter +1#counter for testing
             #graphs the original time series
-
-
             response = urllib2.urlopen(x)
             html = response.read()
             graph_original = Original_Checker(html)
@@ -234,13 +240,11 @@ def home(request):
             graph_info = Original_Checker(html)
             number_ts1 = [{'name':"timeseries1", 'data':graph_info['for_highchart']}]
             plot = chartPara(graph_info,number_ts1)
-
         # Plotting the altered time series
         else:
             for x in url_list:
                 counter = counter +1#counter for testing
                 #graphs the original time series
-                
                 response = urllib2.urlopen(x)
                 html = response.read()
                 graph_original = Original_Checker(html)
@@ -268,8 +272,8 @@ def home(request):
                 test_run = run_wps(process_id,input,output)
                 download_link = test_run[1]
                 string_download = ''.join(download_link)
+                upload_hs = string_download
                 graph_info =TimeSeriesConverter(test_run[0])#prepares data for graphing
-                print graph_info['for_highchart']
                 number_ts.append({'name':graph_original['site_name']+' Convertered','data':graph_info['for_highchart']})
                 legend.append(graph_original['site_name']+' Convertered')
             plot = chartPara(graph_original,number_ts)#plots graph data
@@ -284,7 +288,6 @@ def home(request):
     hydroshare_file = TextInput(display_text='Enter file name of Hydroshare Resource',
                                    name='hydroshare_file',
                                     )
-
     select_interval = SelectInput(display_text='Select a new time frame',
                             name='select_interval',
                             multiple=False,
@@ -325,6 +328,9 @@ def home(request):
                        name='select_r',
                        submit=True)
 
+    upload_hs = Button(display_text='Upload data to HydroShare',
+                       name='upload_hs',
+                       submit=True)
     context = {
 'plot':plot,
 'text_input_options':text_input_options,
@@ -349,7 +355,8 @@ def home(request):
 'hydroshare_file':hydroshare_file,
 'hydroshare_resource':hydroshare_resource,
 'water_ml':water_ml,
-'show_waterml':show_waterml
+'show_waterml':show_waterml,
+'upload_hs':upload_hs
 
 
 
@@ -443,3 +450,8 @@ def View_R():
     r_code = r_html
 
     return  {'r_code':r_code,'my_url':my_url}
+def upload_to_hs(id,file):
+    auth = HydroShareAuthBasic(username='mbayles2', password='lego2695')
+    hs = HydroShare(auth=auth)
+    fpath = '/path/to/somefile.txt'
+    resource_id = hs.addResourceFile('id', file)
