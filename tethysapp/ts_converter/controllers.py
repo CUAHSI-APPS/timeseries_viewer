@@ -16,6 +16,8 @@ from .model import engine, SessionMaker, Base, URL,rscript,SessionMaker1,Base1,e
 from hs_restclient import HydroShare, HydroShareAuthBasic
 import dicttoxml
 import ast
+import zipfile
+import StringIO
 
 import urllib
 import json
@@ -58,50 +60,30 @@ def home(request):
     Current_r = "Select an R script"
     show_hydroshare = False
     show_waterml = False
+    show_cuashi = False
+
+
+    #https://ziptest.blob.core.windows.net/time-series/1396-utah-132-nephi-ut-84648-usa-2015-09-08-05-36-42-1881.zip
+    #test
+    #example of possible launch string
+    #http://localhost:8000/apps/ts-converter/?input=775-missouri-215-morrisville-mo-65710-usa-2015-09-08-05-13-39-6651.zip&source=hydroshare
+    if request.GET and 'input' in request.GET and 'source' in request.GET:
+        if request.GET['source'] == "cuashi":
+            show_cusahi = True
+        elif request.GET['source'] == "hydroshare":
+            show_hydroshare = True
+        print request.GET['input']
+        print request.GET['source']
+
+
 
     if request.POST and 'hydroshare' in request.POST:
         show_hydroshare = True
     if request.POST and 'water_ml' in request.POST:
         show_waterml = True
 
-
-    #test for downloading hydroshare
-    # hs = HydroShare()
-    # name =hs.getResourceFile("b29ac5ce06914752aaac74685ba0f682","DemoReferencedTimeSeries-wml_1.xml")
-    # jim =[]
-    # for thing in name:
-    #     jim.append(thing)
-    # xml = ''.join(jim)
-
-    # response = urllib2.urlopen("https://www.hydroshare.org/resource/b29ac5ce06914752aaac74685ba0f682/data/contents/DemoReferencedTimeSeries-wml_2_0.xml")
-    # html = response.read()
-    # graph_original = Original_Checker(html)# this is the common element between hydroshare resource and water ml url
-    # number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
-    # plot = chartPara(graph_original,number_ts)#plots graph data
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     if request.POST:
         Current_r = request.POST['select_r_script']
-
-    if request.POST and "hydroshare_resource" in request.POST and "hydroshare_file" in request.POST:
-        resouce = request.POST['hydroshare_resource']
-        file = request.POST['hydroshare_file']
 
     if request.POST and "add_ts" in request.POST:
         Current_r = request.POST['select_r_script']
@@ -110,7 +92,6 @@ def home(request):
                 hs = HydroShare()
                 hs_resource = request.POST['hydroshare_resource']
                 hs_file = request.POST['hydroshare_file']
-
                 #hs_text =hs.getResourceFile("b29ac5ce06914752aaac74685ba0f682","DemoReferencedTimeSeries-wml_1.xml")
                 hs_text =hs.getResourceFile(hs_resource,hs_file)
                 # hs_lst =[] This was an old methond to extract the data from the resource. Probably obsolete
@@ -161,10 +142,7 @@ def home(request):
             #graph_original1 = ast.literal_eval(graph_original)#this displays the whole document
             graph_original1 = Original_Checker(html)
             legend.append(graph_original1['site_name'])
-            #yay = "ii"
     session.close()
-
-
 
     if request.POST and "clear_all_ts" in request.POST:
         session = SessionMaker()
@@ -189,18 +167,6 @@ def home(request):
             number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
         plot = chartPara(graph_original,number_ts)#plots graph data
 
-    # if request.POST and "graph" in request.POST:
-    #     for x in url_list:
-    #         counter = counter +1#counter for testing
-    #         #graphs the original time series
-    #         url_wml = x
-    #         response = urllib2.urlopen(url_wml)
-    #         html = response.read()
-    #         graph_original = Original_Checker(html)
-    #         number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
-    #     plot = chartPara(graph_original,number_ts)#plots graph data
-    #     Current_r = request.POST['select_r_script']
-
     if request.POST and "select_r" in request.POST:
         session = SessionMaker1()
         script1 = session.query(rscript).all()
@@ -220,11 +186,9 @@ def home(request):
             print m
             counter = counter+1
 
-
     if request.POST and "run" in request.POST:
         download_bool = True
         display_r=[]
-
         session = SessionMaker1()
         script1 = session.query(rscript).all()
         for script in script1:
@@ -327,7 +291,6 @@ def home(request):
     select_r = Button(display_text='Select R Script',
                        name='select_r',
                        submit=True)
-
     upload_hs = Button(display_text='Upload data to HydroShare',
                        name='upload_hs',
                        submit=True)
@@ -357,9 +320,6 @@ def home(request):
 'water_ml':water_ml,
 'show_waterml':show_waterml,
 'upload_hs':upload_hs
-
-
-
 }
     
     return render(request, 'ts_converter/home.html', context)
@@ -369,20 +329,14 @@ def run_wps(process_id,input,output):
     #choose the first wps engine
     my_engine = WebProcessingService('http://appsdev.hydroshare.org:8282/wps/WebProcessingService', verbose=False, skip_caps=True)
     my_engine.getcapabilities()
-
     #wps_engines = list_wps_service_engines()
     #my_engine = wps_engines[0]
-
     #choose the r.time-series-converter
-
     my_process = my_engine.describeprocess(process_id)
     my_inputs = my_process.dataInputs
-
     input_names = [] #getting list of input
     for input1 in my_inputs:
         input_names.append(input1)
-
-
     #executing the process..
     execution = my_engine.execute(process_id, input, output)
     request = execution.request
@@ -406,14 +360,8 @@ def run_wps(process_id,input,output):
         wps_open1 = urllib2.urlopen(wps_request1)
         wps_read1 = wps_open1.read()
 
-
     #now we must use our own method to send the request1
-
-
     #we need to use the request
-
-
-
     #this code is for the normal wps which is not working right now
     # monitorExecution(execution)
     # output_data = execution.processOutputs
@@ -431,12 +379,10 @@ def read_final_data(url):
     rows = []
     for row in reader:
         rows.append(row)
-
     return rows
 
 def View_R():
     display_r =[]
-
     session = SessionMaker1()
     script1 = session.query(rscript).all()
     for script in script1:

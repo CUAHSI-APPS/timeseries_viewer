@@ -1,7 +1,5 @@
 import os
 from tethys_apps.base.persistent_store import get_persistent_store_engine as gpse
-
-
 import urllib2
 from lxml import etree
 from datetime import datetime
@@ -11,6 +9,10 @@ import csv
 from collections import OrderedDict
 import re
 from django.http import HttpResponse
+import zipfile
+import StringIO
+import requests
+
 
 def get_persistent_store_engine(persistent_store_name):
     """
@@ -336,7 +338,7 @@ def TimeSeriesConverter(string_data):
             time_int = datetime.strptime(time_str, '%Y-%m-%d')
             for_highchart.append([time_int,value_float])
     return {
-                    'for_highchart':for_highchart,
+                'for_highchart':for_highchart,
            }
 
 def Original_Checker(html):
@@ -346,3 +348,35 @@ def Original_Checker(html):
         return parse_1_0_and_1_1(root)
     elif wml_version == '2.0':
         return parse_2_0(root)
+
+
+def file_unzipper(file):
+    r = requests.get(file)
+    z = zipfile.ZipFile(StringIO.StringIO(r.content))
+    file_list = z.namelist()
+    csv_reader(z)
+
+    return {'time_series': ts,
+            'site_name': site_name,
+            'start_date': smallest_time,
+            'end_date':largest_time,
+            'variable_name': variable_name,
+            'units': units,
+            'values': values,
+            'for_graph': for_graph,
+            'wml_version': '2.0',
+            'latitude': latitude,
+            'longitude': longitude,
+            'for_highchart':for_highchart,
+		    'test':test
+                    }
+
+def csv_reader(file):
+    z_object = file.open("nwisuv-salt_creek_at_nephi,_ut-gage_height,_feet.csv")
+    csv_cuashi = csv.reader(z_object)
+    for row in csv_cuashi:
+        #row   associate time_obj and val_obj with row values
+        item=[time_obj,val_obj]
+        for_highchart.append(item)
+        print row[0]
+        print row[3]
