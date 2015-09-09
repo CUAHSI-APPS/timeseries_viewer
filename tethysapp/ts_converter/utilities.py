@@ -350,12 +350,25 @@ def Original_Checker(html):
         return parse_2_0(root)
 
 
-def file_unzipper(file):
-    r = requests.get(file)
+def file_unzipper(url_cuashi):
+    ts =[]
+    site_name =None
+    smallest_time=None
+    largest_time=None
+    variable_name=None
+    units=None
+    values=None
+    for_graph=None
+    latitude=None
+    longitude=None
+    for_highchart=None
+
+    r = requests.get(url_cuashi)
     z = zipfile.ZipFile(StringIO.StringIO(r.content))
     file_list = z.namelist()
-    csv_reader(z)
 
+    for_highchart = csv_reader(z)
+    print for_highchart
     return {'time_series': ts,
             'site_name': site_name,
             'start_date': smallest_time,
@@ -367,16 +380,20 @@ def file_unzipper(file):
             'wml_version': '2.0',
             'latitude': latitude,
             'longitude': longitude,
-            'for_highchart':for_highchart,
-		    'test':test
+            'for_highchart':for_highchart
+
                     }
 
 def csv_reader(file):
+    for_highchart=[]
     z_object = file.open("nwisuv-salt_creek_at_nephi,_ut-gage_height,_feet.csv")
     csv_cuashi = csv.reader(z_object)
+
     for row in csv_cuashi:
         #row   associate time_obj and val_obj with row values
+        time_obj = row[0]
+        val_obj = row[3]
         item=[time_obj,val_obj]
         for_highchart.append(item)
-        print row[0]
-        print row[3]
+
+    return for_highchart

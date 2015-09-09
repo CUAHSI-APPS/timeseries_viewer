@@ -4,7 +4,6 @@
     <list default="true" id="4c79509a-9421-4a63-9d83-6abe6036c28c" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/controllers.py" afterPath="$PROJECT_DIR$/tethysapp/ts_converter/controllers.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/utilities.py" afterPath="$PROJECT_DIR$/tethysapp/ts_converter/utilities.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="tethysapp-ts_converter.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,11 +25,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="controllers.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="controllers.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/controllers.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-14.971429">
-              <caret line="403" column="0" selection-start-line="403" selection-start-column="0" selection-end-line="403" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.2665615">
+              <caret line="66" column="5" selection-start-line="66" selection-start-column="5" selection-end-line="66" selection-end-column="5" />
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
                 <element signature="e#853#1171#0" expanded="false" />
@@ -39,11 +38,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="utilities.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="utilities.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/utilities.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.82470787">
-              <caret line="377" column="61" selection-start-line="377" selection-start-column="61" selection-end-line="377" selection-end-column="61" />
+            <state vertical-scroll-proportion="0.0">
+              <caret line="364" column="0" selection-start-line="364" selection-start-column="0" selection-end-line="364" selection-end-column="0" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -54,7 +53,7 @@
       <file leaf-file-name="home.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/home.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="-10.416667">
+            <state vertical-scroll-proportion="0.0">
               <caret line="31" column="0" selection-start-line="31" selection-start-column="0" selection-end-line="31" selection-end-column="7" />
               <folding />
             </state>
@@ -78,8 +77,8 @@
         <option value="$PROJECT_DIR$/tethysapp/ts_converter/init_stores.py" />
         <option value="$PROJECT_DIR$/tethysapp/ts_converter/public/css/main.css" />
         <option value="$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/home.html" />
-        <option value="$PROJECT_DIR$/tethysapp/ts_converter/controllers.py" />
         <option value="$PROJECT_DIR$/tethysapp/ts_converter/utilities.py" />
+        <option value="$PROJECT_DIR$/tethysapp/ts_converter/controllers.py" />
       </list>
     </option>
   </component>
@@ -92,7 +91,7 @@
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="327" />
-    <option name="y" value="108" />
+    <option name="y" value="101" />
     <option name="width" value="1201" />
     <option name="height" value="763" />
   </component>
@@ -119,6 +118,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -130,7 +130,6 @@
         </subPane>
       </pane>
       <pane id="Scratches" />
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -344,7 +343,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="327" y="108" width="1201" height="763" extended-state="0" />
+    <frame x="327" y="101" width="1201" height="763" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.0" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -786,35 +785,34 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.184">
           <caret line="23" column="10" selection-start-line="23" selection-start-column="10" selection-end-line="23" selection-end-column="10" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/home.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-10.416667">
+        <state vertical-scroll-proportion="0.0">
           <caret line="31" column="0" selection-start-line="31" selection-start-column="0" selection-end-line="31" selection-end-column="7" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/controllers.py">
+    <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/utilities.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="-14.971429">
-          <caret line="403" column="0" selection-start-line="403" selection-start-column="0" selection-end-line="403" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="364" column="0" selection-start-line="364" selection-start-column="0" selection-end-line="364" selection-end-column="0" />
           <folding>
-            <element signature="e#0#35#0" expanded="true" />
-            <element signature="e#853#1171#0" expanded="false" />
+            <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/utilities.py">
+    <entry file="file://$PROJECT_DIR$/tethysapp/ts_converter/controllers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.82470787">
-          <caret line="377" column="61" selection-start-line="377" selection-start-column="61" selection-end-line="377" selection-end-column="61" />
+        <state vertical-scroll-proportion="0.2665615">
+          <caret line="66" column="5" selection-start-line="66" selection-start-column="5" selection-end-line="66" selection-end-column="5" />
           <folding>
-            <element signature="e#0#9#0" expanded="true" />
+            <element signature="e#0#35#0" expanded="true" />
+            <element signature="e#853#1171#0" expanded="false" />
           </folding>
         </state>
       </provider>

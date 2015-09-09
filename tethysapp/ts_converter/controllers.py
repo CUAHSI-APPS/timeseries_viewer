@@ -62,6 +62,12 @@ def home(request):
     show_waterml = False
     show_cuashi = False
 
+    #Cuashi Graph test
+    #test_cuashi = file_unzipper("https://ziptest.blob.core.windows.net/time-series/1396-utah-132-nephi-ut-84648-usa-2015-09-08-05-36-42-1881.zip")
+    #chartPara(test_cuashi)
+
+
+
 
     #https://ziptest.blob.core.windows.net/time-series/1396-utah-132-nephi-ut-84648-usa-2015-09-08-05-36-42-1881.zip
     #test
@@ -396,6 +402,7 @@ def View_R():
     r_code = r_html
 
     return  {'r_code':r_code,'my_url':my_url}
+
 def upload_to_hs(id,file):
     auth = HydroShareAuthBasic(username='mbayles2', password='lego2695')
     hs = HydroShare(auth=auth)
