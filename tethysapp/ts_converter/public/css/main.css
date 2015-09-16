@@ -10,4 +10,8 @@ width:700px;
 #inner-app-content{
     with:1000px;
 }
-
+#plot{
+legend:{
+align:'left';
+}
+}

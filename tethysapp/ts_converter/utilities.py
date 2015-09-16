@@ -12,7 +12,7 @@ from django.http import HttpResponse
 import zipfile
 import StringIO
 import requests
-
+from tethys_sdk.gizmos import TimeSeries
 
 def get_persistent_store_engine(persistent_store_name):
     """
@@ -169,48 +169,25 @@ def chartPara(ts_original,for_highcharts):
     title_text= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date']
     x_title_text = "Time Period"
     y_title_text = ts_original['units']
-    serise_text="testing123"
+
 
     # Timeseries plot example
-    timeseries_plot_object = {
-        'chart': {
-            'type': 'line',
-            'zoomType': 'x'
-        },
-        'title': {
-            'text': title_text
-        },
-        'xAxis': {
-            'maxZoom': 3 * 24 * 3600000, # 30 days in milliseconds
-            'type': 'datetime',
-            'title': {
-                'text': x_title_text
-            }
-        },
-        'yAxis': {
-            'title': {
-                'text': y_title_text
-            }
-        },
-        'legend': {
-            'layout': 'vertical',
-            'align': 'left',
-            'verticalAlign': 'top',
-            'x': 0,
-            'y': 125,
-            'floating': False,
-            'borderWidth': 1,
-            'backgroundColor': '#FFFFFF'
-        },
-        'series': for_highcharts,
-    }
-    timeseries_plot = {'highcharts_object': timeseries_plot_object,
-                     'width': '500px',
-                     'height': '500px'
-
-                       }
+    legend1 = {'align':'left'}
 
 
+    timeseries_plot = TimeSeries(
+    chart ='line',
+    height='500px',
+    width='500px',
+    engine='highcharts',
+    title= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date'],
+    y_axis_title='Snow depth',
+    y_axis_units='m',
+    legend = legend1,
+
+    series= for_highcharts
+
+)
     return timeseries_plot
 
 
@@ -351,6 +328,7 @@ def Original_Checker(html):
 
 
 def file_unzipper(url_cuashi):
+    #this function is for unzipping files
     ts =[]
     site_name =None
     smallest_time=None
@@ -385,6 +363,7 @@ def file_unzipper(url_cuashi):
                     }
 
 def csv_reader(file):
+    #this was designed to read the cuashi data which is in csv format, however, this likely change to waterml format
     for_highchart=[]
     z_object = file.open("nwisuv-salt_creek_at_nephi,_ut-gage_height,_feet.csv")
     csv_cuashi = csv.reader(z_object)

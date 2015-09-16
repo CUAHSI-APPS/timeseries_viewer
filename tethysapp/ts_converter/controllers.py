@@ -5,7 +5,7 @@ from owslib.wps import WebProcessingService
 from owslib.wps import printInputOutput
 from owslib.wps import monitorExecution
 from owslib.wps import WPSExecution
-from tethys_apps.sdk import list_wps_service_engines
+#from tethys_apps.sdk import list_wps_service_engines
 import xml.etree.ElementTree as ET
 import sys
 import requests
@@ -169,6 +169,7 @@ def home(request):
             #graphs the original time series
             response = urllib2.urlopen(x)
             html = response.read()
+            print x
             graph_original = Original_Checker(html)
             number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
         plot = chartPara(graph_original,number_ts)#plots graph data

@@ -1,18 +1,17 @@
 #url_name {
-width:500px;
+width:700px;
 }
-
-#info {
-float:right;
-width:50%;
-height:100%;
+#url_name.form-control{
+    width:1000px;
 }
-
-#function {
-float:right;
-width: 50%;
-height:100%;
+#input_group{
+    width:100px;
 }
-
-
-
+#inner-app-content{
+    with:1000px;
+}
+#plot{
+legend:{
+align:'left'
+}
+}

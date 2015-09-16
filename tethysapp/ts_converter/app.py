@@ -1,6 +1,7 @@
 from tethys_apps.base import TethysAppBase, url_map_maker
 from tethys_apps.base import PersistentStore
 
+
 class TsConverter(TethysAppBase):
     """
     Tethys app class for ts converter.
