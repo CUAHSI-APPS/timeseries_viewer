@@ -172,18 +172,19 @@ def chartPara(ts_original,for_highcharts):
 
 
     # Timeseries plot example
-    legend1 = {'align':'left'}
+    legend1 = {'layout':'vertical','align':'left'},
 
 
     timeseries_plot = TimeSeries(
-    chart ='line',
+
     height='500px',
     width='500px',
     engine='highcharts',
     title= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date'],
     y_axis_title='Snow depth',
     y_axis_units='m',
-    legend = legend1,
+    legend_align = 'left',
+
 
     series= for_highcharts
 
