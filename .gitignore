@@ -1,0 +1,6 @@
+*.pyc
+*.py~
+*.js~
+*.html~
+.idea/*
+.build/*
