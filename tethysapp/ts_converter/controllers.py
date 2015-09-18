@@ -60,7 +60,7 @@ def home(request):
     Current_r = "Select an R script"
     show_hydroshare = False
     show_waterml = False
-    show_cuashi = False
+    show_cuahsi = False
 
     #Cuashi Graph test
     #test_cuashi = file_unzipper("https://ziptest.blob.core.windows.net/time-series/1396-utah-132-nephi-ut-84648-usa-2015-09-08-05-36-42-1881.zip")
@@ -74,8 +74,9 @@ def home(request):
     #example of possible launch string
     #http://localhost:8000/apps/ts-converter/?input=775-missouri-215-morrisville-mo-65710-usa-2015-09-08-05-13-39-6651.zip&source=hydroshare
     if request.GET and 'input' in request.GET and 'source' in request.GET:
-        if request.GET['source'] == "cuashi":
-            show_cusahi = True
+        if request.GET['source'] == "cuahsi":
+            show_cuahsi = True
+
         elif request.GET['source'] == "hydroshare":
             show_hydroshare = True
         print request.GET['input']
@@ -91,8 +92,10 @@ def home(request):
     if request.POST:
         Current_r = request.POST['select_r_script']
 
-    if request.POST and "add_ts" in request.POST:
-        Current_r = request.POST['select_r_script']
+    if (request.POST and "add_ts" in request.POST) or show_cuahsi:
+        if not show_cuahsi:
+            Current_r = request.POST['select_r_script']
+
         if request.POST.get('hydroshare_resource') != None and request.POST.get('hydroshare_file')!= None:
             try:
                 hs = HydroShare()
@@ -118,15 +121,24 @@ def home(request):
                 print "Error:invalid Url"
             except TypeError, e: #checks to see if xml is formatted correctly
                 print "Error:string indices must be integers not str"
-        if request.POST.get('url_name') != None:
+        if request.POST.get('url_name') != None or show_cuahsi == True:
+            print 'we are in show_cuahsi!'
             try:
-                response = urllib2.urlopen(request.POST['url_name'])
+                if show_cuahsi:
+                    cuahsi_url = 'http://localhost:8000/static/data_cart/waterml/' + request.GET['input']
+                    print cuahsi_url
+                    response = urllib2.urlopen(cuahsi_url)
+                    url1 = URL(url=cuahsi_url)
+                else:
+                    response = urllib2.urlopen(request.POST['url_name'])
+                    url1 = URL(url = request.POST['url_name'])
+
                 html = response.read()
                 graph_original = Original_Checker(html)
                 url_data_validation.append(graph_original['site_name'])
                 session = SessionMaker()
                 #url1 = URL(url = str(graph_original)) changed before trip
-                url1 = URL(url = request.POST['url_name'])
+
                 session.add(url1)
                 session.commit()
                 session.close()
