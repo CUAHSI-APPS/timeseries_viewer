@@ -125,7 +125,8 @@ def home(request):
             print 'we are in show_cuahsi!'
             try:
                 if show_cuahsi:
-                    cuahsi_url = 'http://localhost:8000/static/data_cart/waterml/' + request.GET['input']
+                    print request.GET
+                    cuahsi_url = 'http://appsdev.hydroshare.org/static/data_cart/waterml/' + request.GET['input']
                     print cuahsi_url
                     response = urllib2.urlopen(cuahsi_url)
                     url1 = URL(url=cuahsi_url)
