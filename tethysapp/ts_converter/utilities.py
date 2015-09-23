@@ -13,6 +13,9 @@ import zipfile
 import StringIO
 import requests
 from tethys_sdk.gizmos import TimeSeries
+import xml.etree.ElementTree as ET
+
+
 
 def get_persistent_store_engine(persistent_store_name):
     """
@@ -169,23 +172,22 @@ def chartPara(ts_original,for_highcharts):
     title_text= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date']
     x_title_text = "Time Period"
     y_title_text = ts_original['units']
-
-
     # Timeseries plot example
-    legend1 = {'layout':'vertical','align':'left'},
-
 
     timeseries_plot = TimeSeries(
-
     height='500px',
     width='500px',
     engine='highcharts',
     title= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date'],
     y_axis_title='Snow depth',
     y_axis_units='m',
-    legend_align = 'left',
-
-
+    show_legend = False,
+    legend={
+            'layout': 'horizontal',
+            'align': 'left',
+            'verticalAlign': 'middle',
+            'borderWidth': 0
+    },
     series= for_highcharts
 
 )
@@ -320,12 +322,19 @@ def TimeSeriesConverter(string_data):
            }
 
 def Original_Checker(html):
+    #html1 = str(html)
     root = etree.XML(html)
+    #root =  ET.fromstring(html1)
     wml_version = get_version(root)
     if wml_version == '1':
         return parse_1_0_and_1_1(root)
     elif wml_version == '2.0':
         return parse_2_0(root)
+
+
+
+
+
 
 
 def file_unzipper(url_cuashi):
@@ -344,24 +353,17 @@ def file_unzipper(url_cuashi):
 
     r = requests.get(url_cuashi)
     z = zipfile.ZipFile(StringIO.StringIO(r.content))
+
+
     file_list = z.namelist()
+    for  file in file_list:
+        joe = z.read(file)
+        #print joe
+    #print file_list
 
-    for_highchart = csv_reader(z)
-    print for_highchart
-    return {'time_series': ts,
-            'site_name': site_name,
-            'start_date': smallest_time,
-            'end_date':largest_time,
-            'variable_name': variable_name,
-            'units': units,
-            'values': values,
-            'for_graph': for_graph,
-            'wml_version': '2.0',
-            'latitude': latitude,
-            'longitude': longitude,
-            'for_highchart':for_highchart
+    return file_list
 
-                    }
+
 
 def csv_reader(file):
     #this was designed to read the cuashi data which is in csv format, however, this likely change to waterml format

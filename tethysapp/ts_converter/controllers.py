@@ -61,10 +61,24 @@ def home(request):
     show_hydroshare = False
     show_waterml = False
     show_cuahsi = False
-
+    timeseries_plot =None
+    outside_input = False
+    filename_zip = None
+    url_zip =None
+    zip_bool = False #checks if file is zipped
     #Cuashi Graph test
     #test_cuashi = file_unzipper("https://ziptest.blob.core.windows.net/time-series/1396-utah-132-nephi-ut-84648-usa-2015-09-08-05-36-42-1881.zip")
     #chartPara(test_cuashi)
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -73,14 +87,47 @@ def home(request):
     #test
     #example of possible launch string
     #http://localhost:8000/apps/ts-converter/?input=775-missouri-215-morrisville-mo-65710-usa-2015-09-08-05-13-39-6651.zip&source=hydroshare
-    if request.GET and 'input' in request.GET and 'source' in request.GET:
-        if request.GET['source'] == "cuahsi":
+    if request.GET and 'res_id' in request.GET and 'src' in request.GET:
+        zip_string = ".zip"
+        outside_input = True
+        #unfinished support for zipped files
+        if zip_string.find(request.GET['input']) != 0:
+            zip_bool = True
+            url_zip = "http://localhost:8000/static/data_cart/waterml/"+request.GET['res_id']
+            #filename_zip = file_unzipper(url_zip)
+            #print "happy"
+        if request.GET['src'] == "cuahsi":
             show_cuahsi = True
 
-        elif request.GET['source'] == "hydroshare":
+        elif request.GET['src'] == "hydroshare":
             show_hydroshare = True
-        print request.GET['input']
-        print request.GET['source']
+
+
+
+
+    #zip file test
+
+
+    # counter2 = 0
+    # r = requests.get(url_zip)
+    # z = zipfile.ZipFile(StringIO.StringIO(r.content))
+    # file_list = z.namelist()
+    #
+    #
+    # for  file in file_list[1:]:
+    #     counter2 = counter2 +1
+    #     joe1 = z.read(file)
+    #
+    #     graph_original = Original_Checker(joe1)
+    #     #print joe
+    # #print file_list
+
+
+
+    #end zip test
+
+
+
 
 
 
@@ -92,12 +139,15 @@ def home(request):
     if request.POST:
         Current_r = request.POST['select_r_script']
 
-    if (request.POST and "add_ts" in request.POST) or show_cuahsi:
-        if not show_cuahsi:
+
+    # this block of code will add a time series to the legend and graph the result
+    if (request.POST and "add_ts" in request.POST) or outside_input:
+        if not outside_input:
             Current_r = request.POST['select_r_script']
 
         if request.POST.get('hydroshare_resource') != None and request.POST.get('hydroshare_file')!= None:
             try:
+                #adding a hydroshare resource
                 hs = HydroShare()
                 hs_resource = request.POST['hydroshare_resource']
                 hs_file = request.POST['hydroshare_file']
@@ -121,18 +171,22 @@ def home(request):
                 print "Error:invalid Url"
             except TypeError, e: #checks to see if xml is formatted correctly
                 print "Error:string indices must be integers not str"
+         #adding data through cuashi or from a water ml url
         if request.POST.get('url_name') != None or show_cuahsi == True:
-            print 'we are in show_cuahsi!'
             try:
+                # if url_zip != None:
+                #     print "zip"
+                #     response = urllib2.urlopen(url_zip)
+
                 if show_cuahsi:
-                    print request.GET
-                    cuahsi_url = 'http://appsdev.hydroshare.org/static/data_cart/waterml/' + request.GET['input']
-                    print cuahsi_url
+                    cuahsi_url = 'http://appsdev.hydroshare.org/static/data_cart/waterml/' + request.GET['res_id']
                     response = urllib2.urlopen(cuahsi_url)
                     url1 = URL(url=cuahsi_url)
+
                 else:
                     response = urllib2.urlopen(request.POST['url_name'])
                     url1 = URL(url = request.POST['url_name'])
+                # zip file name
 
                 html = response.read()
                 graph_original = Original_Checker(html)
@@ -150,6 +204,8 @@ def home(request):
                 print "Error:invalid Url"
             except TypeError, e: #checks to see if xml is formatted correctly
                 print "Error:string indices must be integers not str"
+
+
 
     session = SessionMaker()
     urls = session.query(URL).all()
@@ -182,10 +238,10 @@ def home(request):
             #graphs the original time series
             response = urllib2.urlopen(x)
             html = response.read()
-            print x
+
             graph_original = Original_Checker(html)
             number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
-        plot = chartPara(graph_original,number_ts)#plots graph data
+        timeseries_plot = chartPara(graph_original,number_ts)#plots graph data
 
     if request.POST and "select_r" in request.POST:
         session = SessionMaker1()
@@ -203,7 +259,6 @@ def home(request):
         test1 = "wps.in"
         Current_r = request.POST['select_r_script']
         for m in re.finditer(test1,r1):
-            print m
             counter = counter+1
 
     if request.POST and "run" in request.POST:
@@ -223,7 +278,7 @@ def home(request):
             html = response.read()
             graph_info = Original_Checker(html)
             number_ts1 = [{'name':"timeseries1", 'data':graph_info['for_highchart']}]
-            plot = chartPara(graph_info,number_ts1)
+            timeseries_plot = chartPara(graph_info,number_ts1)
         # Plotting the altered time series
         else:
             for x in url_list:
@@ -260,7 +315,7 @@ def home(request):
                 graph_info =TimeSeriesConverter(test_run[0])#prepares data for graphing
                 number_ts.append({'name':graph_original['site_name']+' Convertered','data':graph_info['for_highchart']})
                 legend.append(graph_original['site_name']+' Convertered')
-            plot = chartPara(graph_original,number_ts)#plots graph data
+            timeseries_plot = chartPara(graph_original,number_ts)#plots graph data
 
 
     text_input_options = TextInput(display_text='Enter URL of Water ML data and click "Add a Time Series"',
@@ -315,7 +370,7 @@ def home(request):
                        name='upload_hs',
                        submit=True)
     context = {
-'plot':plot,
+'timeseries_plot':timeseries_plot,
 'text_input_options':text_input_options,
 'name':name,
 'select_interval': select_interval,
