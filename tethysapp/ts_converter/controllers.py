@@ -91,7 +91,7 @@ def home(request):
         zip_string = ".zip"
         outside_input = True
         #unfinished support for zipped files
-        if zip_string.find(request.GET['input']) != 0:
+        if zip_string.find(request.GET['res_id']) != 0:
             zip_bool = True
             url_zip = "http://localhost:8000/static/data_cart/waterml/"+request.GET['res_id']
             #filename_zip = file_unzipper(url_zip)
