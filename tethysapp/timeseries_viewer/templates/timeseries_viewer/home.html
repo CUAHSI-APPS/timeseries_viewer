@@ -1,0 +1,59 @@
+{% extends "timeseries_viewer/base.html" %}
+{% load staticfiles%}
+{% load tethys_gizmos %}
+
+{% block app_navigation_items %}
+<form method="post">
+
+{% csrf_token %}
+ <h1>Legend</h1>
+    {%for ts in legend%}
+    <ul>
+        <li>{{ts}}</li>
+    </ul>
+    {%endfor%}
+
+
+    <p></p>
+
+{% endblock %}
+
+
+{% block app_content %}
+ <h1>Welcome to HydroScriptR</h1>
+{%gizmo button water_ml%}{%gizmo button hydroshare%}
+<p></p>
+{%if show_hydroshare = True%}
+    {% gizmo text_input hydroshare_resource %}
+    {% gizmo text_input hydroshare_file %}
+{%endif%}
+{%if show_waterml = True%}
+    {% gizmo text_input text_input_options %}
+{%endif%}
+
+{% gizmo button add_ts %}{% gizmo button clear_all_ts %}
+
+{%if download_bool%}
+    <a href="{{string_download}}" class = "btn btn-default">Download Data</a>
+{%endif%}
+{% csrf_token %}
+
+{% gizmo button graph %}
+{% gizmo plot_view timeseries_plot%}
+
+<h1>Statistics</h1>
+    {%gizmo table_view stat_table%}
+
+
+
+</form>
+
+{% endblock %}
+
+{% block app_actions %}
+
+  <a href="" class="btn btn-default">Next</a>
+  <a href="" class="btn btn-default">Back</a>
+
+{% endblock %}
+
