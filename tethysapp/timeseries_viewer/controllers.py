@@ -36,58 +36,23 @@ def restcall(request,branch,res_id,filename):
     return render(request, 'timeseries_viewer/home.html', context)
 #Normal Get or Post Request
 #http://dev.hydroshare.org/hsapi/resource/72b1d67d415b4d949293b1e46d02367d/files/referencetimeseries-2_23_2015-wml_2_0.wml/
-def View_R_Code(request):
-    context = View_R()
-    return render(request, 'timeseries_viewer/View_R_Code.html', context)
+
 
 def home(request):
-    url_wml=None
     name = None
-    show_time = False
     no_url = False
-    output_converter = None
     number_ts = []#stores highcharts info of each time series
     Base.metadata.create_all(engine)
     url_list = []
-    plot = None
-    counter = 0
-    r_script = None
-    script_test =[]
     legend = []
-    download_bool = False
-    string_download = None
     url_data_validation=[]
-    Current_r = "Select an R script"
     show_hydroshare = False
     show_waterml = False
     show_cuahsi = False
     timeseries_plot =None
     outside_input = False
-    stat_data = []
-    filename_zip = None
-    url_zip =None
-    zip_bool = False #checks if file is zipped
-    #Cuashi Graph test
-    #test_cuashi = file_unzipper("https://ziptest.blob.core.windows.net/time-series/1396-utah-132-nephi-ut-84648-usa-2015-09-08-05-36-42-1881.zip")
-    #chartPara(test_cuashi)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    #https://ziptest.blob.core.windows.net/time-series/1396-utah-132-nephi-ut-84648-usa-2015-09-08-05-36-42-1881.zip
-    #test
-    #example of possible launch string
-    #http://localhost:8000/apps/ts-converter/?input=775-missouri-215-morrisville-mo-65710-usa-2015-09-08-05-13-39-6651.zip&source=hydroshare
+    stat_data = OrderedDict()
+    stat_data1 = []
 
     if request.GET and 'res_id' in request.GET and 'src' in request.GET:
         zip_string = ".zip"
@@ -104,13 +69,8 @@ def home(request):
         elif request.GET['src'] == "hydroshare":
             show_hydroshare = True
 
-
-
-
     #zip file test
 
-
-    
     # r = requests.get(url_zip)
     # z = zipfile.ZipFile(StringIO.StringIO(r.content))
     # file_list = z.namelist()
@@ -124,8 +84,6 @@ def home(request):
     #     timeseries_plot = chartPara(graph_original,number_ts)#plots graph data
 
     #end zip test
-
-
 
     if request.POST and 'hydroshare' in request.POST:
         show_hydroshare = True
@@ -146,14 +104,7 @@ def home(request):
                 hs = HydroShare()
                 hs_resource = request.POST['hydroshare_resource']
                 hs_file = request.POST['hydroshare_file']
-                #hs_text =hs.getResourceFile("b29ac5ce06914752aaac74685ba0f682","DemoReferencedTimeSeries-wml_1.xml")
-                hs_text =hs.getResourceFile(hs_resource,hs_file)
-                # hs_lst =[] This was an old methond to extract the data from the resource. Probably obsolete
-                # for line in hs_text:
-                #     hs_lst.append(line)
-                # xml = ''.join(hs_lst)
                 url_hs_resource = "https://www.hydroshare.org/resource/"+hs_resource+"/data/contents/"+hs_file
-                #graph_original = Original_Checker(xml)
                 session = SessionMaker()
                 url1 = URL(url = url_hs_resource)
                 session.add(url1)
@@ -182,19 +133,15 @@ def home(request):
                     response = urllib2.urlopen(request.POST['url_name'])
                     url1 = URL(url = request.POST['url_name'])
                 # zip file name
-
                 html = response.read()
                 graph_original = Original_Checker(html)
                 url_data_validation.append(graph_original['site_name'])
                 session = SessionMaker()
-                #url1 = URL(url = str(graph_original)) changed before trip
-
                 session.add(url1)
                 session.commit()
                 session.close()
             except etree.XMLSyntaxError as e: #checks to see if data is an xml
                 print "Error:Not XML"
-                #quit("not valid xml")
             except ValueError, e: #checks to see if Url is valid
                 print "Error:invalid Url"
             except TypeError, e: #checks to see if xml is formatted correctly
@@ -208,8 +155,6 @@ def home(request):
             url_list.append(url.url)
             response = urllib2.urlopen(url.url)
             html = response.read()
-            #graph_original = url.url
-            #graph_original1 = ast.literal_eval(graph_original)#this displays the whole document
             graph_original1 = Original_Checker(html)
             legend.append(graph_original1['site_name'])
     session.close()
@@ -224,22 +169,19 @@ def home(request):
         session.close()
         legend = None
         url_list =[]
-        Current_r = request.POST['select_r_script']
+
 
     if len(url_list) ==0:
         print "empty"
     else:
         for x in url_list:
-            counter = counter +1#counter for testing
+
             #graphs the original time series
             response = urllib2.urlopen(x)
             html = response.read()
-
             url_user = str(x)
             url_user = url_user.replace('=', '!')
             url_user = url_user.replace('&', '~')
-
-
             process_id = 'org.n52.wps.server.r.timeseries_viewer_stat'
             input = [("url",url_user)]
             output = "output"
@@ -250,31 +192,25 @@ def home(request):
             download_link = test_run[1]
             string_download = ''.join(download_link)
             upload_hs = string_download
-
+            #Takes the data fromt he time series and computes common statistics
             stat = test_run[0]
-
             split_stat = stat.split()
-
-            print split_stat
             split_stat1 = split_stat[1::2]
             split_stat1.insert(0,"")
             stat_function =  [graph_original['site_name'],"Mean", "Median", "Standard Deviation"]
 
             for i in range(0, len(stat_function)):
                 stat_val = split_stat1[i]
-
                 stat_fun = stat_function[i]
-                stat_data.append([stat_fun,stat_val])
-            print stat_data
+                stat_data1.append({stat_fun:stat_val})
 
-
-
+            for d in stat_data1:
+                stat_data.update(d)
 
             number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
         timeseries_plot = chartPara(graph_original,number_ts)#plots graph data
 
-
-
+    choices = {'joe1':'val1', 'key2':'val2'}
     text_input_options = TextInput(display_text='Enter URL of Water ML data and click "Add a Time Series"',
                                    name='url_name',
                                     )
@@ -296,13 +232,9 @@ def home(request):
     clear_all_ts = Button(display_text='Clear all Time Series',
                        name='clear_all_ts',
                        submit=True)
-    download = Button(display_text='Download CSV',
-                       name='download',
-                       submit=True)
     graph = Button(display_text='Graph Oringal Time Series',
                        name='graph',
                        submit=True)
-
     upload_hs = Button(display_text='Upload data to HydroShare',
                        name='upload_hs',
                        submit=True)
@@ -312,9 +244,6 @@ def home(request):
                            striped = False,
                            bordered = True,
                            condensed = True
-
-
-
                            )
     context = {
 'timeseries_plot':timeseries_plot,
@@ -322,38 +251,27 @@ def home(request):
 'name':name,
 'stat_data':stat_data,
 'stat_table':stat_table,
-
-'show_time':show_time,
 'no_url':no_url,
-'output_converter':output_converter,
 'add_ts':add_ts,
-
 'clear_all_ts':clear_all_ts,
 'graph':graph,
 'legend':legend,
-
-'string_download':string_download,
-'download_bool':download_bool,
-
 'hydroshare':hydroshare,
 'show_hydroshare':show_hydroshare,
 'hydroshare_file':hydroshare_file,
 'hydroshare_resource':hydroshare_resource,
 'water_ml':water_ml,
 'show_waterml':show_waterml,
-'upload_hs':upload_hs
+'upload_hs':upload_hs,
+        "choices":choices
 }
     
     return render(request, 'timeseries_viewer/home.html', context)
 
 def run_wps(process_id,input,output):
-
     #choose the first wps engine
     my_engine = WebProcessingService('http://appsdev.hydroshare.org:8282/wps/WebProcessingService', verbose=False, skip_caps=True)
     my_engine.getcapabilities()
-    #wps_engines = list_wps_service_engines()
-    #my_engine = wps_engines[0]
-    #choose the r.time-series-converter
     my_process = my_engine.describeprocess(process_id)
     my_inputs = my_process.dataInputs
     input_names = [] #getting list of input
@@ -365,11 +283,9 @@ def run_wps(process_id,input,output):
     #set store executeresponse to false
     request = request.replace('storeExecuteResponse="true"', 'storeExecuteResponse="false"')
     url_wps = 'http://appsdev.hydroshare.org:8282/wps/WebProcessingService'
-
     wps_request = urllib2.Request(url_wps,request)
     wps_open = urllib2.urlopen(wps_request)
     wps_read = wps_open.read()
-
     if 'href' in wps_read:
         tag = 'href="'
         location = wps_read.find(tag)
@@ -381,14 +297,6 @@ def run_wps(process_id,input,output):
         wps_request1 = urllib2.Request(split[0])
         wps_open1 = urllib2.urlopen(wps_request1)
         wps_read1 = wps_open1.read()
-
-    #now we must use our own method to send the request1
-    #we need to use the request
-    #this code is for the normal wps which is not working right now
-    # monitorExecution(execution)
-    # output_data = execution.processOutputs
-    # final_output_url = output_data[0].reference
-    # final_data = read_final_data(final_output_url)
 
     #return [final_output_url, final_data]
     return [wps_read1, split]
@@ -402,11 +310,3 @@ def read_final_data(url):
     for row in reader:
         rows.append(row)
     return rows
-
-
-
-def upload_to_hs(id,file):
-    auth = HydroShareAuthBasic(username='mbayles2', password='lego2695')
-    hs = HydroShare(auth=auth)
-    fpath = '/path/to/somefile.txt'
-    resource_id = hs.addResourceFile('id', file)

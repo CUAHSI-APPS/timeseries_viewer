@@ -285,43 +285,6 @@ def parse_2_0(root):
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
 
 
-def TimeSeriesConverter(string_data):
-    data = None
-    counter = None
-    #xml_string = str(xml_data)
-    #root = etree.fromstring(xml_string)
-    #converted_file = xml_data
-
-    #using strings
-    # if '<wps:ComplexData encoding="UTF-8" mimeType="text/plain">' in xml_string:
-    #     tag = '<wps:ComplexData encoding="UTF-8" mimeType="text/plain">'
-    #     location = xml_string.find(tag)
-    #     new= xml_string[location+len(tag):len(xml_string)]
-    #     tag2 = '<'
-    #     location2 = new.find(tag2)
-    #     final = new[0:location2]
-    #     split = final.split()
-    #     data= []
-    for_highchart =[]
-    split = string_data.split()
-
-    time = split[::2]
-    value = split[1::2]
-    item = []
-
-    for i in range(0,len(time)):
-            time_str = time[i]
-            value_str = value[i]
-            if value_str == "NA": #check to see if there are null values in the time series
-                 value_float = None
-            else:
-                value_float = float(value_str)
-
-            time_int = datetime.strptime(time_str, '%Y-%m-%d')
-            for_highchart.append([time_int,value_float])
-    return {
-                'for_highchart':for_highchart,
-           }
 
 def Original_Checker(html):
     #html1 = str(html)

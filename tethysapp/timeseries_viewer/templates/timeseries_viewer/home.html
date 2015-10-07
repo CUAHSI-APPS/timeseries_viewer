@@ -12,10 +12,7 @@
         <li>{{ts}}</li>
     </ul>
     {%endfor%}
-
-
     <p></p>
-
 {% endblock %}
 
 
@@ -33,21 +30,33 @@
 
 {% gizmo button add_ts %}{% gizmo button clear_all_ts %}
 
-{%if download_bool%}
-    <a href="{{string_download}}" class = "btn btn-default">Download Data</a>
-{%endif%}
+
 {% csrf_token %}
 
-{% gizmo button graph %}
 {% gizmo plot_view timeseries_plot%}
 
 <h1>Statistics</h1>
-    {%gizmo table_view stat_table%}
+
+<table border="1" style="width:100%">
+  <tr >
+      <th > Function </th>
+      <th>Value</th>
+  </tr>
+    {%for fun, stat in stat_data.items%}
+  <tr class ="red">
+    <td>{{fun}}</td>
+      <td>{{stat}}</td>
+  </tr>
+
+    {%endfor%}
+</table>
+
+
 
 
 
 </form>
-
+<p></p>
 {% endblock %}
 
 {% block app_actions %}

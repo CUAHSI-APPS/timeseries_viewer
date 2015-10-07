@@ -23,9 +23,6 @@ class TsConverter(TethysAppBase):
         url_maps = (UrlMap(name='home',
                            url='timeseries_viewer/',
                            controller='timeseries_viewer.controllers.home'),
-
-
-
         )
 
         return url_maps
