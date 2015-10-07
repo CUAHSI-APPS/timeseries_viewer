@@ -27,7 +27,5 @@ class URL(Base):
 
 
   # DB Engine, sessionmaker and base
-engine1 = get_persistent_store_engine('rscript_db')
-SessionMaker1 = sessionmaker(bind=engine1)
-Base1 = declarative_base()
+
 

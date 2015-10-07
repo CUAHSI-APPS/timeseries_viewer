@@ -1,4 +1,4 @@
-from .model import engine, Base,engine1,Base1
+from .model import engine, Base
 
 def init_urls_db(first_time):
     """

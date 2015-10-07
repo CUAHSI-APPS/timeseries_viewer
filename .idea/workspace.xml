@@ -2,24 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4c79509a-9421-4a63-9d83-6abe6036c28c" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/__init__.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/app.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/controllers.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/init_stores.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/model.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/public/css/main.css" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/public/images/icon.gif" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/public/js/main.js" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/View_R_Code.html" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/__init__.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/base.html" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/templates/ts_converter/home.html" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp/ts_converter/utilities.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tethysapp/timeseries_viewer/app.py" afterPath="$PROJECT_DIR$/tethysapp/timeseries_viewer/app.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp_ts_converter.egg-info/PKG-INFO" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp_ts_converter.egg-info/SOURCES.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp_ts_converter.egg-info/dependency_links.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp_ts_converter.egg-info/namespace_packages.txt" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp_ts_converter.egg-info/not-zip-safe" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/tethysapp_ts_converter.egg-info/top_level.txt" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tethysapp/timeseries_viewer/controllers.py" afterPath="$PROJECT_DIR$/tethysapp/timeseries_viewer/controllers.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tethysapp/timeseries_viewer/templates/timeseries_viewer/home.html" afterPath="$PROJECT_DIR$/tethysapp/timeseries_viewer/templates/timeseries_viewer/home.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tethysapp/timeseries_viewer/public/css/main.css" afterPath="$PROJECT_DIR$/tethysapp/timeseries_viewer/public/css/main.css" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tethysapp/timeseries_viewer/utilities.py" afterPath="$PROJECT_DIR$/tethysapp/timeseries_viewer/utilities.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tethysapp/timeseries_viewer/model.py" afterPath="$PROJECT_DIR$/tethysapp/timeseries_viewer/model.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="tethysapp-ts_converter.iws" />
@@ -58,7 +48,7 @@
         <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/controllers.py">
           <provider selected="true" editor-type-id="text-editor">
             <state vertical-scroll-proportion="0.0">
-              <caret line="66" column="30" selection-start-line="66" selection-start-column="30" selection-end-line="66" selection-end-column="30" />
+              <caret line="14" column="45" selection-start-line="14" selection-start-column="45" selection-end-line="14" selection-end-column="45" />
               <folding>
                 <element signature="e#0#35#0" expanded="true" />
               </folding>
@@ -78,10 +68,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="app.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="app.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/app.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.14055637">
+            <state vertical-scroll-proportion="0.0">
               <caret line="7" column="7" selection-start-line="7" selection-start-column="7" selection-end-line="7" selection-end-column="7" />
               <folding>
                 <element signature="e#0#57#0" expanded="true" />
@@ -90,11 +80,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="model.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="model.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/model.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.6368961">
+              <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
               <folding>
                 <element signature="e#0#55#0" expanded="true" />
               </folding>
@@ -122,11 +112,11 @@
         <option value="$PROJECT_DIR$/tethysapp/ts_converter/utilities.py" />
         <option value="$PROJECT_DIR$/../cuahsi-data-cart/tethysapp-data_cart/tethysapp/data_cart/templates/data_cart/home.html" />
         <option value="$PROJECT_DIR$/tethysapp/ts_converter/controllers.py" />
-        <option value="$PROJECT_DIR$/tethysapp/timeseries_viewer/model.py" />
         <option value="$PROJECT_DIR$/tethysapp/timeseries_viewer/utilities.py" />
-        <option value="$PROJECT_DIR$/tethysapp/timeseries_viewer/controllers.py" />
         <option value="$PROJECT_DIR$/tethysapp/timeseries_viewer/templates/timeseries_viewer/home.html" />
         <option value="$PROJECT_DIR$/tethysapp/timeseries_viewer/app.py" />
+        <option value="$PROJECT_DIR$/tethysapp/timeseries_viewer/model.py" />
+        <option value="$PROJECT_DIR$/tethysapp/timeseries_viewer/controllers.py" />
       </list>
     </option>
   </component>
@@ -140,7 +130,7 @@
   <component name="ProjectFrameBounds">
     <option name="x" value="568" />
     <option name="y" value="24" />
-    <option name="width" value="1022" />
+    <option name="width" value="1012" />
     <option name="height" value="812" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
@@ -166,8 +156,8 @@
       <sortByType />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="Scope" />
+      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -181,7 +171,7 @@
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../tethysapp-ts_converter" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="FullScreen" value="false" />
     <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
@@ -391,10 +381,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="568" y="24" width="1022" height="812" extended-state="4" />
-    <editor active="false" />
+    <frame x="568" y="24" width="1012" height="812" extended-state="4" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.004892368" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.0039525693" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3286517" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
@@ -433,6 +423,56 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/templates/timeseries_viewer/home.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="45" column="19" selection-start-line="45" selection-start-column="19" selection-end-line="45" selection-end-column="19" />
+          <folding>
+            <element signature="n#style#0;n#table#0;n#form#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/controllers.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="66" column="30" selection-start-line="66" selection-start-column="30" selection-end-line="66" selection-end-column="30" />
+          <folding>
+            <element signature="e#0#35#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/utilities.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="128" column="38" selection-start-line="128" selection-start-column="38" selection-end-line="128" selection-end-column="38" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/app.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#57#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/model.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#55#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/templates/timeseries_viewer/home.html">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -554,12 +594,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/model.py">
+    <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/templates/timeseries_viewer/home.html">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="33" column="0" selection-start-line="33" selection-start-column="0" selection-end-line="33" selection-end-column="0" />
+          <caret line="45" column="19" selection-start-line="45" selection-start-column="19" selection-end-line="45" selection-end-column="19" />
           <folding>
-            <element signature="e#0#55#0" expanded="true" />
+            <element signature="n#style#0;n#table#0;n#form#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/app.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="7" column="7" selection-start-line="7" selection-start-column="7" selection-end-line="7" selection-end-column="7" />
+          <folding>
+            <element signature="e#0#57#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -574,32 +624,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/templates/timeseries_viewer/home.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="45" column="19" selection-start-line="45" selection-start-column="19" selection-end-line="45" selection-end-column="19" />
-          <folding>
-            <element signature="n#style#0;n#table#0;n#form#0;n#!!top" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/controllers.py">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
-          <caret line="66" column="30" selection-start-line="66" selection-start-column="30" selection-end-line="66" selection-end-column="30" />
+          <caret line="14" column="45" selection-start-line="14" selection-start-column="45" selection-end-line="14" selection-end-column="45" />
           <folding>
             <element signature="e#0#35#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/app.py">
+    <entry file="file://$PROJECT_DIR$/tethysapp/timeseries_viewer/model.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.14055637">
-          <caret line="7" column="7" selection-start-line="7" selection-start-column="7" selection-end-line="7" selection-end-column="7" />
+        <state vertical-scroll-proportion="0.6368961">
+          <caret line="29" column="0" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
           <folding>
-            <element signature="e#0#57#0" expanded="true" />
+            <element signature="e#0#55#0" expanded="true" />
           </folding>
         </state>
       </provider>
