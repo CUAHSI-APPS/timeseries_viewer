@@ -12,7 +12,7 @@ import requests
 import csv
 from datetime import datetime
 import urllib2
-from .model import engine, SessionMaker, Base
+from .model import engine, SessionMaker, Base, URL
 from hs_restclient import HydroShare, HydroShareAuthBasic
 import dicttoxml
 import ast
