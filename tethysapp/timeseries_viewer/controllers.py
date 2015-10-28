@@ -82,8 +82,7 @@ def home(request):
             outside_input = True
             zip_bool = True
             #Make a dictionary to hold the ids passed by CUAHSI
-            cuahsi_data = request.GET['res_id']#retrieves ids from url
-            cuahsi_split = cuahsi_data.split(',')#splits ideas by commma
+            cuahsi_resources = getCuahsiResourceIDs(request)
 
     if request.POST and 'hydroshare' in request.POST:
         show_hydroshare = True
@@ -105,9 +104,7 @@ def home(request):
             if not os.path.exists(temp_dir):
                 os.makedirs(temp_dir)
 
-            print cuahsi_split
-
-            for id in cuahsi_split:
+            for id in cuahsi_resources:
                 url_zip = "http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/"+id+'/zip'
                 r = requests.get(url_zip)
                 try:
@@ -176,48 +173,46 @@ def home(request):
 
 
         #adding data through cuashi or from a water ml url
-        if request.POST.get('url_name') != None or show_cuahsi == True:
-            try:
+        if show_cuahsi == True:
 
+            cuahsi_resources = getCuahsiResourceIDs(request)
+            for id in cuahsi_resources:
 
-                if show_cuahsi:
+                try:
                     cuahsi_url = findZippedUrl(request, id)
                     print "opening " + cuahsi_url + "..."
 
                     response = urllib2.urlopen(cuahsi_url)
-                    url1 = URL(url=cuahsi_url)
 
-                else:
-                    response = urllib2.urlopen(request.POST['url_name'])
-                    url1 = URL(url = request.POST['url_name'])
-                # zip file name
-                html = response.read()
-                graph_original = Original_Checker(html)
-                print 'original_checker completed!'
-                url_data_validation.append(graph_original['site_name'])
-                print url_data_validation
+                    # zip file name
+                    html = response.read()
+                    graph_original = Original_Checker(html)
+                    print 'original_checker completed!'
 
-                # get the statistics...
-                stat_function =  [graph_original['site_name'],"Mean", "Median", "Standard Deviation"]
+                    # get the statistics...
+                    stat_function =  [graph_original['site_name'],"Mean", "Median", "Standard Deviation"]
 
-                stat_data1.append({'site_name': graph_original['site_name']})
-                stat_data1.append({'Mean': graph_original['mean']})
-                stat_data1.append({'Median': graph_original['median']})
-                stat_data1.append({'Standard Deviation': graph_original['stdev']})
+                    stat_data1.append({'site_name': graph_original['site_name']})
+                    stat_data1.append({'Mean': graph_original['mean']})
+                    stat_data1.append({'Median': graph_original['median']})
+                    stat_data1.append({'Standard Deviation': graph_original['stdev']})
 
-                for d in stat_data1:
-                    stat_data.update(d)
+                    for d in stat_data1:
+                        stat_data.update(d)
 
-                number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
-                timeseries_plot = chartPara(graph_original,number_ts)#plots graph data
+                    number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
+                    legend.append(graph_original['site_name'])
 
 
-            except etree.XMLSyntaxError as e: #checks to see if data is an xml
-                print "Error:Not XML"
-            except ValueError, e: #checks to see if Url is valid
-                print "Error:invalid Url"
-            except TypeError, e: #checks to see if xml is formatted correctly
-                print "Error:string indices must be integers not str"
+                except etree.XMLSyntaxError as e: #checks to see if data is an xml
+                    print "Error:Not XML"
+                except ValueError, e: #checks to see if Url is valid
+                    print "Error:invalid Url"
+                except TypeError, e: #checks to see if xml is formatted correctly
+                    print "Error:string indices must be integers not str"
+
+            #finally plot the charts
+            timeseries_plot = chartPara(graph_original,number_ts)
 
 
     if len(url_list) < 2:

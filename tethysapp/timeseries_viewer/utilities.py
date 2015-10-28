@@ -153,15 +153,10 @@ def parse_1_0_and_1_1(root):
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
 
 
-def median(lst):
-    sortedLst = sorted(lst)
-    lstLen = len(lst)
-    index = (lstLen - 1) // 2
-
-    if (lstLen % 2):
-        return sortedLst[index]
-    else:
-        return (sortedLst[index] + sortedLst[index + 1])/2.0
+def getCuahsiResourceIDs(page_request):
+    cuahsi_data = page_request.GET['res_id']#retrieves ids from url
+    cuahsi_split = cuahsi_data.split(',')#splits ideas by commma
+    return cuahsi_split
 
 
 def findZippedUrl(page_request, res_id):
@@ -175,30 +170,28 @@ def findZippedUrl(page_request, res_id):
 # Prepare for Chart Parameters
 def chartPara(ts_original,for_highcharts):
 
-    title_text= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date']
-    x_title_text = "Time Period"
-    y_title_text = ts_original['units']
-    # Timeseries plot example
+    #title_text= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date']
+    #x_title_text = "Time Period"
+    #y_title_text = ts_original['units']
 
     timeseries_plot = TimeSeries(
-    height='500px',
-    width='500px',
-    engine='highcharts',
-    title= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date'],
-    y_axis_title='Snow depth',
-    y_axis_units='m',
-    show_legend = False,
-    plotOptions = {"fillColor" :"Red"},
-    legend={
-            'layout': 'horizontal',
-            'align': 'left',
-            'verticalAlign': 'middle',
-            'borderWidth': 0,
-            'floating':"true"
-    },
-    series= for_highcharts
-
-)
+        height='500px',
+        width='500px',
+        engine='highcharts',
+        title= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date'],
+        y_axis_title=ts_original['variable_name'],
+        y_axis_units=ts_original['units'],
+        show_legend = False,
+        plotOptions = {'fillColor':'Red'},
+        legend={
+                'layout': 'horizontal',
+                'align': 'left',
+                'verticalAlign': 'middle',
+                'borderWidth': 0,
+                'floating':"true"
+        },
+        series= for_highcharts
+    )
     return timeseries_plot
 
 
