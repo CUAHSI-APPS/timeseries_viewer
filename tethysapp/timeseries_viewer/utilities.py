@@ -1,5 +1,4 @@
 import os
-from tethys_apps.base.persistent_store import get_persistent_store_engine as gpse
 import urllib2
 from lxml import etree
 from datetime import datetime
@@ -17,17 +16,6 @@ import xml.etree.ElementTree as ET
 import time
 import numpy
 
-
-
-def get_persistent_store_engine(persistent_store_name):
-    """
-    Returns an SQLAlchemy engine object for the persistent store name provided.
-    """
-    # Derive app name
-    app_name = os.path.split(os.path.dirname(__file__))[1]
-
-    # Get engine
-    return gpse(app_name, persistent_store_name)
 
 def get_version(root):
     wml_version = None
@@ -273,8 +261,8 @@ def parse_2_0(root):
                     'wml_version': '2.0',
                     'latitude': latitude,
                     'longitude': longitude,
-                    'for_highchart':for_highchart,
-		    'test':test
+                    'for_highchart': for_highchart,
+		            'test': test
                     }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"

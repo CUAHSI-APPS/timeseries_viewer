@@ -18,7 +18,9 @@
 
 {% block app_content %}
  <h1>Welcome to CUAHSI time series viewer</h1>
+    {%if show_add_clear_ts = True%}
 {%gizmo button water_ml%}{%gizmo button hydroshare%}
+    {%endif%}
 <p></p>
 {%if show_hydroshare = True%}
     {% gizmo text_input hydroshare_resource %}
@@ -28,7 +30,9 @@
     {% gizmo text_input text_input_options %}
 {%endif%}
 
-{% gizmo button add_ts %}{% gizmo button clear_all_ts %}
+{%if show_add_clear_ts = True%}
+    {% gizmo button add_ts %}{% gizmo button clear_all_ts %}
+{%endif%}
 
 
 {% csrf_token %}
@@ -39,15 +43,18 @@
 
 <table border="1" style="width:100%">
   <tr >
-      <th > Function </th>
-      <th>Value</th>
+      <th >Site Name</th>
+      <th>Mean</th>
+      <th>Median</th>
+      <th>Standard Deviation</th>
   </tr>
-    {%for fun, stat in stat_data.items%}
+    {%for stat in stat_data%}
   <tr class ="red">
-    <td>{{fun}}</td>
-      <td>{{stat}}</td>
+      <td>{{stat.site_name}}</td>
+      <td>{{stat.mean}}</td>
+      <td>{{stat.median}}</td>
+      <td>{{stat.stdev}}</td>
   </tr>
-
     {%endfor%}
 </table>
 

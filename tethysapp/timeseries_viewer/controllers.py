@@ -12,7 +12,6 @@ import requests
 import csv
 from datetime import datetime
 import urllib2
-from .model import engine, Base, URL
 from hs_restclient import HydroShare, HydroShareAuthBasic
 import dicttoxml
 import ast
@@ -35,18 +34,14 @@ def restcall(request,branch,res_id,filename):
     timeseries_plot = chartPara(html,filename)
     context = {"timeseries_plot":timeseries_plot}
     return render(request, 'timeseries_viewer/home.html', context)
-#Normal Get or Post Request
-#http://dev.hydroshare.org/hsapi/resource/72b1d67d415b4d949293b1e46d02367d/files/referencetimeseries-2_23_2015-wml_2_0.wml/
 
 
 def home(request):
     name = None
     no_url = False
     number_ts = []#stores highcharts info of each time series
-    Base.metadata.create_all(engine)
     url_list = []
     legend = []
-    url_data_validation=[]
     show_hydroshare = False
     show_waterml = False
     show_cuahsi = False
@@ -55,6 +50,9 @@ def home(request):
     outside_input = False
     stat_data = OrderedDict()
     stat_data1 = []
+    stat_data2 = []
+    use_wps = False
+    show_add_clear_ts = False
 
     if request.GET and 'res_id' in request.GET and 'src' in request.GET:
         zip_string = ".zip"
@@ -63,9 +61,6 @@ def home(request):
         #unfinished support for zipped files
         if zip_string.find(request.GET['res_id']) != 0:
             zip_bool = True
-            #url_zip = "http://localhost:8000/static/data_cart/waterml/"+request.GET['res_id']
-            #filename_zip = file_unzipper(url_zip)
-            #print "happy"
         if request.GET['src'] == "cuahsi":
             show_cuahsi = True
             zip_bool = True
@@ -133,8 +128,6 @@ def home(request):
                             zipped_url = base_url + "temp_waterml/cuahsi/" + id + '.xml'
                             print zipped_url
 
-                            url2 = URL(url = zipped_url)
-
                             print "WaterML file unzipped successfully."
                     except etree.XMLSyntaxError as e: #checks to see if data is an xml
                         print "Error:Not XML"
@@ -151,7 +144,7 @@ def home(request):
     # this block of code will add a time series to the legend and graph the result
     if (request.POST and "add_ts" in request.POST) or outside_input:
         if not outside_input:
-            print "not"
+            print "not using outside_input"
 
         if request.POST.get('hydroshare_resource') != None and request.POST.get('hydroshare_file')!= None:
             try:
@@ -160,9 +153,6 @@ def home(request):
                 hs_resource = request.POST['hydroshare_resource']
                 hs_file = request.POST['hydroshare_file']
                 url_hs_resource = "https://www.hydroshare.org/resource/"+hs_resource+"/data/contents/"+hs_file
-
-                url1 = URL(url = url_hs_resource)
-
             except etree.XMLSyntaxError as e: #checks to see if data is an xml
                 print "Error:Not XML"
                 #quit("not valid xml")
@@ -190,15 +180,10 @@ def home(request):
                     print 'original_checker completed!'
 
                     # get the statistics...
-                    stat_function =  [graph_original['site_name'],"Mean", "Median", "Standard Deviation"]
-
-                    stat_data1.append({'site_name': graph_original['site_name']})
-                    stat_data1.append({'Mean': graph_original['mean']})
-                    stat_data1.append({'Median': graph_original['median']})
-                    stat_data1.append({'Standard Deviation': graph_original['stdev']})
-
-                    for d in stat_data1:
-                        stat_data.update(d)
+                    stat_data2.append({'site_name': graph_original['site_name'],
+                               'mean': '%.4f'% graph_original['mean'],
+                               'median': '%.4f'% graph_original['median'],
+                               'stdev': '%.4f'% graph_original['stdev']})
 
                     number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
                     legend.append(graph_original['site_name'])
@@ -215,9 +200,8 @@ def home(request):
             timeseries_plot = chartPara(graph_original,number_ts)
 
 
-    if len(url_list) < 2:
-        print "empty"
-    else:
+    if use_wps:
+
         for x in url_list:
 
             #graphs the original time series
@@ -233,9 +217,7 @@ def home(request):
 
             graph_original = Original_Checker(html)
 
-            download_link = test_run[1]
-            string_download = ''.join(download_link)
-            upload_hs = string_download
+
             #Takes the data fromt he time series and computes common statistics
             stat = test_run[0]
             split_stat = stat.split()
@@ -253,6 +235,8 @@ def home(request):
 
             number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
         timeseries_plot = chartPara(graph_original,number_ts)#plots graph data
+
+
 
     choices = {'joe1':'val1', 'key2':'val2'}
     text_input_options = TextInput(display_text='Enter URL of Water ML data and click "Add a Time Series"',
@@ -282,35 +266,36 @@ def home(request):
     upload_hs = Button(display_text='Upload data to HydroShare',
                        name='upload_hs',
                        submit=True)
-    stat_table = TableView(column_names=("Function","Value"),
-                           rows = stat_data,
+    stat_table = TableView(column_names=('Name', 'Mean', 'Median', 'Standard Deviation'),
+                           rows = stat_data2,
                            hover =True,
                            striped = False,
                            bordered = True,
                            condensed = True
                            )
     context = {
-'timeseries_plot':timeseries_plot,
-'text_input_options':text_input_options,
-'name':name,
-'stat_data':stat_data,
-'stat_table':stat_table,
-'no_url':no_url,
-'add_ts':add_ts,
-'clear_all_ts':clear_all_ts,
-'graph':graph,
-'legend':legend,
-'hydroshare':hydroshare,
-'show_hydroshare':show_hydroshare,
-'hydroshare_file':hydroshare_file,
-'hydroshare_resource':hydroshare_resource,
-'water_ml':water_ml,
-'show_waterml':show_waterml,
-'upload_hs':upload_hs,
-        "choices":choices
-}
-    
+        'timeseries_plot':timeseries_plot,
+        'text_input_options':text_input_options,
+        'name':name,
+        'stat_data':stat_data2,
+        'stat_table':stat_table,
+        'no_url':no_url,
+        'add_ts':add_ts,
+        'clear_all_ts':clear_all_ts,
+        'graph':graph,
+        'legend':legend,
+        'hydroshare':hydroshare,
+        'show_hydroshare':show_hydroshare,
+        'hydroshare_file':hydroshare_file,
+        'hydroshare_resource':hydroshare_resource,
+        'water_ml':water_ml,
+        'show_waterml':show_waterml,
+        'upload_hs':upload_hs,
+        'choices':choices,
+        'show_add_clear_ts':show_add_clear_ts
+    }
     return render(request, 'timeseries_viewer/home.html', context)
+
 
 def run_wps(process_id,input,output):
     #choose the first wps engine
