@@ -14,6 +14,8 @@ import StringIO
 import requests
 from tethys_sdk.gizmos import TimeSeries
 import xml.etree.ElementTree as ET
+import time
+import numpy
 
 
 
@@ -61,110 +63,114 @@ def time_to_int(t):
         raise Exception('time_to_int error: ' + t)
 
 
-
 def parse_1_0_and_1_1(root):
+    print "running parse_1_0_and_1_1"
+    root_tag = root.tag.lower()
+    print "root tag: " + root_tag
     try:
-        if 'timeSeriesResponse' in root.tag or 'timeSeries' in root.tag:
-            time_series = root[1]
-            ts = etree.tostring(time_series)
-            values = OrderedDict()
+        if 'timeseriesresponse' in root_tag or 'timeseries' in root_tag or "envelope" in root_tag:
+
+            # lists to store the time-series data
             for_graph = []
             for_highchart = []
+            my_times = []
+            my_values = []
 
-            units, site_name, variable_name, latitude, longitude, methodCode, method, QCcode, QClevel = None, None, None, None, None, None, None, None, None
+            t0 = time.time()
+
+            # metadata items
+            units, site_name, variable_name = None, None, None
             unit_is_set = False
-            methodCode_set = False
-            QCcode_set = False
+
+            # iterate through xml document and read all values
             for element in root.iter():
                 brack_lock = -1
                 if '}' in element.tag:
                     brack_lock = element.tag.index('}')  #The namespace in the tag is enclosed in {}.
-                tag = element.tag[brack_lock+1:]     #Takes only actual tag, no namespace
-                if 'unitName' == tag:  # in the xml there is a unit for the value, then for time. just take the first
-                    if not unit_is_set:
-                        units = element.text
-                        unit_is_set = True
+                    tag = element.tag[brack_lock+1:]     #Takes only actual tag, no namespace
+
                 if 'value' == tag:
-                    values[element.attrib['dateTime']] = element.text
-                    if not methodCode_set:
-                        for a in element.attrib:
-                            if 'methodCode' in a:
-                                methodCode = element.attrib[a]
-                                methodCode_set = True
-                            if 'qualityControlLevelCode' in a:
-                                QCcode = element.attrib[a]
-                                QCcode_set = True
-                if 'siteName' == tag:
-                    site_name = element.text
-                if 'variableName' == tag:
-                    variable_name = element.text
-                if 'latitude' == tag:
-                    latitude = element.text
-                if 'longitude' == tag:
-                    longitude = element.text
-            if methodCode == 1:
-                method = 'No method specified'
-            else:
-                method = 'Unknown method'
-
-            if QCcode == 0:
-                QClevel = "Raw Data"
-            elif QCcode == 1:
-                QClevel = "Quality Controlled Data"
-            elif QCcode == 2:
-                QClevel = "Derived Products"
-            elif QCcode == 3:
-                QClevel = "Interpreted Products"
-            elif QCcode == 4:
-                QClevel = "Knowledge Products"
-            else:
-                QClevel = 'Unknown'
-
-
-            dates = []
-            data = []
-            item = []
-            for k, v in values.items():
-                dates = values.keys()
-                data = values.values()
-            for i in range(0,len(dates)):
-                time_str = dates[i]
-                values_str = data[i]
-                t= datetime.strptime(time_str, '%Y-%m-%dT%H:%M:%S')
-
-                if values_str == "-9999.0" or values_str == "-9999": #check to see if there are null values in the time series
-                    value_float = None
+                    my_times.append(element.attrib['dateTime'])
+                    my_values.append(element.text)
                 else:
-                    value_float = float(values_str)
+                    if 'unitName' == tag:  # in the xml there is a unit for the value, then for time. just take the first
+                        if not unit_is_set:
+                            units = element.text
+                            unit_is_set = True
 
-                #item.append([t,value_float])
-                for_highchart.append([t,value_float])
+                    if 'noDataValue' == tag:
+                        nodata = element.text
+                    if 'siteName' == tag:
+                        site_name = element.text
+                    if 'variableName' == tag:
+                        variable_name = element.text
 
-            smallest_time = list(values.keys())[0]
-            largest_time =  list(values.keys())[0]
-            for t in list(values.keys()):
-                if t < smallest_time:
-                    smallest_time = t
-                if t>largest_time:
-                    largest_time = t
-            return {'time_series': ts,
+            print "root.iter time: " + str(time.time() - t0)
+
+            t0 = time.time()
+
+            for i in range(0, len(my_times)):
+                t= datetime.strptime(my_times[i], '%Y-%m-%dT%H:%M:%S')
+
+                #check to see if there are null values in the time series
+                if my_values[i] == nodata:
+                    for_highchart.append([t, None])
+                else:
+                    for_highchart.append([t, float(my_values[i])])
+                    for_graph.append(float(my_values[i]))
+
+            smallest_time = for_highchart[0][0]
+            largest_time = for_highchart[len(for_highchart) - 1][0]
+
+            print "convert time time: " + str(time.time() - t0)
+
+            mean = numpy.mean(for_graph)
+            median = numpy.median(for_graph)
+            stdev = numpy.std(for_graph)
+
+            print mean
+            print median
+            print stdev
+
+            return {
                     'site_name': site_name,
-                    'start_date': smallest_time,
-                    'end_date':largest_time,
+                    'start_date': str(smallest_time),
+                    'end_date':str(largest_time),
                     'variable_name': variable_name,
                     'units': units,
-                    'values': values,
                     'for_graph': for_graph,
                     'wml_version': '1',
-                    'latitude': latitude,
-                    'longitude': longitude,
-                    'QClevel': QClevel,
-                    'method': method,
-		            'for_highchart':for_highchart}
+                    'for_highchart':for_highchart,
+                    'mean': mean,
+                    'median': median,
+                    'stdev': stdev
+            }
         else:
+            print "Parsing error: The waterml document doesn't appear to be a WaterML 1.0/1.1 time series"
             return "Parsing error: The waterml document doesn't appear to be a WaterML 1.0/1.1 time series"
-    except:
-        return "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
+    except Exception, e:
+        print e
+        return "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
+
+
+def median(lst):
+    sortedLst = sorted(lst)
+    lstLen = len(lst)
+    index = (lstLen - 1) // 2
+
+    if (lstLen % 2):
+        return sortedLst[index]
+    else:
+        return (sortedLst[index] + sortedLst[index + 1])/2.0
+
+
+def findZippedUrl(page_request, res_id):
+    base_url = page_request.build_absolute_uri()
+    if "?" in base_url:
+        base_url = base_url.split("?")[0]
+        zipped_url = base_url + "temp_waterml/cuahsi/" + res_id + ".xml"
+        return zipped_url
+
 
 # Prepare for Chart Parameters
 def chartPara(ts_original,for_highcharts):
@@ -287,9 +293,8 @@ def parse_2_0(root):
 
 
 def Original_Checker(html):
-    #html1 = str(html)
     root = etree.XML(html)
-    #root =  ET.fromstring(html1)
+
     wml_version = get_version(root)
     if wml_version == '1':
         return parse_1_0_and_1_1(root)

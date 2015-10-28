@@ -23,20 +23,9 @@ class TsConverter(TethysAppBase):
         url_maps = (UrlMap(name='home',
                            url='timeseries_viewer/',
                            controller='timeseries_viewer.controllers.home'),
-        )
 
+                    UrlMap(name='temp_waterml',
+                           url='temp_waterml/{folder}/{id}',
+                           controller='ts_converter.controllers.temp_waterml')
+        )
         return url_maps
-
-    def persistent_stores(self):
-        """
-        Add one or more persistent stores
-        """
-        stores = (PersistentStore(name='urls_db',
-                                  initializer='init_stores:init_urls_db',
-                                  spatial=False),
-
-
-
-        )
-
-        return stores
