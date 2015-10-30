@@ -15,6 +15,8 @@ from tethys_sdk.gizmos import TimeSeries
 import xml.etree.ElementTree as ET
 import time
 import numpy
+import zipfile
+import tempfile
 
 
 def get_version(root):
@@ -108,7 +110,8 @@ def parse_1_0_and_1_1(root):
                     for_graph.append(float(my_values[i]))
 
             smallest_time = for_highchart[0][0]
-            largest_time = for_highchart[len(for_highchart) - 1][0]
+            value_count = len(for_highchart)
+            largest_time = for_highchart[value_count - 1][0]
 
             print "convert time time: " + str(time.time() - t0)
 
@@ -131,7 +134,8 @@ def parse_1_0_and_1_1(root):
                     'for_highchart':for_highchart,
                     'mean': mean,
                     'median': median,
-                    'stdev': stdev
+                    'stdev': stdev,
+                    'count': value_count
             }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 1.0/1.1 time series"
@@ -141,7 +145,7 @@ def parse_1_0_and_1_1(root):
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
 
 
-def getCuahsiResourceIDs(page_request):
+def getResourceIDs(page_request):
     cuahsi_data = page_request.GET['res_id']#retrieves ids from url
     cuahsi_split = cuahsi_data.split(',')#splits ideas by commma
     return cuahsi_split
@@ -249,7 +253,7 @@ def parse_2_0(root):
                     smallest_time = t
                 if t> largest_time:
                     largest_time = t
-	    test = "testingkkkk"	   
+
             return {'time_series': ts,
                     'site_name': site_name,
                     'start_date': smallest_time,
@@ -283,8 +287,54 @@ def Original_Checker(html):
         return parse_2_0(root)
 
 
+def unzip_waterml(request, id, src='cuahsi'):
+    base_temp_dir = tempfile.tempdir
+    temp_dir = os.path.join(base_temp_dir, 'cuahsi')
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
 
 
+    if src == 'cuahsi':
+        url_zip = 'http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+id+'/zip'
+    elif src == 'test':
+        url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+id
+    r = requests.get(url_zip)
+    try:
+        z = zipfile.ZipFile(StringIO.StringIO(r.content))
+        file_list = z.namelist()
+
+        try:
+            for file in file_list:
+                file_data = z.read(file)
+                file_temp_name = temp_dir + '/' + id + '.xml'
+                print "unzipping file " + file_temp_name
+
+                file_temp = open(file_temp_name, 'wb')
+                file_temp.write(file_data)
+                file_temp.close()
+
+                print "unzipped file " + file_temp_name
+
+                #getting the URL of the zip file
+                base_url = request.build_absolute_uri()
+                if "?" in base_url:
+                    base_url = base_url.split("?")[0]
+
+                zipped_url = base_url + "temp_waterml/cuahsi/" + id + '.xml'
+                print zipped_url
+
+                print "WaterML file unzipped successfully."
+        except etree.XMLSyntaxError as e: #checks to see if data is an xml
+            print "Error:Not XML"
+            #quit("not valid xml")
+        except ValueError, e: #checks to see if Url is valid
+            print "Error:invalid Url"
+        except TypeError, e: #checks to see if xml is formatted correctly
+            print "Error:string indices must be integers not str"
+    except  zipfile.BadZipfile as e:
+            error_message = "Bad Zip File"
+            print "Bad Zip file"
+    return zipped_url
 
 
 

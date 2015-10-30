@@ -4,7 +4,6 @@ tethysapp/timeseries_viewer/__init__.py
 tethysapp/timeseries_viewer/app.py
 tethysapp/timeseries_viewer/controllers.py
 tethysapp/timeseries_viewer/init_stores.py
-tethysapp/timeseries_viewer/model.py
 tethysapp/timeseries_viewer/utilities.py
 tethysapp_timeseries_viewer.egg-info/PKG-INFO
 tethysapp_timeseries_viewer.egg-info/SOURCES.txt

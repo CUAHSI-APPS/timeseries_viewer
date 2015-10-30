@@ -44,6 +44,7 @@
 <table border="1" style="width:100%">
   <tr >
       <th >Site Name</th>
+      <th>Value Count</th>
       <th>Mean</th>
       <th>Median</th>
       <th>Standard Deviation</th>
@@ -51,6 +52,7 @@
     {%for stat in stat_data%}
   <tr class ="red">
       <td>{{stat.site_name}}</td>
+      <td>{{stat.count}}</td>
       <td>{{stat.mean}}</td>
       <td>{{stat.median}}</td>
       <td>{{stat.stdev}}</td>

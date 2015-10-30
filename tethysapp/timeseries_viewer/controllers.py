@@ -5,7 +5,6 @@ from owslib.wps import WebProcessingService
 from owslib.wps import printInputOutput
 from owslib.wps import monitorExecution
 from owslib.wps import WPSExecution
-#from tethys_apps.sdk import list_wps_service_engines
 import xml.etree.ElementTree as ET
 import sys
 import requests
@@ -45,7 +44,6 @@ def home(request):
     show_hydroshare = False
     show_waterml = False
     show_cuahsi = False
-    zip_bool = False
     timeseries_plot =None
     outside_input = False
     stat_data = OrderedDict()
@@ -55,18 +53,7 @@ def home(request):
     show_add_clear_ts = False
 
     if request.GET and 'res_id' in request.GET and 'src' in request.GET:
-        zip_string = ".zip"
         outside_input = True
-
-        #unfinished support for zipped files
-        if zip_string.find(request.GET['res_id']) != 0:
-            zip_bool = True
-        if request.GET['src'] == "cuahsi":
-            show_cuahsi = True
-            zip_bool = True
-
-        elif request.GET['src'] == "hydroshare":
-            show_hydroshare = True
 
     if request.GET and 'res_id' in request.GET and 'src' in request.GET:
         outside_input = True
@@ -75,73 +62,23 @@ def home(request):
         elif request.GET['src']=='cuahsi':
             show_cuahsi =True
             outside_input = True
-            zip_bool = True
-            #Make a dictionary to hold the ids passed by CUAHSI
-            cuahsi_resources = getCuahsiResourceIDs(request)
+            cuahsi_resources = getResourceIDs(request)
+            for id in cuahsi_resources:
+                unzip_waterml(request, id, src='cuahsi')
+        elif request.GET['src'] == 'test':
+            show_cuahsi = True
+            test_resources = getResourceIDs(request)
+            for id in test_resources:
+                unzip_waterml(request, id, src='test')
 
     if request.POST and 'hydroshare' in request.POST:
         show_hydroshare = True
     if request.POST and 'water_ml' in request.POST:
         show_waterml = True
 
-    #new code for zip file
-    if zip_bool == True:
-
-        #fetch the zip file urls
-        urls1 = []
-
-        if urls1 != []:
-            x=2
-        else:
-            # make temp directory for the zip files
-            base_temp_dir = tempfile.tempdir
-            temp_dir = os.path.join(base_temp_dir, "cuahsi")
-            if not os.path.exists(temp_dir):
-                os.makedirs(temp_dir)
-
-            for id in cuahsi_resources:
-                url_zip = "http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/"+id+'/zip'
-                r = requests.get(url_zip)
-                try:
-                    z = zipfile.ZipFile(StringIO.StringIO(r.content))
-                    file_list = z.namelist()
-
-                    try:
-                        for file in file_list:
-
-                            joe1 = z.read(file)
-
-                            file_temp_name = temp_dir + '/' + id + '.xml'
-                            print "unzipping file " + file_temp_name
-
-                            file_temp = open(file_temp_name, 'wb')
-                            file_temp.write(joe1)
-                            file_temp.close()
-
-                            print "unzipped file " + file_temp_name
-
-                            #getting the URL of the zip file
-                            base_url = request.build_absolute_uri()
-                            if "?" in base_url:
-                                base_url = base_url.split("?")[0]
-
-                            zipped_url = base_url + "temp_waterml/cuahsi/" + id + '.xml'
-                            print zipped_url
-
-                            print "WaterML file unzipped successfully."
-                    except etree.XMLSyntaxError as e: #checks to see if data is an xml
-                        print "Error:Not XML"
-                        #quit("not valid xml")
-                    except ValueError, e: #checks to see if Url is valid
-                        print "Error:invalid Url"
-                    except TypeError, e: #checks to see if xml is formatted correctly
-                        print "Error:string indices must be integers not str"
-                except  zipfile.BadZipfile as e:
-                        error_message = "Bad Zip File"
-                        print "Bad Zip file"
 
 
-    # this block of code will add a time series to the legend and graph the result
+    # this block of code will add a time series from hydroshare
     if (request.POST and "add_ts" in request.POST) or outside_input:
         if not outside_input:
             print "not using outside_input"
@@ -165,7 +102,7 @@ def home(request):
         #adding data through cuashi or from a water ml url
         if show_cuahsi == True:
 
-            cuahsi_resources = getCuahsiResourceIDs(request)
+            cuahsi_resources = getResourceIDs(request)
             for id in cuahsi_resources:
 
                 try:
@@ -183,7 +120,8 @@ def home(request):
                     stat_data2.append({'site_name': graph_original['site_name'],
                                'mean': '%.4f'% graph_original['mean'],
                                'median': '%.4f'% graph_original['median'],
-                               'stdev': '%.4f'% graph_original['stdev']})
+                               'stdev': '%.4f'% graph_original['stdev'],
+                               'count': '%d'% graph_original['count']})
 
                     number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
                     legend.append(graph_original['site_name'])
@@ -327,7 +265,6 @@ def run_wps(process_id,input,output):
         wps_open1 = urllib2.urlopen(wps_request1)
         wps_read1 = wps_open1.read()
 
-    #return [final_output_url, final_data]
     return [wps_read1, split]
 
 
