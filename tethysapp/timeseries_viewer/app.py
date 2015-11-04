@@ -9,10 +9,11 @@ class TsConverter(TethysAppBase):
 
     name = 'timeseries viewer'
     index = 'timeseries_viewer:home'
-    icon = 'timeseries_viewer/images/icon.gif'
+    icon = 'timeseries_viewer/images/viewer_icon2.gif'
     package = 'timeseries_viewer'
     root_url = 'timeseries_viewer'
-    color = '#f1c40f'
+    #color = '#f1c40f'
+    color = '#d3d3d3'
         
     def url_maps(self):
         """
