@@ -1,13 +1,10 @@
-import os
-import urllib2
 from lxml import etree
 from datetime import datetime
 from datetime import timedelta
 from dateutil import parser
-import csv
-from collections import OrderedDict
-import re
 from django.http import HttpResponse
+from .app import TsConverter as app
+import csv
 import zipfile
 import StringIO
 import requests
@@ -16,7 +13,18 @@ import xml.etree.ElementTree as ET
 import time
 import numpy
 import zipfile
-import tempfile
+import os
+
+
+def get_app_base_uri(request):
+    base_url = request.build_absolute_uri()
+    if "?" in base_url:
+        base_url = base_url.split("?")[0]
+    return base_url
+
+
+def get_workspace():
+    return app.get_app_workspace().path
 
 
 def get_version(root):
@@ -155,16 +163,12 @@ def findZippedUrl(page_request, res_id):
     base_url = page_request.build_absolute_uri()
     if "?" in base_url:
         base_url = base_url.split("?")[0]
-        zipped_url = base_url + "temp_waterml/cuahsi/" + res_id + ".xml"
+        zipped_url = base_url + "temp_waterml/" + res_id + ".xml"
         return zipped_url
 
 
 # Prepare for Chart Parameters
 def chartPara(ts_original,for_highcharts):
-
-    #title_text= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date']
-    #x_title_text = "Time Period"
-    #y_title_text = ts_original['units']
 
     timeseries_plot = TimeSeries(
         height='500px',
@@ -288,11 +292,7 @@ def Original_Checker(html):
 
 
 def unzip_waterml(request, id, src='cuahsi'):
-    base_temp_dir = tempfile.tempdir
-    temp_dir = os.path.join(base_temp_dir, 'cuahsi')
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)
-
+    temp_dir = get_workspace()
 
     if src == 'cuahsi':
         url_zip = 'http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+id+'/zip'
@@ -340,28 +340,12 @@ def unzip_waterml(request, id, src='cuahsi'):
 
 def file_unzipper(url_cuashi):
     #this function is for unzipping files
-    ts =[]
-    site_name =None
-    smallest_time=None
-    largest_time=None
-    variable_name=None
-    units=None
-    values=None
-    for_graph=None
-    latitude=None
-    longitude=None
-    for_highchart=None
-
     r = requests.get(url_cuashi)
     z = zipfile.ZipFile(StringIO.StringIO(r.content))
 
-
     file_list = z.namelist()
     for  file in file_list:
-        joe = z.read(file)
-        #print joe
-    #print file_list
-
+        z.read(file)
     return file_list
 
 

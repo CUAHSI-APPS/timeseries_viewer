@@ -1,25 +1,13 @@
 from django.shortcuts import render
 from utilities import *
 from tethys_gizmos.gizmo_options import *
+from django.core.servers.basehttp import FileWrapper
 from owslib.wps import WebProcessingService
-from owslib.wps import printInputOutput
-from owslib.wps import monitorExecution
-from owslib.wps import WPSExecution
-import xml.etree.ElementTree as ET
-import sys
 import requests
 import csv
-from datetime import datetime
 import urllib2
 from hs_restclient import HydroShare, HydroShareAuthBasic
-import dicttoxml
-import ast
-import zipfile
-import tempfile
-import StringIO
 
-import urllib
-import json
 # -- coding: utf-8--
 
 #Base_Url_HydroShare REST API
@@ -35,6 +23,13 @@ def restcall(request,branch,res_id,filename):
     return render(request, 'timeseries_viewer/home.html', context)
 
 
+def temp_waterml(request, id):
+    base_path = get_workspace()
+    file_path = base_path + "/" +id
+    response = HttpResponse(FileWrapper(open(file_path)), content_type='application/xml')
+    return response
+
+
 def home(request):
     name = None
     no_url = False
@@ -46,8 +41,6 @@ def home(request):
     show_cuahsi = False
     timeseries_plot =None
     outside_input = False
-    stat_data = OrderedDict()
-    stat_data1 = []
     stat_data2 = []
     use_wps = False
     show_add_clear_ts = False
@@ -136,44 +129,6 @@ def home(request):
 
             #finally plot the charts
             timeseries_plot = chartPara(graph_original,number_ts)
-
-
-    if use_wps:
-
-        for x in url_list:
-
-            #graphs the original time series
-            response = urllib2.urlopen(x)
-            html = response.read()
-            url_user = str(x)
-            url_user = url_user.replace('=', '!')
-            url_user = url_user.replace('&', '~')
-            process_id = 'org.n52.wps.server.r.timeseries_viewer_stat'
-            input = [("url",url_user)]
-            output = "output"
-            test_run = run_wps(process_id,input,output)
-
-            graph_original = Original_Checker(html)
-
-
-            #Takes the data fromt he time series and computes common statistics
-            stat = test_run[0]
-            split_stat = stat.split()
-            split_stat1 = split_stat[1::2]
-            split_stat1.insert(0,"")
-            stat_function =  [graph_original['site_name'],"Mean", "Median", "Standard Deviation"]
-
-            for i in range(0, len(stat_function)):
-                stat_val = split_stat1[i]
-                stat_fun = stat_function[i]
-                stat_data1.append({stat_fun:stat_val})
-
-            for d in stat_data1:
-                stat_data.update(d)
-
-            number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
-        timeseries_plot = chartPara(graph_original,number_ts)#plots graph data
-
 
 
     choices = {'joe1':'val1', 'key2':'val2'}
