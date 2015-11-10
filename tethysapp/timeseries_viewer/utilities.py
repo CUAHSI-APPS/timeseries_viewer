@@ -298,7 +298,7 @@ def unzip_waterml(request, id, src='cuahsi'):
         url_zip = 'http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+id+'/zip'
     elif src == 'test':
         url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+id
-    r = requests.get(url_zip)
+    r = requests.get(url_zip, verify=False)
     try:
         z = zipfile.ZipFile(StringIO.StringIO(r.content))
         file_list = z.namelist()
