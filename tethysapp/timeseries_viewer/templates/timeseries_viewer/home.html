@@ -2,22 +2,20 @@
 {% load staticfiles%}
 {% load tethys_gizmos %}
 
-{% block app_navigation_items %}
+{%block title%}
+</h1>
+{%endblock%}
+
+
 <form method="post">
 
 {% csrf_token %}
- <h1>Legend</h1>
-    {%for ts in legend%}
-    <ul>
-        <li>{{ts}}</li>
-    </ul>
-    {%endfor%}
-    <p></p>
-{% endblock %}
+
+
 
 
 {% block app_content %}
- <h1>Welcome to CUAHSI time series viewer</h1>
+
     {%if show_add_clear_ts = True%}
 {%gizmo button water_ml%}{%gizmo button hydroshare%}
     {%endif%}
@@ -39,7 +37,7 @@
 
 {% gizmo plot_view timeseries_plot%}
 
-<h1>Statistics</h1>
+
 
 <table border="1" style="width:100%">
   <tr >
@@ -62,12 +60,30 @@
 
 
 
-
-
 </form>
 <p></p>
 {% endblock %}
+<h1>Statistics</h1>
+{% block app_navigation_items %}
+<table border="1" style="width:100%">
+  <tr >
+      <th >Site Name</th>
+      <th>Variable</th>
 
+      <th>Organization</th>
+
+  </tr>
+    {%for meta in meta_data%}
+  <tr class ="red">
+      <td>{{meta.site_name}}</td>
+      <td>{{meta.variable_name}}</td>
+      <td>{{meta.organization}}</td>
+
+  </tr>
+    {%endfor%}
+</table>
+
+{% endblock %}
 {% block app_actions %}
 
   <a href="" class="btn btn-default">Next</a>

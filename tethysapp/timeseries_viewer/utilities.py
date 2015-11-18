@@ -102,6 +102,8 @@ def parse_1_0_and_1_1(root):
                         site_name = element.text
                     if 'variableName' == tag:
                         variable_name = element.text
+                    if 'organization'==tag:
+                        organization = element.text
 
             print "root.iter time: " + str(time.time() - t0)
 
@@ -124,6 +126,7 @@ def parse_1_0_and_1_1(root):
             print "convert time time: " + str(time.time() - t0)
 
             mean = numpy.mean(for_graph)
+            mean = float(format(mean, '.2f'))
             median = numpy.median(for_graph)
             stdev = numpy.std(for_graph)
 
@@ -143,7 +146,8 @@ def parse_1_0_and_1_1(root):
                     'mean': mean,
                     'median': median,
                     'stdev': stdev,
-                    'count': value_count
+                    'count': value_count,
+                    'organization': organization
             }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 1.0/1.1 time series"
@@ -168,24 +172,45 @@ def findZippedUrl(page_request, res_id):
 
 
 # Prepare for Chart Parameters
-def chartPara(ts_original,for_highcharts):
+def chartPara(ts_original,for_highcharts,legend1):
 
     timeseries_plot = TimeSeries(
-        height='500px',
-        width='500px',
+        height='600px',
+        width='600px',
         engine='highcharts',
         title= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date'],
         y_axis_title=ts_original['variable_name'],
         y_axis_units=ts_original['units'],
-        show_legend = False,
-        plotOptions = {'fillColor':'Red'},
-        legend={
-                'layout': 'horizontal',
-                'align': 'left',
-                'verticalAlign': 'middle',
-                'borderWidth': 0,
-                'floating':"true"
+        y_axis= [{
+            'labels': {
+                'title': {
+                'text': 'Temperature',
+                },
+                'format': '{value}',
+
+            },
+            'title': {
+                'text': 'Temperature',
+
+            },
+            'opposite': 'true'
+
         },
+    {
+            'gridLineWidth': 0,
+            'title': {
+                'text': 'Rainfall',
+
+            },
+            'labels': {
+                'format': '{value} mm',
+
+            }
+
+        }],
+
+
+        legend= legend1,
         series= for_highcharts
     )
     return timeseries_plot
@@ -204,6 +229,7 @@ def parse_2_0(root):
             units, site_name, variable_name, latitude, longitude, method = None, None, None, None, None, None
             name_is_set = False
             variable_name = root[1].text
+            organization = None
             for element in root.iter():
                 if 'MeasurementTVP' in element.tag:
                         for e in element:
@@ -234,6 +260,8 @@ def parse_2_0(root):
                                 if 'title' in a:
                                     method=e.attrib[a]
 
+                if 'organization' in element.tag:
+                    organization = element.text
             for i in range(0,len(keys)):
                 time_str=keys[i]
                 time_obj=time_str_to_datetime(time_str)
@@ -270,7 +298,8 @@ def parse_2_0(root):
                     'latitude': latitude,
                     'longitude': longitude,
                     'for_highchart': for_highchart,
-		            'test': test
+		            'test': test,
+                    'organization':organization
                     }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"

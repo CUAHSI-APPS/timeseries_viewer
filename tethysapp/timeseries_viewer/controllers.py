@@ -42,6 +42,7 @@ def home(request):
     timeseries_plot =None
     outside_input = False
     stat_data2 = []
+    meta_data = []
     use_wps = False
     show_add_clear_ts = False
 
@@ -116,8 +117,17 @@ def home(request):
                                'stdev': '%.4f'% graph_original['stdev'],
                                'count': '%d'% graph_original['count']})
 
-                    number_ts.append({'name':graph_original['site_name'],'data':graph_original['for_highchart']})
-                    legend.append(graph_original['site_name'])
+                    meta_data.append({'site_name':graph_original['site_name'],
+                                      'variable_name':graph_original['variable_name'],
+                                      'units':graph_original['units'],
+                                      'organization':graph_original['organization']})
+                    legend ={'layout': 'vertical','align': 'right','verticalAlign': 'top','borderWidth': 0,'floating':"false",'backgroundColor': 'FCFFC5'}
+                    graph_type = 'spline'
+                    units_space = ' '+graph_original['units']+'test'
+                    tooltip_units = {'valueSuffix': units_space}
+                    ts_name = graph_original['site_name'] + ' '+graph_original['variable_name'] +': '+graph_original['organization']
+                    number_ts.append({'name':ts_name,'data':graph_original['for_highchart'],'type':graph_type,'lineWidth': 3, 'tooltip':tooltip_units})
+
 
 
                 except etree.XMLSyntaxError as e: #checks to see if data is an xml
@@ -128,7 +138,11 @@ def home(request):
                     print "Error:string indices must be integers not str"
 
             #finally plot the charts
-            timeseries_plot = chartPara(graph_original,number_ts)
+            timeseries_plot = chartPara(graph_original,number_ts,legend)
+
+
+
+
 
 
     choices = {'joe1':'val1', 'key2':'val2'}
@@ -185,7 +199,9 @@ def home(request):
         'show_waterml':show_waterml,
         'upload_hs':upload_hs,
         'choices':choices,
-        'show_add_clear_ts':show_add_clear_ts
+        'show_add_clear_ts':show_add_clear_ts,
+
+        'meta_data':meta_data
     }
     return render(request, 'timeseries_viewer/home.html', context)
 

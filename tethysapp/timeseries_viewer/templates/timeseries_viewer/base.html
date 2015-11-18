@@ -6,16 +6,25 @@
 
 {% block styles %}
   {{ block.super }}
-  <link href="{% static 'timeseries_viewer/css/main.css' %}" rel="stylesheet"/>
+
 {% endblock %}
 
 {% block app_icon %}
   {# The path you provided in your app.py is accessible through the tethys_app.icon context variable #}
-  <img src="{% static 'timeseries_viewer/images/viewer_icon2.gif' %}">
+
+  <img src="{% static 'timeseries_viewer/images/cuahsi_logo_small.png' %}">
 {% endblock %}
 
 {# The name you provided in your app.py is accessible through the tethys_app.name context variable #}
-{% block app_title %}{{ tethys_app.name }}{% endblock %}
+{% block app_title %}Time Series Viewer{% endblock %}
+
+{%block app_header%}
+
+{% endblock %}
+
+
+{% block exit_button_override %}
+{% endblock %}
 
 {% block app_navigation_items %}
   <li class="title">App Navigation</li>
@@ -33,10 +42,14 @@
 {% block app_content %}
 {% endblock %}
 
-{% block app_actions %}
+{% block app_actions_override %}
+
 {% endblock %}
+
+
 
 {% block scripts %}
   {{ block.super }}
   <script src="{% static 'timeseries_viewer/js/main.js' %}" type="text/javascript"></script>
+  <link href="{% static 'timeseries_viewer/css/main.css' %}" rel="stylesheet"/>
 {% endblock %}

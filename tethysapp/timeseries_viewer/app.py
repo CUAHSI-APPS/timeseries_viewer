@@ -12,9 +12,8 @@ class TsConverter(TethysAppBase):
     icon = 'timeseries_viewer/images/viewer_icon2.gif'
     package = 'timeseries_viewer'
     root_url = 'timeseries_viewer'
-    #color = '#f1c40f'
-    color = '#d3d3d3'
-        
+    # color = '#ffff4d'
+
     def url_maps(self):
         """
         Add controllers
