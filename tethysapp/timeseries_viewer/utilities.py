@@ -181,34 +181,6 @@ def chartPara(ts_original,for_highcharts,legend1):
         title= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date'],
         y_axis_title=ts_original['variable_name'],
         y_axis_units=ts_original['units'],
-        y_axis= [{
-            'labels': {
-                'title': {
-                'text': 'Temperature',
-                },
-                'format': '{value}',
-
-            },
-            'title': {
-                'text': 'Temperature',
-
-            },
-            'opposite': 'true'
-
-        },
-    {
-            'gridLineWidth': 0,
-            'title': {
-                'text': 'Rainfall',
-
-            },
-            'labels': {
-                'format': '{value} mm',
-
-            }
-
-        }],
-
 
         legend= legend1,
         series= for_highcharts

@@ -121,7 +121,7 @@ def home(request):
                                       'variable_name':graph_original['variable_name'],
                                       'units':graph_original['units'],
                                       'organization':graph_original['organization']})
-                    legend ={'layout': 'vertical','align': 'right','verticalAlign': 'top','borderWidth': 0,'floating':"false",'backgroundColor': 'FCFFC5'}
+                    legend ={'layout': 'vertical','align': 'left','verticalAlign': 'top','borderWidth': 0,'floating':"false",'backgroundColor': 'FCFFC5'}
                     graph_type = 'spline'
                     units_space = ' '+graph_original['units']+'test'
                     tooltip_units = {'valueSuffix': units_space}

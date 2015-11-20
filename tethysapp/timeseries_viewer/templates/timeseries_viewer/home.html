@@ -39,21 +39,21 @@
 
 
 
-<table border="1" style="width:100%">
-  <tr >
-      <th >Site Name</th>
-      <th>Value Count</th>
-      <th>Mean</th>
-      <th>Median</th>
-      <th>Standard Deviation</th>
+<table border="1" style= "font-size:20px;width:80%">
+  <tr align = 'center'>
+      <th align = 'center'>Site Name</th>
+      <th align = 'center'>Value Count</th>
+      <th align = 'center'>Mean</th>
+      <th align = 'center'>Median</th>
+      <th align = 'center'>Standard Deviation</th>
   </tr>
     {%for stat in stat_data%}
   <tr class ="red">
       <td>{{stat.site_name}}</td>
-      <td>{{stat.count}}</td>
-      <td>{{stat.mean}}</td>
-      <td>{{stat.median}}</td>
-      <td>{{stat.stdev}}</td>
+      <td align ='right'>{{stat.count}}</td>
+      <td align ='right'>{{stat.mean}}</td>
+      <td align ='right'>{{stat.median}}</td>
+      <td align ='right'>{{stat.stdev}}</td>
   </tr>
     {%endfor%}
 </table>
@@ -65,11 +65,11 @@
 {% endblock %}
 <h1>Statistics</h1>
 {% block app_navigation_items %}
+<!--
 <table border="1" style="width:100%">
   <tr >
       <th >Site Name</th>
       <th>Variable</th>
-
       <th>Organization</th>
 
   </tr>
@@ -82,7 +82,20 @@
   </tr>
     {%endfor%}
 </table>
+-->
+<h1>Metadata</h1>
+{%for meta in meta_data%}
+    <ul style="font-size:20px">
+        <li>{{meta.site_name}}</li>
+        <ul style="font-size:20px">
+            <li>{{meta.variable_name}}</li>
+            <li>{{meta.organization}}</li>
+        </ul>
+    </ul>
+<hr>
+{%endfor%}
 
+<hr>
 {% endblock %}
 {% block app_actions %}
 
