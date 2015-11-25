@@ -1,9 +1,8 @@
 {% extends "timeseries_viewer/base.html" %}
 {% load staticfiles%}
-{% load tethys_gizmos %}
 
 {%block title%}
-</h1>
+CUAHSI Time Series Viewer
 {%endblock%}
 
 
@@ -16,28 +15,9 @@
 
 {% block app_content %}
 
-    {%if show_add_clear_ts = True%}
-{%gizmo button water_ml%}{%gizmo button hydroshare%}
-    {%endif%}
-<p></p>
-{%if show_hydroshare = True%}
-    {% gizmo text_input hydroshare_resource %}
-    {% gizmo text_input hydroshare_file %}
-{%endif%}
-{%if show_waterml = True%}
-    {% gizmo text_input text_input_options %}
-{%endif%}
-
-{%if show_add_clear_ts = True%}
-    {% gizmo button add_ts %}{% gizmo button clear_all_ts %}
-{%endif%}
-
-
 {% csrf_token %}
 
-{% gizmo plot_view timeseries_plot%}
-
-
+<div id="ts-chart" class="highcharts-plot"></div>
 
 <table border="1" style= "font-size:20px;width:80%">
   <tr align = 'center'>
@@ -59,8 +39,6 @@
 </table>
 
 
-
-</form>
 <p></p>
 {% endblock %}
 <h1>Statistics</h1>
@@ -97,10 +75,14 @@
 
 <hr>
 {% endblock %}
+
 {% block app_actions %}
-
-  <a href="" class="btn btn-default">Next</a>
-  <a href="" class="btn btn-default">Back</a>
-
 {% endblock %}
 
+{% block scripts %}
+<script src="{% static 'timeseries_viewer/vendor/highcharts/highcharts.js' %}" type="text/javascript"></script>
+<script src="{% static 'timeseries_viewer/vendor/highcharts/exporting.js' %}" type="text/javascript"></script>
+<script src="{% static 'timeseries_viewer/vendor/highcharts/export-csv.js' %}" type="text/javascript"></script>
+<script src="{% static 'timeseries_viewer/js/main.js' %}"></script>
+  {{ block.super }}
+{% endblock %}

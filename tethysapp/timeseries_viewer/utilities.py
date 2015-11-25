@@ -61,7 +61,7 @@ def time_to_int(t):
         raise Exception('time_to_int error: ' + t)
 
 
-def parse_1_0_and_1_1(root):
+def parse_1_0_and_1_1(root, time_format='default'):
     print "running parse_1_0_and_1_1"
     root_tag = root.tag.lower()
     print "root tag: " + root_tag
@@ -112,6 +112,12 @@ def parse_1_0_and_1_1(root):
             for i in range(0, len(my_times)):
                 t= datetime.strptime(my_times[i], '%Y-%m-%dT%H:%M:%S')
 
+                #special case: formatting time for highcharts
+                if time_format == "highcharts":
+                    t = (t - datetime(1970, 1, 1)).total_seconds()
+                    #in highcharts the time format is miliseconds since Jan1 1970
+                    t = int(t * 1000)
+
                 #check to see if there are null values in the time series
                 if my_values[i] == nodata:
                     for_highchart.append([t, None])
@@ -140,7 +146,6 @@ def parse_1_0_and_1_1(root):
                     'end_date':str(largest_time),
                     'variable_name': variable_name,
                     'units': units,
-                    'for_graph': for_graph,
                     'wml_version': '1',
                     'for_highchart':for_highchart,
                     'mean': mean,
@@ -158,8 +163,8 @@ def parse_1_0_and_1_1(root):
 
 
 def getResourceIDs(page_request):
-    cuahsi_data = page_request.GET['res_id']#retrieves ids from url
-    cuahsi_split = cuahsi_data.split(',')#splits ideas by commma
+    cuahsi_data = page_request.GET['res_id']#retrieves IDs from url
+    cuahsi_split = cuahsi_data.split(',')#splits IDs by commma
     return cuahsi_split
 
 
@@ -265,12 +270,10 @@ def parse_2_0(root):
                     'variable_name': variable_name,
                     'units': units,
                     'values': values,
-                    'for_graph': for_graph,
                     'wml_version': '2.0',
                     'latitude': latitude,
                     'longitude': longitude,
                     'for_highchart': for_highchart,
-		            'test': test,
                     'organization':organization
                     }
         else:
@@ -282,12 +285,16 @@ def parse_2_0(root):
 
 
 
-def Original_Checker(html):
-    root = etree.XML(html)
+def Original_Checker(html, time_format='default'):
+    if os.path.isfile(html):
+        tree = etree.parse(html)
+        root = tree.getroot()
+    else:
+        root = etree.XML(html)
 
     wml_version = get_version(root)
     if wml_version == '1':
-        return parse_1_0_and_1_1(root)
+        return parse_1_0_and_1_1(root, time_format)
     elif wml_version == '2.0':
         return parse_2_0(root)
 
@@ -321,8 +328,8 @@ def unzip_waterml(request, id, src='cuahsi'):
                 if "?" in base_url:
                     base_url = base_url.split("?")[0]
 
-                zipped_url = base_url + "temp_waterml/cuahsi/" + id + '.xml'
-                print zipped_url
+                waterml_url = base_url + "temp_waterml/cuahsi/" + id + '.xml'
+                print waterml_url
 
                 print "WaterML file unzipped successfully."
         except etree.XMLSyntaxError as e: #checks to see if data is an xml
@@ -335,7 +342,7 @@ def unzip_waterml(request, id, src='cuahsi'):
     except  zipfile.BadZipfile as e:
             error_message = "Bad Zip File"
             print "Bad Zip file"
-    return zipped_url
+    return waterml_url
 
 
 

@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from django.http import JsonResponse
 from utilities import *
 from tethys_gizmos.gizmo_options import *
 from django.core.servers.basehttp import FileWrapper
@@ -28,6 +29,20 @@ def temp_waterml(request, id):
     file_path = base_path + "/" +id
     response = HttpResponse(FileWrapper(open(file_path)), content_type='application/xml')
     return response
+
+# formats the time series for highcharts
+def chart_data(request, id):
+    base_path = get_workspace()
+    file_path = base_path + "/" +id
+    if not file_path.endswith('.xml'):
+        file_path = file_path + '.xml'
+
+    # NEEDSWORK: download the file from CUAHSI and unzip it if not found
+
+    timeseries_data = Original_Checker(file_path, time_format='highcharts')
+    return JsonResponse(timeseries_data)
+
+
 
 
 def home(request):
