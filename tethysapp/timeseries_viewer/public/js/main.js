@@ -1,4 +1,3 @@
-TEST = "vole!";
 
 function find_query_parameter(name) {
   url = location.href;
@@ -56,7 +55,6 @@ function add_series_to_chart(chart, res_id) {
     $.ajax({
         url: data_url,
         success: function(json) {
-            console.log(json.for_highchart);
 
             var series = {
             id: res_id,
@@ -75,11 +73,8 @@ function add_series_to_chart(chart, res_id) {
 
 
 $(document).ready(function () {
-    console.log("running main.js!");
 
     var res_id = find_query_parameter("res_id");
-
-    console.log(res_id);
 
     // initialize the chart
     $('#ts-chart').highcharts(chart_options);
