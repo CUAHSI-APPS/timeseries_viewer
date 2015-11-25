@@ -65,8 +65,26 @@ function add_series_to_chart(chart, res_id) {
             series.data = json.for_highchart;
             chart.addSeries(series);
             chart.yAxis[0].setTitle({ text: json.variable_name + ' ' + json.units });
-        },
-        cache: false
+
+            // set the metadata elements content
+            $("#metadata-site-name").text(json.site_name)
+            $("#metadata-variable-name").text(json.variable_name)
+            $("#metadata-organization").text(json.organization)
+
+            // add the row to the statistics table
+            var stats_info = "<tr class ='red'><td>" + json.site_name + "</td>" +
+            "<td align ='right'>" + json.count + "</td>" +
+            "<td align ='right'>" + json.mean + "</td>" +
+            "<td align ='right'>" + json.median + "</td>" +
+            "<td align ='right'>" + json.stdev + "</td></tr>";
+
+            console.log(stats_info);
+
+            $("#stats-table").append(stats_info);
+
+        }
+
+
     });
 
 }

@@ -29,7 +29,7 @@ class TsConverter(TethysAppBase):
                            controller='timeseries_viewer.controllers.temp_waterml'),
 
                     UrlMap(name='chart_data',
-                           url='chart_data/{id}',
+                           url='chart_data/{res_id}',
                            controller='timeseries_viewer.controllers.chart_data')
         )
         return url_maps

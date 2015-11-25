@@ -30,30 +30,29 @@ def temp_waterml(request, id):
     response = HttpResponse(FileWrapper(open(file_path)), content_type='application/xml')
     return response
 
+
 # formats the time series for highcharts
-def chart_data(request, id):
+def chart_data(request, res_id):
     base_path = get_workspace()
-    file_path = base_path + "/" +id
+    file_path = base_path + "/" + res_id
     if not file_path.endswith('.xml'):
-        file_path = file_path + '.xml'
+        file_path += '.xml'
 
-    # NEEDSWORK: download the file from CUAHSI and unzip it if not found
+    if not os.path.exists(file_path):
+        unzip_waterml(request, res_id)
 
-    timeseries_data = Original_Checker(file_path, time_format='highcharts')
-    return JsonResponse(timeseries_data)
+    data_for_chart = Original_Checker(file_path, time_format='highcharts')
+    return JsonResponse(data_for_chart)
 
 
-
-
+# home page controller
 def home(request):
     name = None
     no_url = False
-    number_ts = []#stores highcharts info of each time series
+    number_ts = []
     url_list = []
     legend = []
-    show_hydroshare = False
     show_waterml = False
-    show_cuahsi = False
     timeseries_plot =None
     outside_input = False
     stat_data2 = []
@@ -61,58 +60,18 @@ def home(request):
     use_wps = False
     show_add_clear_ts = False
 
-    if request.GET and 'res_id' in request.GET and 'src' in request.GET:
-        outside_input = True
 
-    if request.GET and 'res_id' in request.GET and 'src' in request.GET:
-        outside_input = True
-        if request.GET['src'] == "hydroshare":
-            show_hydroshare = True
-        elif request.GET['src']=='cuahsi':
-            show_cuahsi =True
-            outside_input = True
-            cuahsi_resources = getResourceIDs(request)
-            for id in cuahsi_resources:
-                unzip_waterml(request, id, src='cuahsi')
-        elif request.GET['src'] == 'test':
-            show_cuahsi = True
-            test_resources = getResourceIDs(request)
-            for id in test_resources:
-                unzip_waterml(request, id, src='test')
+    if request.GET:
 
-    if request.POST and 'hydroshare' in request.POST:
-        show_hydroshare = True
-    if request.POST and 'water_ml' in request.POST:
-        show_waterml = True
+        return render(request, 'timeseries_viewer/home.html', {})
 
+    else:
 
+        if 'res_id' in request.GET and 'src' in request.GET:
 
-    # this block of code will add a time series from hydroshare
-    if (request.POST and "add_ts" in request.POST) or outside_input:
-        if not outside_input:
-            print "not using outside_input"
+            resources = getResourceIDs(request)
 
-        if request.POST.get('hydroshare_resource') != None and request.POST.get('hydroshare_file')!= None:
-            try:
-                #adding a hydroshare resource
-                hs = HydroShare()
-                hs_resource = request.POST['hydroshare_resource']
-                hs_file = request.POST['hydroshare_file']
-                url_hs_resource = "https://www.hydroshare.org/resource/"+hs_resource+"/data/contents/"+hs_file
-            except etree.XMLSyntaxError as e: #checks to see if data is an xml
-                print "Error:Not XML"
-                #quit("not valid xml")
-            except ValueError, e: #checks to see if Url is valid
-                print "Error:invalid Url"
-            except TypeError, e: #checks to see if xml is formatted correctly
-                print "Error:string indices must be integers not str"
-
-
-        #adding data through cuashi or from a water ml url
-        if show_cuahsi == True:
-
-            cuahsi_resources = getResourceIDs(request)
-            for id in cuahsi_resources:
+            for id in resources:
 
                 try:
                     cuahsi_url = findZippedUrl(request, id)
@@ -155,11 +114,6 @@ def home(request):
             #finally plot the charts
             timeseries_plot = chartPara(graph_original,number_ts,legend)
 
-
-
-
-
-
     choices = {'joe1':'val1', 'key2':'val2'}
     text_input_options = TextInput(display_text='Enter URL of Water ML data and click "Add a Time Series"',
                                    name='url_name',
@@ -198,67 +152,21 @@ def home(request):
     context = {
         'timeseries_plot':timeseries_plot,
         'text_input_options':text_input_options,
-        'name':name,
-        'stat_data':stat_data2,
-        'stat_table':stat_table,
-        'no_url':no_url,
-        'add_ts':add_ts,
-        'clear_all_ts':clear_all_ts,
-        'graph':graph,
-        'legend':legend,
-        'hydroshare':hydroshare,
-        'show_hydroshare':show_hydroshare,
-        'hydroshare_file':hydroshare_file,
-        'hydroshare_resource':hydroshare_resource,
-        'water_ml':water_ml,
-        'show_waterml':show_waterml,
-        'upload_hs':upload_hs,
-        'choices':choices,
-        'show_add_clear_ts':show_add_clear_ts,
+        'name': name,
+        'stat_data': stat_data2,
+        'stat_table': stat_table,
+        'no_url': no_url,
+        'add_ts': add_ts,
+        'clear_all_ts': clear_all_ts,
+        'graph': graph,
+        'legend': legend,
+        'hydroshare_resource': hydroshare_resource,
+        'water_ml': water_ml,
+        'show_waterml': show_waterml,
+        'upload_hs': upload_hs,
+        'choices': choices,
+        'show_add_clear_ts': show_add_clear_ts,
 
         'meta_data':meta_data
     }
     return render(request, 'timeseries_viewer/home.html', context)
-
-
-def run_wps(process_id,input,output):
-    #choose the first wps engine
-    my_engine = WebProcessingService('http://appsdev.hydroshare.org:8282/wps/WebProcessingService', verbose=False, skip_caps=True)
-    my_engine.getcapabilities()
-    my_process = my_engine.describeprocess(process_id)
-    my_inputs = my_process.dataInputs
-    input_names = [] #getting list of input
-    for input1 in my_inputs:
-        input_names.append(input1)
-    #executing the process..
-    execution = my_engine.execute(process_id, input, output)
-    request = execution.request
-    #set store executeresponse to false
-    request = request.replace('storeExecuteResponse="true"', 'storeExecuteResponse="false"')
-    url_wps = 'http://appsdev.hydroshare.org:8282/wps/WebProcessingService'
-    wps_request = urllib2.Request(url_wps,request)
-    wps_open = urllib2.urlopen(wps_request)
-    wps_read = wps_open.read()
-    if 'href' in wps_read:
-        tag = 'href="'
-        location = wps_read.find(tag)
-        new= wps_read[location+len(tag):len(wps_read)]
-        tag2 = '"/>\n    </wps:Output>\n  </wps:ProcessOutputs>\n</wps:'
-        location2 = new.find(tag2)
-        final = new[0:location2]
-        split = final.split()
-        wps_request1 = urllib2.Request(split[0])
-        wps_open1 = urllib2.urlopen(wps_request1)
-        wps_read1 = wps_open1.read()
-
-    return [wps_read1, split]
-
-
-def read_final_data(url):
-    r = requests.get(url)
-    data = r.text
-    reader = csv.reader(data.splitlines(), delimiter='\t')
-    rows = []
-    for row in reader:
-        rows.append(row)
-    return rows

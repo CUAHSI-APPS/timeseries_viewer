@@ -299,13 +299,18 @@ def Original_Checker(html, time_format='default'):
         return parse_2_0(root)
 
 
-def unzip_waterml(request, id, src='cuahsi'):
+def unzip_waterml(request, res_id):
+
+    # this is where we'll unzip the waterML file to
     temp_dir = get_workspace()
 
-    if src == 'cuahsi':
+    # get the URL of the remote zipped WaterML resource
+    src = 'test'
+    if res_id.starts_with('cuahsi-wdc'):
         url_zip = 'http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+id+'/zip'
-    elif src == 'test':
+    else:
         url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+id
+
     r = requests.get(url_zip, verify=False)
     try:
         z = zipfile.ZipFile(StringIO.StringIO(r.content))
@@ -315,33 +320,41 @@ def unzip_waterml(request, id, src='cuahsi'):
             for file in file_list:
                 file_data = z.read(file)
                 file_temp_name = temp_dir + '/' + id + '.xml'
-                print "unzipping file " + file_temp_name
 
                 file_temp = open(file_temp_name, 'wb')
                 file_temp.write(file_data)
                 file_temp.close()
 
-                print "unzipped file " + file_temp_name
-
-                #getting the URL of the zip file
+                # getting the URL of the zip file
                 base_url = request.build_absolute_uri()
                 if "?" in base_url:
                     base_url = base_url.split("?")[0]
-
                 waterml_url = base_url + "temp_waterml/cuahsi/" + id + '.xml'
-                print waterml_url
 
-                print "WaterML file unzipped successfully."
-        except etree.XMLSyntaxError as e: #checks to see if data is an xml
+        # error handling
+
+        # checks to see if data is an xml
+        except etree.XMLSyntaxError as e:
             print "Error:Not XML"
-            #quit("not valid xml")
-        except ValueError, e: #checks to see if Url is valid
+            return False
+
+        # checks to see if Url is valid
+        except ValueError, e:
             print "Error:invalid Url"
-        except TypeError, e: #checks to see if xml is formatted correctly
+            return False
+
+        # checks to see if xml is formatted correctly
+        except TypeError, e:
             print "Error:string indices must be integers not str"
-    except  zipfile.BadZipfile as e:
+            return False
+
+    # check if the zip file is valid
+    except zipfile.BadZipfile as e:
             error_message = "Bad Zip File"
             print "Bad Zip file"
+            return False
+
+    # finally we return the waterml_url
     return waterml_url
 
 
