@@ -13,19 +13,38 @@ var chart_options = {
 	chart: {
 		zoomType: 'x',
 	},
+    exporting:{
+        buttons:{
+            contextButton:{
+
+        }
+        }
+    },
+
+
 	title: {
 		text: 'Time Series Plot'
 	},
 	xAxis: {
-		type: 'datetime'
+		type: 'datetime',
+        lineWidth:1
 	},
 	yAxis: {
 		title: {
-			text: 'Data Value'
-		}
+			text: 'Data Value',
+
+		},
+        lineWidth:1
 	},
 	legend: {
-		align: 'center'
+		align: 'center',
+        itemStyle:{
+            fontWeight: 'bold',
+            fontSize: '18px'
+        },
+        title: {text:'Legend'},
+        borderColor: '#C98657',
+        borderWidth: 1
 	},
 	plotOptions: {
 		line: {
@@ -67,9 +86,11 @@ function add_series_to_chart(chart, res_id) {
             chart.yAxis[0].setTitle({ text: json.variable_name + ' ' + json.units });
 
             // set the metadata elements content
-            $("#metadata-site-name").text(json.site_name)
-            $("#metadata-variable-name").text(json.variable_name)
-            $("#metadata-organization").text(json.organization)
+            $("#metadata-site-name").text("Site: "+json.site_name)
+            $("#metadata-variable-name").text("Variable: "+json.variable_name)
+            $("#metadata-organization").text("Source: "+json.organization)
+            $("#metadata-quality").text("Quality: "+json.quality)
+            $("#metadata-method").text("Method: "+json.method)
 
             // add the row to the statistics table
             var stats_info = "<tr class ='red'><td>" + json.site_name + "</td>" +

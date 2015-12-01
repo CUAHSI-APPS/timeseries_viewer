@@ -60,25 +60,18 @@ def home(request):
     use_wps = False
     show_add_clear_ts = False
 
-
+    print"starting"
     if request.GET:
 
         return render(request, 'timeseries_viewer/home.html', {})
-
     else:
-
         if 'res_id' in request.GET and 'src' in request.GET:
-
             resources = getResourceIDs(request)
-
             for id in resources:
-
                 try:
                     cuahsi_url = findZippedUrl(request, id)
                     print "opening " + cuahsi_url + "..."
-
                     response = urllib2.urlopen(cuahsi_url)
-
                     # zip file name
                     html = response.read()
                     graph_original = Original_Checker(html)
@@ -113,6 +106,7 @@ def home(request):
 
             #finally plot the charts
             timeseries_plot = chartPara(graph_original,number_ts,legend)
+    print meta_data
 
     choices = {'joe1':'val1', 'key2':'val2'}
     text_input_options = TextInput(display_text='Enter URL of Water ML data and click "Add a Time Series"',
@@ -166,7 +160,6 @@ def home(request):
         'upload_hs': upload_hs,
         'choices': choices,
         'show_add_clear_ts': show_add_clear_ts,
-
         'meta_data':meta_data
     }
     return render(request, 'timeseries_viewer/home.html', context)

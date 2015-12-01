@@ -77,11 +77,13 @@ def parse_1_0_and_1_1(root, time_format='default'):
             t0 = time.time()
 
             # metadata items
-            units, site_name, variable_name = None, None, None
+            units, site_name, variable_name,quality,method = None, None, None,None,None
             unit_is_set = False
 
             # iterate through xml document and read all values
             for element in root.iter():
+
+                print element.tag
                 brack_lock = -1
                 if '}' in element.tag:
                     brack_lock = element.tag.index('}')  #The namespace in the tag is enclosed in {}.
@@ -105,7 +107,18 @@ def parse_1_0_and_1_1(root, time_format='default'):
                     if 'organization'==tag:
                         organization = element.text
 
-            print "root.iter time: " + str(time.time() - t0)
+
+                    if 'definition' == tag:
+                        quality = element.text
+                        print "Quality"
+                        print quality
+                    if 'methodDescription' == tag:
+                        method = element.text
+                        print"Method"
+                        print method
+
+
+
 
             t0 = time.time()
 
@@ -152,13 +165,16 @@ def parse_1_0_and_1_1(root, time_format='default'):
                     'median': median,
                     'stdev': stdev,
                     'count': value_count,
-                    'organization': organization
+                    'organization': organization,
+                    'quality':quality,
+                    'method':method
             }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 1.0/1.1 time series"
             return "Parsing error: The waterml document doesn't appear to be a WaterML 1.0/1.1 time series"
     except Exception, e:
         print e
+        print"happy"
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
 
 
@@ -195,7 +211,7 @@ def chartPara(ts_original,for_highcharts,legend1):
 
 
 def parse_2_0(root):
-
+    print "running parse_2"
     try:
         if 'Collection' in root.tag:
             ts = etree.tostring(root)
@@ -207,6 +223,8 @@ def parse_2_0(root):
             name_is_set = False
             variable_name = root[1].text
             organization = None
+            quality = None
+            method =None
             for element in root.iter():
                 if 'MeasurementTVP' in element.tag:
                         for e in element:
@@ -239,6 +257,18 @@ def parse_2_0(root):
 
                 if 'organization' in element.tag:
                     organization = element.text
+
+                if 'definition' in element.tag:
+                    quality = element.text
+                    print "the quality"+quality
+                if 'methodDescription' in element.tag:
+                    method = element.text
+                    print "the method"+method
+
+
+
+
+
             for i in range(0,len(keys)):
                 time_str=keys[i]
                 time_obj=time_str_to_datetime(time_str)
@@ -274,7 +304,9 @@ def parse_2_0(root):
                     'latitude': latitude,
                     'longitude': longitude,
                     'for_highchart': for_highchart,
-                    'organization':organization
+                    'organization':organization,
+                    'quality':quality,
+                    'method':method
                     }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"
@@ -286,6 +318,7 @@ def parse_2_0(root):
 
 
 def Original_Checker(html, time_format='default'):
+    print "running original checker"
     if os.path.isfile(html):
         tree = etree.parse(html)
         root = tree.getroot()
@@ -300,16 +333,20 @@ def Original_Checker(html, time_format='default'):
 
 
 def unzip_waterml(request, res_id):
-
+    print "create water ml"
     # this is where we'll unzip the waterML file to
     temp_dir = get_workspace()
-
+    print temp_dir
     # get the URL of the remote zipped WaterML resource
     src = 'test'
-    if res_id.starts_with('cuahsi-wdc'):
-        url_zip = 'http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+id+'/zip'
+
+    if 'cuahsi-wdc'in res_id:
+        url_zip = 'http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
+
     else:
-        url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+id
+        url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
+
+
 
     r = requests.get(url_zip, verify=False)
     try:
@@ -319,17 +356,15 @@ def unzip_waterml(request, res_id):
         try:
             for file in file_list:
                 file_data = z.read(file)
-                file_temp_name = temp_dir + '/' + id + '.xml'
-
+                file_temp_name = temp_dir + '/' + res_id + '.xml'
                 file_temp = open(file_temp_name, 'wb')
                 file_temp.write(file_data)
                 file_temp.close()
-
                 # getting the URL of the zip file
                 base_url = request.build_absolute_uri()
                 if "?" in base_url:
                     base_url = base_url.split("?")[0]
-                waterml_url = base_url + "temp_waterml/cuahsi/" + id + '.xml'
+                waterml_url = base_url + "temp_waterml/cuahsi/" + res_id + '.xml'
 
         # error handling
 
