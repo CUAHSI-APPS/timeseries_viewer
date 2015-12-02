@@ -14,9 +14,15 @@ width:700px;
     with:1000px;
 }
 
-#stat_table{
-    width:20%
-
+#stats-table{
+    font-size:17px;
+    width:80%;
+    border: 1px solid black;
+    margin-top: 20px;
+}
+#stats-table th, td {
+    border: 1px solid black;
+    padding: 4px;
 }
 
 #app-header .tethys-app-header .icon-wrapper img

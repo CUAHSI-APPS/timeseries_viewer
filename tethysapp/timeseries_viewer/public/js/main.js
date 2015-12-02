@@ -16,8 +16,11 @@ var chart_options = {
     exporting:{
         buttons:{
             contextButton:{
+                text: 'print / export chart',
+                symbol: 'url(http://localhost:8000/static/timeseries_viewer/images/print16.png)'
 
-        }
+
+            }
         }
     },
 
@@ -27,14 +30,16 @@ var chart_options = {
 	},
 	xAxis: {
 		type: 'datetime',
-        lineWidth:1
+        lineWidth:2,
+        lineColor: 'lightgray'
 	},
 	yAxis: {
 		title: {
 			text: 'Data Value',
 
 		},
-        lineWidth:1
+        lineWidth:2,
+        lineColor: 'lightgray'
 	},
 	legend: {
 		align: 'center',
@@ -97,7 +102,7 @@ function add_series_to_chart(chart, res_id) {
             "<td align ='right'>" + json.count + "</td>" +
             "<td align ='right'>" + json.mean + "</td>" +
             "<td align ='right'>" + json.median + "</td>" +
-            "<td align ='right'>" + json.stdev + "</td></tr>";
+            "<td align ='right'>" + json.stdev.toFixed(4) + "</td></tr>";
 
             console.log(stats_info);
 
