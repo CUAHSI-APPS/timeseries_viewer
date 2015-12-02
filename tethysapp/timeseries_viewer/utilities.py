@@ -14,6 +14,7 @@ import time
 import numpy
 import zipfile
 import os
+import dateutil.parser
 
 
 def get_app_base_uri(request):
@@ -65,6 +66,7 @@ def parse_1_0_and_1_1(root):
     print "running parse_1_0_and_1_1"
     root_tag = root.tag.lower()
     print "root tag: " + root_tag
+    threshold = 50000
     try:
         if 'timeseriesresponse' in root_tag or 'timeseries' in root_tag or "envelope" in root_tag:
 
@@ -82,7 +84,6 @@ def parse_1_0_and_1_1(root):
             # iterate through xml document and read all values
             for element in root.iter():
 
-                print element.tag
                 bracket_lock = -1
                 if '}' in element.tag:
                     bracket_lock = element.tag.index('}')  # The namespace in the tag is enclosed in {}.
@@ -115,12 +116,12 @@ def parse_1_0_and_1_1(root):
             t0 = time.time()
 
             for i in range(0, len(my_times)):
-                t = datetime.strptime(my_times[i], '%Y-%m-%dT%H:%M:%S')
 
-                # formatting time for HighCharts
-                t = (t - datetime(1970, 1, 1)).total_seconds()
-                # in HighCharts the time format is milliseconds since Jan1 1970
-                t = int(t * 1000)
+                # parse date and time
+                t = dateutil.parser.parse(my_times[i], ignoretz=True)
+
+                # formatting time for HighCharts (milliseconds since Jan1 1970)
+                t = int((t - datetime(1970, 1, 1)).total_seconds() * 1000)
 
                 # check to see if there are null values in the time series
                 if my_values[i] == nodata:
@@ -128,6 +129,10 @@ def parse_1_0_and_1_1(root):
                 else:
                     for_highchart.append([t, float(my_values[i])])
                     for_graph.append(float(my_values[i]))
+
+                # if we get past the threshold, break
+                if i > threshold:
+                    break
 
             smallest_time = for_highchart[0][0]
             value_count = len(for_highchart)
@@ -171,6 +176,7 @@ def parse_1_0_and_1_1(root):
     except Exception, e:
         data_error = "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
         print data_error
+        print e
         return {
             'status': data_error
         }

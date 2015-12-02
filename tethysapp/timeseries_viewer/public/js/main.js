@@ -9,6 +9,19 @@ function find_query_parameter(name) {
 }
 
 // here we set up the configuration of the highCharts chart
+var loading_options = {
+        labelStyle: {
+        top: '5%',
+        left: '5%',
+        backgroundImage: 'url("/static/timeseries_viewer/images/ajax-loader.gif")',
+        display: 'block',
+        width: '134px',
+        height: '100px',
+        backgroundColor: '#000'
+    }
+}
+
+// here we set up the configuration of the highCharts chart
 var chart_options = {
 	chart: {
 		zoomType: 'x',
@@ -22,15 +35,7 @@ var chart_options = {
         }
     },
     loading: {
-        labelStyle: {
-            top: '5%',
-		    left: '5%',
-            backgroundImage: 'url("/static/timeseries_viewer/images/ajax-loader.gif")',
-            display: 'block',
-            width: '134px',
-            height: '100px',
-            backgroundColor: '#000'
-        }
+        //loading_options
     },
 
 
@@ -113,7 +118,6 @@ function add_series_to_chart(chart, res_id) {
             "<li>" + json.quality + "</li>" +
             "<li>" + json.method + "</li>" +
             "</ul>"
-            console.log(metadata_info);
 
             $('#metadata-list').append(metadata_info);
             $('#metadata-loading').hide();
