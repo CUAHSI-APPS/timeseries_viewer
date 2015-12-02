@@ -15,7 +15,7 @@ width:700px;
 }
 
 #stats-table{
-    font-size:17px;
+    font-size:16px;
     width:80%;
     border: 1px solid black;
     margin-top: 20px;
@@ -24,10 +24,21 @@ width:700px;
     border: 1px solid black;
     padding: 4px;
 }
+#metadata-list {
+     font-size:20px;
+}
+#metadata-list ul {
+    font-size:16px;
+}
+
+#inner-app-content {
+    margin-right: 20px;
+}
 
 #app-header .tethys-app-header .icon-wrapper img
 {
-    height:70px;
+    height:50px;
+    width:250px;
     border-radius: 0%;
 }
 #app-header .tethys-app-header {

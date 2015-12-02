@@ -61,7 +61,7 @@ def time_to_int(t):
         raise Exception('time_to_int error: ' + t)
 
 
-def parse_1_0_and_1_1(root, time_format='default'):
+def parse_1_0_and_1_1(root):
     print "running parse_1_0_and_1_1"
     root_tag = root.tag.lower()
     print "root tag: " + root_tag
@@ -73,27 +73,27 @@ def parse_1_0_and_1_1(root, time_format='default'):
             for_highchart = []
             my_times = []
             my_values = []
-
-            t0 = time.time()
+            nodata = "-9999"  # default NoData value. The actual NoData value is read from the XML noDataValue tag
 
             # metadata items
-            units, site_name, variable_name,quality,method = None, None, None,None,None
+            units, site_name, variable_name,quality,method, organization = None, None, None, None, None, None
             unit_is_set = False
 
             # iterate through xml document and read all values
             for element in root.iter():
 
                 print element.tag
-                brack_lock = -1
+                bracket_lock = -1
                 if '}' in element.tag:
-                    brack_lock = element.tag.index('}')  #The namespace in the tag is enclosed in {}.
-                    tag = element.tag[brack_lock+1:]     #Takes only actual tag, no namespace
+                    bracket_lock = element.tag.index('}')  # The namespace in the tag is enclosed in {}.
+                    tag = element.tag[bracket_lock+1:]     # Takes only actual tag, no namespace
 
                 if 'value' == tag:
                     my_times.append(element.attrib['dateTime'])
                     my_values.append(element.text)
                 else:
-                    if 'unitName' == tag:  # in the xml there is a unit for the value, then for time. just take the first
+                    # in the xml there is a unit for the value, then for time. just take the first
+                    if 'unitName' == tag:
                         if not unit_is_set:
                             units = element.text
                             unit_is_set = True
@@ -106,32 +106,23 @@ def parse_1_0_and_1_1(root, time_format='default'):
                         variable_name = element.text
                     if 'organization'==tag:
                         organization = element.text
-
-
                     if 'definition' == tag:
                         quality = element.text
-                        print "Quality"
-                        print quality
                     if 'methodDescription' == tag:
                         method = element.text
-                        print"Method"
-                        print method
 
-
-
-
+            # Measuring the WaterML processing time ...
             t0 = time.time()
 
             for i in range(0, len(my_times)):
-                t= datetime.strptime(my_times[i], '%Y-%m-%dT%H:%M:%S')
+                t = datetime.strptime(my_times[i], '%Y-%m-%dT%H:%M:%S')
 
-                #special case: formatting time for highcharts
-                if time_format == "highcharts":
-                    t = (t - datetime(1970, 1, 1)).total_seconds()
-                    #in highcharts the time format is miliseconds since Jan1 1970
-                    t = int(t * 1000)
+                # formatting time for HighCharts
+                t = (t - datetime(1970, 1, 1)).total_seconds()
+                # in HighCharts the time format is milliseconds since Jan1 1970
+                t = int(t * 1000)
 
-                #check to see if there are null values in the time series
+                # check to see if there are null values in the time series
                 if my_values[i] == nodata:
                     for_highchart.append([t, None])
                 else:
@@ -142,46 +133,53 @@ def parse_1_0_and_1_1(root, time_format='default'):
             value_count = len(for_highchart)
             largest_time = for_highchart[value_count - 1][0]
 
+            # End of measuring the WaterML processing time...
             print "convert time time: " + str(time.time() - t0)
 
             mean = numpy.mean(for_graph)
             mean = float(format(mean, '.2f'))
             median = numpy.median(for_graph)
-            stdev = numpy.std(for_graph)
+            sd = numpy.std(for_graph)
 
             print mean
             print median
-            print stdev
+            print sd
 
             return {
-                    'site_name': site_name,
-                    'start_date': str(smallest_time),
-                    'end_date':str(largest_time),
-                    'variable_name': variable_name,
-                    'units': units,
-                    'wml_version': '1',
-                    'for_highchart':for_highchart,
-                    'mean': mean,
-                    'median': median,
-                    'stdev': stdev,
-                    'count': value_count,
-                    'organization': organization,
-                    'quality':quality,
-                    'method':method
+                'site_name': site_name,
+                'start_date': str(smallest_time),
+                'end_date': str(largest_time),
+                'variable_name': variable_name,
+                'units': units,
+                'wml_version': '1',
+                'for_highchart': for_highchart,
+                'mean': mean,
+                'median': median,
+                'stdev': sd,
+                'count': value_count,
+                'organization': organization,
+                'quality': quality,
+                'method': method,
+                'status': 'success'
             }
         else:
-            print "Parsing error: The waterml document doesn't appear to be a WaterML 1.0/1.1 time series"
-            return "Parsing error: The waterml document doesn't appear to be a WaterML 1.0/1.1 time series"
+            parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
+            print parse_error
+            return {
+                'status': parse_error
+            }
     except Exception, e:
-        print e
-        print"happy"
-        return "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
+        data_error = "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
+        print data_error
+        return {
+            'status': data_error
+        }
 
 
 def getResourceIDs(page_request):
-    cuahsi_data = page_request.GET['res_id']#retrieves IDs from url
-    cuahsi_split = cuahsi_data.split(',')#splits IDs by commma
-    return cuahsi_split
+    resource_string = page_request.GET['res_id']  # retrieves IDs from url
+    resource_IDs = resource_string.split(',')  # splits IDs by commma
+    return resource_IDs
 
 
 def findZippedUrl(page_request, res_id):
@@ -190,24 +188,6 @@ def findZippedUrl(page_request, res_id):
         base_url = base_url.split("?")[0]
         zipped_url = base_url + "temp_waterml/" + res_id + ".xml"
         return zipped_url
-
-
-# Prepare for Chart Parameters
-def chartPara(ts_original,for_highcharts,legend1):
-
-    timeseries_plot = TimeSeries(
-        height='600px',
-        width='600px',
-        engine='highcharts',
-        title= ts_original ['site_name']+" "+ts_original['start_date']+" - "+ts_original['end_date'],
-        y_axis_title=ts_original['variable_name'],
-        y_axis_units=ts_original['units'],
-
-        legend= legend1,
-        series= for_highcharts
-    )
-    return timeseries_plot
-
 
 
 def parse_2_0(root):
@@ -265,10 +245,6 @@ def parse_2_0(root):
                     method = element.text
                     print "the method"+method
 
-
-
-
-
             for i in range(0,len(keys)):
                 time_str=keys[i]
                 time_obj=time_str_to_datetime(time_str)
@@ -306,7 +282,8 @@ def parse_2_0(root):
                     'for_highchart': for_highchart,
                     'organization':organization,
                     'quality':quality,
-                    'method':method
+                    'method':method,
+                    'status': 'success'
                     }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"
@@ -317,17 +294,14 @@ def parse_2_0(root):
 
 
 
-def Original_Checker(html, time_format='default'):
-    print "running original checker"
-    if os.path.isfile(html):
-        tree = etree.parse(html)
-        root = tree.getroot()
-    else:
-        root = etree.XML(html)
+def Original_Checker(xml_file):
+
+    tree = etree.parse(xml_file)
+    root = tree.getroot()
 
     wml_version = get_version(root)
     if wml_version == '1':
-        return parse_1_0_and_1_1(root, time_format)
+        return parse_1_0_and_1_1(root)
     elif wml_version == '2.0':
         return parse_2_0(root)
 
@@ -345,8 +319,6 @@ def unzip_waterml(request, res_id):
 
     else:
         url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
-
-
 
     r = requests.get(url_zip, verify=False)
     try:

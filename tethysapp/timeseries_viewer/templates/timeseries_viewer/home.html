@@ -11,12 +11,12 @@ CUAHSI Time Series Viewer
 
 <table id="stats-table">
     <thead>
-  <tr align = 'center'>
-      <th align = 'center'>Site Name</th>
-      <th align = 'center'>Value Count</th>
-      <th align = 'center'>Mean</th>
-      <th align = 'center'>Median</th>
-      <th align = 'center'>Standard Deviation</th>
+  <tr>
+      <th>Site Name</th>
+      <th>Value Count</th>
+      <th>Mean</th>
+      <th>Median</th>
+      <th>Standard Deviation</th>
   </tr>
     </thead>
     <tbody></tbody>
@@ -29,15 +29,8 @@ CUAHSI Time Series Viewer
 {% block app_navigation_items %}
 
 <h1>Metadata</h1>
-
-    <ul style="font-size:20px">
-        <li id="metadata-site-name"></li>
-        <ul style="font-size:20px">
-            <li id="metadata-variable-name"></li>
-            <li id="metadata-organization"></li>
-            <li id="metadata-quality"></li>
-            <li id="metadata-method"></li>
-        </ul>
+    <ul id="metadata-list">
+        <li id="metadata-loading">Loading...</li>
     </ul>
 <hr>
 

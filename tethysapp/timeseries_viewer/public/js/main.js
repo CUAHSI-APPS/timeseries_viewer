@@ -8,7 +8,7 @@ function find_query_parameter(name) {
   return results == null ? null : results[1];
 }
 
-
+// here we set up the configuration of the highCharts chart
 var chart_options = {
 	chart: {
 		zoomType: 'x',
@@ -17,10 +17,19 @@ var chart_options = {
         buttons:{
             contextButton:{
                 text: 'print / export chart',
-                symbol: 'url(http://localhost:8000/static/timeseries_viewer/images/print16.png)'
-
-
+                symbol: 'url(/static/timeseries_viewer/images/print16.png)'
             }
+        }
+    },
+    loading: {
+        labelStyle: {
+            top: '5%',
+		    left: '5%',
+            backgroundImage: 'url("/static/timeseries_viewer/images/ajax-loader.gif")',
+            display: 'block',
+            width: '134px',
+            height: '100px',
+            backgroundColor: '#000'
         }
     },
 
@@ -75,6 +84,10 @@ function add_series_to_chart(chart, res_id) {
     index = current_url.indexOf("timeseries-viewer");
     base_url = current_url.substring(0, index);
 
+    // in the start we show the loading...
+    chart.showLoading();
+    $('#metadata-loading').show();
+
     data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/';
     $.ajax({
         url: data_url,
@@ -86,37 +99,49 @@ function add_series_to_chart(chart, res_id) {
             data: []
             }
 
+            // add the time series to the chart
             series.data = json.for_highchart;
             chart.addSeries(series);
             chart.yAxis[0].setTitle({ text: json.variable_name + ' ' + json.units });
+            chart.hideLoading();
 
             // set the metadata elements content
-            $("#metadata-site-name").text("Site: "+json.site_name)
-            $("#metadata-variable-name").text("Variable: "+json.variable_name)
-            $("#metadata-organization").text("Source: "+json.organization)
-            $("#metadata-quality").text("Quality: "+json.quality)
-            $("#metadata-method").text("Method: "+json.method)
+            var metadata_info = "<li>" + json.site_name + "</li>" +
+            "<ul>" +
+            "<li>" + json.variable_name + "</li>" +
+            "<li>" + json.organization + "</li>" +
+            "<li>" + json.quality + "</li>" +
+            "<li>" + json.method + "</li>" +
+            "</ul>"
+            console.log(metadata_info);
+
+            $('#metadata-list').append(metadata_info);
+            $('#metadata-loading').hide();
 
             // add the row to the statistics table
-            var stats_info = "<tr class ='red'><td>" + json.site_name + "</td>" +
-            "<td align ='right'>" + json.count + "</td>" +
-            "<td align ='right'>" + json.mean + "</td>" +
-            "<td align ='right'>" + json.median + "</td>" +
-            "<td align ='right'>" + json.stdev.toFixed(4) + "</td></tr>";
-
-            console.log(stats_info);
+            var stats_info = "<tr>" +
+            "<td>" + json.site_name + "</td>" +
+            "<td>" + json.count + "</td>" +
+            "<td>" + json.mean + "</td>" +
+            "<td>" + json.median + "</td>" +
+            "<td>" + json.stdev.toFixed(4) + "</td></tr>";
 
             $("#stats-table").append(stats_info);
 
+        },
+        error: function() {
+            chart.hideLoading();
+            var error_message = "Error loading time series from resource: " + res_id;
+            console.log(error_message);
+            chart.setTitle({ text: error_message });
         }
-
-
     });
-
 }
 
 
 $(document).ready(function () {
+
+    $('#metadata-loading').hide();
 
     var res_id = find_query_parameter("res_id");
 
