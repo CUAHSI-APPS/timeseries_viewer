@@ -302,14 +302,20 @@ def parse_2_0(root):
 
 def Original_Checker(xml_file):
 
-    tree = etree.parse(xml_file)
-    root = tree.getroot()
+    try:
+        tree = etree.parse(xml_file)
+        root = tree.getroot()
 
-    wml_version = get_version(root)
-    if wml_version == '1':
-        return parse_1_0_and_1_1(root)
-    elif wml_version == '2.0':
-        return parse_2_0(root)
+        wml_version = get_version(root)
+        if wml_version == '1':
+            return parse_1_0_and_1_1(root)
+        elif wml_version == '2.0':
+            return parse_2_0(root)
+    except ValueError, e:
+        return {'status': 'invalid XML in WaterML file'}
+    except:
+        return {'status': 'invalid XML in WaterML file'}
+
 
 
 def unzip_waterml(request, res_id):
@@ -370,6 +376,14 @@ def unzip_waterml(request, res_id):
     # finally we return the waterml_url
     return waterml_url
 
+
+# finds the waterML file path in the workspace folder
+def waterml_file_path(res_id):
+    base_path = get_workspace()
+    file_path = base_path + "/" + res_id
+    if not file_path.endswith('.xml'):
+        file_path += '.xml'
+    return file_path
 
 
 def file_unzipper(url_cuashi):

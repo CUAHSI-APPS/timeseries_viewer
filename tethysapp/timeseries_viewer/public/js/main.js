@@ -35,7 +35,7 @@ var chart_options = {
         }
     },
     loading: {
-        //loading_options
+        //more loading_options can go here..
     },
 
 
@@ -82,6 +82,17 @@ var chart_options = {
 	}
 };
 
+// shows an error message in the chart title
+function show_error(chart, error_message) {
+    chart.legend.group.hide();
+    var button = chart.exportSVGElements[0];
+    button.destroy();
+    chart.hideLoading();
+    $('#metadata-loading').hide();
+    console.log(error_message);
+    $('#error-message').text(error_message);
+    chart.setTitle({ text: "" });
+}
 
 function add_series_to_chart(chart, res_id) {
 
@@ -97,6 +108,13 @@ function add_series_to_chart(chart, res_id) {
     $.ajax({
         url: data_url,
         success: function(json) {
+
+            // first of all check for the status
+            var status = json.status;
+            if (status !== 'success') {
+                show_error(chart, "Error loading time series from " + res_id + ": " + status)
+                return;
+            }
 
             var series = {
             id: res_id,
@@ -134,10 +152,7 @@ function add_series_to_chart(chart, res_id) {
 
         },
         error: function() {
-            chart.hideLoading();
-            var error_message = "Error loading time series from resource: " + res_id;
-            console.log(error_message);
-            chart.setTitle({ text: error_message });
+            show_error("Error loading time series from " + res_id);
         }
     });
 }
