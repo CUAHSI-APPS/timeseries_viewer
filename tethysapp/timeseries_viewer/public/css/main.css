@@ -16,9 +16,10 @@ width:700px;
 
 #stats-table{
     font-size:16px;
-    width:80%;
+    width:100%;
     border: 1px solid black;
     margin-top: 20px;
+    align:center
 }
 #stats-table th, td {
     border: 1px solid black;
@@ -43,8 +44,12 @@ width:700px;
 }
 #app-header .tethys-app-header {
     background: rgba(211, 211, 211, 1) !important;
+    height: 63px !important;
+    border-bottom: 2px solid black !important;
 }
-
+#app-header .tethys-app-header .app-title-wrapper .app-title{
+    padding: 0px 0px 20px 500px !important;
+}
 #app-header .toggle-nav{
 
 }

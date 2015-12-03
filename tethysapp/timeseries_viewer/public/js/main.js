@@ -8,30 +8,24 @@ function find_query_parameter(name) {
   return results == null ? null : results[1];
 }
 
+
 // here we set up the configuration of the highCharts chart
-var loading_options = {
-        labelStyle: {
-        top: '5%',
-        left: '5%',
-        backgroundImage: 'url("/static/timeseries_viewer/images/ajax-loader.gif")',
-        display: 'block',
-        width: '134px',
-        height: '100px',
-        backgroundColor: '#000'
-    }
-}
+
 
 // here we set up the configuration of the highCharts chart
 var chart_options = {
 	chart: {
 		zoomType: 'x',
+        height: 780
 	},
     exporting:{
         buttons:{
             contextButton:{
                 text: 'print / export chart',
-                symbol: 'url(/static/timeseries_viewer/images/print16.png)'
+                symbol: 'url(/static/timeseries_viewer/images/print16.png)',
+                y:35
             }
+
         }
     },
     loading: {
@@ -40,7 +34,7 @@ var chart_options = {
 
 
 	title: {
-		text: 'Time Series Plot'
+		text: ''
 	},
 	xAxis: {
 		type: 'datetime',
@@ -71,6 +65,7 @@ var chart_options = {
 			marker: {
 				radius: 2
 			},
+            size:'100%',
 			lineWidth: 1,
 			states: {
 				hover: {
@@ -128,13 +123,35 @@ function add_series_to_chart(chart, res_id) {
             chart.yAxis[0].setTitle({ text: json.variable_name + ' ' + json.units });
             chart.hideLoading();
 
+
+            var site_name = json.site_name
+            var variable_name = json.variable_name
+            var organization = json.organization
+            var quality = json.quality
+            var method = json.method
+            if(site_name==null){
+                site_name = "N/A"
+            }
+            if(variable_name==null){
+                variable_name= "N/A"
+            }
+            if(organization==null){
+                organization= "N/A"
+            }
+            if(quality==null){
+                quality= "N/A"
+            }
+            if(method==null){
+                method= "N/A"
+            }
+
             // set the metadata elements content
-            var metadata_info = "<li>" + json.site_name + "</li>" +
+            var metadata_info = "<li>" + "<b>Site: </b>"+site_name + "</li>" +
             "<ul>" +
-            "<li>" + json.variable_name + "</li>" +
-            "<li>" + json.organization + "</li>" +
-            "<li>" + json.quality + "</li>" +
-            "<li>" + json.method + "</li>" +
+            "<li>" + "<b>Variable: </b>"+variable_name + "</li>" +
+            "<li>" + "<b>Organization: </b>"+organization + "</li>" +
+            "<li>" + "<b>Quality: </b>"+quality + "</li>" +
+            "<li>" + "<b>Method: </b>"+method + "</li>" +
             "</ul>"
 
             $('#metadata-list').append(metadata_info);
