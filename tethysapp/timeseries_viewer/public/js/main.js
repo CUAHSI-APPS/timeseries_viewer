@@ -16,23 +16,24 @@ function find_query_parameter(name) {
 var chart_options = {
 	chart: {
 		zoomType: 'x',
-        height: 780
+		resetZoomButton: {
+            position: {
+            // align: 'right', // by default
+            // verticalAlign: 'top', // by default
+                x: 0,
+                y: 35
+            }
+        }
 	},
     exporting:{
         buttons:{
             contextButton:{
                 text: 'print / export chart',
-                symbol: 'url(/static/timeseries_viewer/images/print16.png)',
-                y:35
+                symbol: 'url(/static/timeseries_viewer/images/print16.png)'
             }
 
         }
     },
-    loading: {
-        //more loading_options can go here..
-    },
-
-
 	title: {
 		text: ''
 	},
@@ -120,10 +121,18 @@ function add_series_to_chart(chart, res_id) {
             // add the time series to the chart
             series.data = json.for_highchart;
             chart.addSeries(series);
-            chart.yAxis[0].setTitle({ text: json.variable_name + ' ' + json.units });
+
+            // set the y axis title and units
+            var units = json.units;
+            if(units==null) {
+                units = "";
+            }
+            chart.yAxis[0].setTitle({ text: json.variable_name + ' ' + units });
+
+            // now we can hide the loading... indicator
             chart.hideLoading();
 
-
+            // prepare data for the metadata display
             var site_name = json.site_name
             var variable_name = json.variable_name
             var organization = json.organization
@@ -166,7 +175,6 @@ function add_series_to_chart(chart, res_id) {
             "<td>" + json.stdev.toFixed(4) + "</td></tr>";
 
             $("#stats-table").append(stats_info);
-
         },
         error: function() {
             show_error("Error loading time series from " + res_id);
@@ -181,7 +189,13 @@ $(document).ready(function () {
 
     var res_id = find_query_parameter("res_id");
 
-    // initialize the chart
+    // initialize the chart and set chart height
+    var page_height = $(document).height();
+    console.log(page_height);
+    if (page_height > 500) {
+        chart_options.chart.height = page_height - 225;
+    }
+
     $('#ts-chart').highcharts(chart_options);
 
     // add the series to the chart
