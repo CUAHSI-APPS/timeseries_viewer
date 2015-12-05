@@ -15,6 +15,7 @@ function find_query_parameter(name) {
 // here we set up the configuration of the highCharts chart
 var chart_options = {
 	chart: {
+
 		zoomType: 'x',
 		resetZoomButton: {
             position: {
@@ -138,6 +139,10 @@ function add_series_to_chart(chart, res_id) {
             var organization = json.organization
             var quality = json.quality
             var method = json.method
+            var datatype = json.datatype
+            var valuetype = json.valuetype
+            var samplemedium = json.samplemedium
+
             if(site_name==null){
                 site_name = "N/A"
             }
@@ -153,15 +158,28 @@ function add_series_to_chart(chart, res_id) {
             if(method==null){
                 method= "N/A"
             }
+            if(datatype==null){
+                datatype= "N/A"
+            }
+            if(valuetype==null){
+                valuetype= "N/A"
+            }
+            if(samplemedium==null){
+                samplemedium= "N/A"
+            }
 
             // set the metadata elements content
-            var metadata_info = "<li>" + "<b>Site: </b>"+site_name + "</li>" +
-            "<ul>" +
-            "<li>" + "<b>Variable: </b>"+variable_name + "</li>" +
-            "<li>" + "<b>Organization: </b>"+organization + "</li>" +
-            "<li>" + "<b>Quality: </b>"+quality + "</li>" +
-            "<li>" + "<b>Method: </b>"+method + "</li>" +
-            "</ul>"
+            var metadata_info =
+
+             "<b>Site: </b>"+site_name +"<br>"+
+             "<b>Variable: </b>"+variable_name +"<br>"+
+             "<b>Organization: </b>"+organization +"<br>"+
+             "<b>Quality: </b>"+quality +"<br>"+
+             "<b>Method: </b>"+method +"<br>"+
+             "<b>Data Type: </b>"+datatype +"<br>"+
+             "<b>Value Type: </b>"+valuetype +"<br>"+
+             "<b>Sample Medium: </b>"+samplemedium
+
 
             $('#metadata-list').append(metadata_info);
             $('#metadata-loading').hide();
@@ -202,3 +220,9 @@ $(document).ready(function () {
     var chart = $('#ts-chart').highcharts();
     add_series_to_chart(chart, res_id);
 })
+
+$("#app-header .tethys-app-header .toggle-nav").click(function()
+{
+    $(window).resize();
+})
+

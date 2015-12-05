@@ -10,9 +10,7 @@ width:700px;
 #input_group{
     width:100px;
 }
-#inner-app-content{
-    with:1000px;
-}
+
 
 #stats-table{
     font-size:16px;
@@ -51,14 +49,15 @@ width:700px;
 }
 #app-header .tethys-app-header {
     background: rgba(211, 211, 211, 1) !important;
-    height: 63px !important;
+    height: 50px !important;
     border-bottom: 2px solid black !important;
 }
 #app-header .tethys-app-header .app-title-wrapper .app-title{
     padding: 0px 0px 20px 500px !important;
 }
 #app-header .toggle-nav{
-
+width:25px !important;
+margin:10px !important;
 }
 
 #app-header .tethys-app-header .app-title-wrapper .app-title{
@@ -83,4 +82,9 @@ width:700px;
   -o-transform: translate3d(350px, 0, 0);
    transform: translate3d(350px, 0, 0);
 }
-
+#app-header .tethys-app-header .icon-wrapper img{
+    height: 49px !important;
+}
+#app-header .tethys-app-header .icon-wrapper {
+    padding: 0px !important;
+}

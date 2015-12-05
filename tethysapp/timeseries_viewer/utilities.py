@@ -80,6 +80,9 @@ def parse_1_0_and_1_1(root):
             # metadata items
             units, site_name, variable_name,quality,method, organization = None, None, None, None, None, None
             unit_is_set = False
+            datatype = None
+            valuetype = None
+            samplemedium = None
 
             # iterate through xml document and read all values
             for element in root.iter():
@@ -111,6 +114,16 @@ def parse_1_0_and_1_1(root):
                         quality = element.text
                     if 'methodDescription' == tag:
                         method = element.text
+
+                    if 'dataType' == tag:
+                        datatype = element.text
+                    if 'valueType' == tag:
+                        valuetype = element.text
+                    if "sampleMedium" == tag:
+                        samplemedium = element.text
+
+                    print samplemedium
+
 
             # Measuring the WaterML processing time ...
             t0 = time.time()
@@ -146,9 +159,6 @@ def parse_1_0_and_1_1(root):
             median = numpy.median(for_graph)
             sd = numpy.std(for_graph)
 
-            print mean
-            print median
-            print sd
 
             return {
                 'site_name': site_name,
@@ -165,7 +175,10 @@ def parse_1_0_and_1_1(root):
                 'organization': organization,
                 'quality': quality,
                 'method': method,
-                'status': 'success'
+                'status': 'success',
+                'datatype' :datatype,
+                'valuetype' :valuetype,
+                'samplemedium':samplemedium
             }
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
@@ -211,6 +224,9 @@ def parse_2_0(root):
             organization = None
             quality = None
             method =None
+            datatype = None
+            valuetype = None
+            samplemedium = None
             for element in root.iter():
                 if 'MeasurementTVP' in element.tag:
                         for e in element:
@@ -249,7 +265,12 @@ def parse_2_0(root):
                     print "the quality"+quality
                 if 'methodDescription' in element.tag:
                     method = element.text
-                    print "the method"+method
+                if 'dataType' in element.tag:
+                    datatype = element.text
+                if 'valueType' in element.tag:
+                    valuetype = element.text
+                if "sampleMedium" in element.tag:
+                    samplemedium = element.text
 
             for i in range(0,len(keys)):
                 time_str=keys[i]
@@ -289,7 +310,10 @@ def parse_2_0(root):
                     'organization':organization,
                     'quality':quality,
                     'method':method,
-                    'status': 'success'
+                    'status': 'success',
+                    'datatype' :datatype,
+                    'valuetype' :valuetype,
+                    'samplemedium ':samplemedium
                     }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"
