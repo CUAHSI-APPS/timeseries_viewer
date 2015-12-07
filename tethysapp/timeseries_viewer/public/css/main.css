@@ -88,3 +88,6 @@ margin:10px !important;
 #app-header .tethys-app-header .icon-wrapper {
     padding: 0px !important;
 }
+#title {
+    color: #ff2283;
+}

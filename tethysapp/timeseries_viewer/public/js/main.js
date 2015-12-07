@@ -219,10 +219,30 @@ $(document).ready(function () {
     // add the series to the chart
     var chart = $('#ts-chart').highcharts();
     add_series_to_chart(chart, res_id);
+
+    // change the app title
+    document.title = 'Time Series Viewer';
+
+
+    $("#app-content").on("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd",
+    function(event)
+    { if (event.originalEvent.propertyName == 'padding-right')
+    { $(window).resize();} });
 })
 
 $("#app-header .tethys-app-header .toggle-nav").click(function()
 {
-    $(window).resize();
+
+ resize()
 })
+
+function changeSize(w,h)
+{
+    window.resizeTo(w,h);
+}
+function resize(){
+    $(window).resize();
+}
+
+
 
