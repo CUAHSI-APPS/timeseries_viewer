@@ -34,10 +34,6 @@ width:700px;
     margin-right: 20px;
 }
 
-#ts-chart {
-
-}
-
 #app-content {
 }
 
@@ -83,7 +79,7 @@ margin:10px !important;
    transform: translate3d(350px, 0, 0);
 }
 #app-header .tethys-app-header .icon-wrapper img{
-    height: 49px !important;
+    height: 48px !important;
 }
 #app-header .tethys-app-header .icon-wrapper {
     padding: 0px !important;
