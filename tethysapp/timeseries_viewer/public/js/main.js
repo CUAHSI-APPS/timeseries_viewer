@@ -133,6 +133,11 @@ function add_series_to_chart(chart, res_id) {
             // now we can hide the loading... indicator
             chart.hideLoading();
 
+            // if we have values more than threshold, show title
+            if (json.count >= 50000) {
+                chart.setTitle({text: 'Showing first 50000 values'})
+            }
+
             // prepare data for the metadata display
             var site_name = json.site_name
             var variable_name = json.variable_name
@@ -200,6 +205,7 @@ function add_series_to_chart(chart, res_id) {
     });
 }
 
+var popupDiv = $('#welcome-popup');
 
 $(document).ready(function () {
 
@@ -207,9 +213,12 @@ $(document).ready(function () {
 
     var res_id = find_query_parameter("res_id");
 
+    if (res_id == null) {
+        popupDiv.modal('show');
+    }
+
     // initialize the chart and set chart height
     var page_height = $(document).height();
-    console.log(page_height);
     if (page_height > 500) {
         chart_options.chart.height = page_height - 225;
     }
@@ -223,26 +232,10 @@ $(document).ready(function () {
     // change the app title
     document.title = 'Time Series Viewer';
 
-
-    $("#app-content").on("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd",
-    function(event)
-    { if (event.originalEvent.propertyName == 'padding-right')
-    { $(window).resize();} });
+    // force to adjust chart width when user hides or shows the side bar
+    $("#app-content").on("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(event) {
+        if (event.originalEvent.propertyName == 'padding-right') {
+            $(window).resize(); // this forces the chart to redraw
+        }
+    });
 })
-
-$("#app-header .tethys-app-header .toggle-nav").click(function()
-{
-
- resize()
-})
-
-function changeSize(w,h)
-{
-    window.resizeTo(w,h);
-}
-function resize(){
-    $(window).resize();
-}
-
-
-

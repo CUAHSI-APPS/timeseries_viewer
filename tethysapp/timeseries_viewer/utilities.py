@@ -66,6 +66,8 @@ def parse_1_0_and_1_1(root):
     print "running parse_1_0_and_1_1"
     root_tag = root.tag.lower()
     print "root tag: " + root_tag
+
+    # we only display the first 50000 values
     threshold = 50000
     try:
         if 'timeseriesresponse' in root_tag or 'timeseries' in root_tag or "envelope" in root_tag:
@@ -130,6 +132,10 @@ def parse_1_0_and_1_1(root):
 
             for i in range(0, len(my_times)):
 
+                # if we get past the threshold, break
+                if i >= threshold:
+                    break
+
                 # parse date and time
                 t = dateutil.parser.parse(my_times[i], ignoretz=True)
 
@@ -143,9 +149,6 @@ def parse_1_0_and_1_1(root):
                     for_highchart.append([t, float(my_values[i])])
                     for_graph.append(float(my_values[i]))
 
-                # if we get past the threshold, break
-                if i > threshold:
-                    break
 
             smallest_time = for_highchart[0][0]
             value_count = len(for_highchart)
@@ -336,10 +339,17 @@ def Original_Checker(xml_file):
         elif wml_version == '2.0':
             return parse_2_0(root)
     except ValueError, e:
-        return {'status': 'invalid XML in WaterML file'}
+        return read_error_file(xml_file)
     except:
-        return {'status': 'invalid XML in WaterML file'}
+        return read_error_file(xml_file)
 
+
+def read_error_file(xml_file):
+    try:
+        f = open(xml_file)
+        return {'status': f.readline()}
+    except:
+        return {'status': 'invalid WaterML file'}
 
 
 def unzip_waterml(request, res_id):

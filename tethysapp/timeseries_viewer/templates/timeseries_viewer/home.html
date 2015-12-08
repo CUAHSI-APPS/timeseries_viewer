@@ -5,6 +5,41 @@
 CUAHSI Time Series Viewer
 {%endblock%}
 
+{% block app_content_wrapper_override %}
+<!-- Modal  -->
+<div class="modal fade" id="welcome-popup" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Welcome to the CUAHSI time series viewer!</h4>
+            </div>
+            <div class="modal-body">
+                <div id="welcome-info">
+                    <p>
+                        This app should be launched from the HydroClient page on <a href='http://bcc-hiswebclient.azurewebsites.net'>CUAHSI</a>
+                    </p>
+                    <ol>
+                        <h6>1. Go to the CUAHSI HydroClient page</h6>
+                        <p>Use the map to search for the site of interest</p>
+                        <h6>2. Select time series</h6>
+                        <p>Select the time series from the search results</p>
+                        <h6>3. Launch the time series viewer</h6>
+                        <p>In your workspace, select the time series for visualization, choose Time series viewer, and launch tool.</p>
+                        <a class="btn btn-default" href='http://bcc-hiswebclient.azurewebsites.net'>Go to CUAHSI HydroClient website</a>
+                    </ol>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" id="close-popup" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Modal -->
+{{block.super}}
+{% endblock %}
+
 {% block app_content %}
 
 
