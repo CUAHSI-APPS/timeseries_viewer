@@ -7,7 +7,7 @@ class TsConverter(TethysAppBase):
     Tethys app class for ts converter.
     """
 
-    name = 'timeseries viewer'
+    name = 'CUAHSI Time Series Viewer'
     index = 'timeseries_viewer:home'
     icon = 'timeseries_viewer/images/viewer_icon2.gif'
     package = 'timeseries_viewer'
