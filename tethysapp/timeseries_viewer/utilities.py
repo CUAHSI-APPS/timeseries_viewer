@@ -124,9 +124,6 @@ def parse_1_0_and_1_1(root):
                     if "sampleMedium" == tag:
                         samplemedium = element.text
 
-                    print samplemedium
-
-
             # Measuring the WaterML processing time ...
             t0 = time.time()
 

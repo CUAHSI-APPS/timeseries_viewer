@@ -7,13 +7,13 @@ class TsConverter(TethysAppBase):
     Tethys app class for ts converter.
     """
 
-    name = 'timeseries viewer'
+    name = 'CUAHSI Time Series Viewer'
     index = 'timeseries_viewer:home'
-    icon = 'timeseries_viewer/images/icon.gif'
+    icon = 'timeseries_viewer/images/viewer_icon2.gif'
     package = 'timeseries_viewer'
     root_url = 'timeseries_viewer'
-    color = '#f1c40f'
-        
+    # color = '#ffff4d'
+
     def url_maps(self):
         """
         Add controllers
@@ -23,20 +23,25 @@ class TsConverter(TethysAppBase):
         url_maps = (UrlMap(name='home',
                            url='timeseries_viewer/',
                            controller='timeseries_viewer.controllers.home'),
-        )
 
+                    UrlMap(name='temp_waterml',
+                           url='temp_waterml/{id}',
+                           controller='timeseries_viewer.controllers.temp_waterml'),
+
+                    UrlMap(name='chart_data',
+                           url='chart_data/{res_id}',
+                           controller='timeseries_viewer.controllers.chart_data'),
+
+                    UrlMap(name='api',
+                           url='api/',
+                           controller='timeseries_viewer.api.home'),
+
+                    UrlMap(name='api_list_apps',
+                           url='api/list_apps/',
+                           controller='timeseries_viewer.api.list_apps'),
+
+                    UrlMap(name='api_list_apps_help',
+                           url='api/list_apps_help/',
+                           controller='timeseries_viewer.api.list_apps_help'),
+        )
         return url_maps
-
-    def persistent_stores(self):
-        """
-        Add one or more persistent stores
-        """
-        stores = (PersistentStore(name='urls_db',
-                                  initializer='init_stores:init_urls_db',
-                                  spatial=False),
-
-
-
-        )
-
-        return stores

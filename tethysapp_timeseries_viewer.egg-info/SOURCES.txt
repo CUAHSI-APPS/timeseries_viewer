@@ -1,6 +1,7 @@
 setup.py
 tethysapp/__init__.py
 tethysapp/timeseries_viewer/__init__.py
+tethysapp/timeseries_viewer/api.py
 tethysapp/timeseries_viewer/app.py
 tethysapp/timeseries_viewer/controllers.py
 tethysapp/timeseries_viewer/init_stores.py

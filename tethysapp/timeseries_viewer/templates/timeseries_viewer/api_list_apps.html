@@ -1,0 +1,23 @@
+{% extends "timeseries_viewer/base.html" %}
+
+{% block app_navigation_items %}
+{% endblock %}
+
+{% block app_content %}
+  <h1>list_apps API method documentation</h1>
+  <p>Shows all HydroApps that can be used by CUAHSI HydroClient</p>
+  <h3>Input</h3>
+  <p>No input parameters</p>
+  <h3>Output</h3>
+  <p>Output in JSON format:</p>
+  <dd>
+    <dt>name</dt><dd>Name of the HydroApp</dd>
+    <dt>description</dt><dd>Description of the HydroApp (how is it used)</dd>
+    <dt>min_series</dt><dd>Minimum required number of time series</dd>
+    <dt>max_series</dt><dd>Maximum allowed number of time series</dd>
+    <dt>url</dt><dd>URL for launching the HydroApp</dd>
+    <dt>icon</dt><dd>URL of the HydroApp's icon</dd>
+  </dl>
+  <h3>Call list_apps Method:</h3>
+  <a href="../list_apps/">http://apps.hydroshare.org/apps/timeseries-viewer/api/list_apps/</a>
+{% endblock %}

@@ -30,6 +30,18 @@ class TsConverter(TethysAppBase):
 
                     UrlMap(name='chart_data',
                            url='chart_data/{res_id}',
-                           controller='timeseries_viewer.controllers.chart_data')
+                           controller='timeseries_viewer.controllers.chart_data'),
+
+                    UrlMap(name='api',
+                           url='api',
+                           controller='timeseries_viewer.api.home'),
+
+                    UrlMap(name='api_list_apps',
+                           url='api/list_apps',
+                           controller='timeseries_viewer.api.list_apps'),
+
+                    UrlMap(name='api_list_apps_help',
+                           url='api/list_apps_help',
+                           controller='timeseries_viewer.api.list_apps_help')
         )
         return url_maps

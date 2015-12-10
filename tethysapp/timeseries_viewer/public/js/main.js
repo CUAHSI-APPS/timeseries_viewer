@@ -32,8 +32,14 @@ var chart_options = {
                 text: 'print / export chart',
                 symbol: 'url(/static/timeseries_viewer/images/print16.png)'
             }
-
-        }
+        },
+        chartOptions:{
+            legend:{
+                borderWidth: 0
+            }
+        },
+        sourceWidth: 1200,
+        sourceHeight: 600
     },
 	title: {
 		text: ''
@@ -55,7 +61,7 @@ var chart_options = {
 		align: 'center',
         itemStyle:{
             fontWeight: 'bold',
-            fontSize: '18px'
+            fontSize: '17px'
         },
         title: {text:'Legend'},
         borderColor: '#C98657',

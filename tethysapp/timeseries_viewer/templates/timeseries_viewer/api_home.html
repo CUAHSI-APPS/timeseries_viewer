@@ -1,0 +1,15 @@
+{% extends "timeseries_viewer/base.html" %}
+
+{% block app_navigation_items %}
+{% endblock %}
+
+{% block app_content %}
+  <h1>Welcome to the HydroApp CUAHSI API!</h1>
+  <p>This API is used to list the available apps that can be used by the CUAHSI HydroClient.</p>
+  <p>For each CUAHSI - compatible app on this website, it lists the accepted input parameters and
+    a description of the app's output.</p>
+  <h2>Available API Functions</h2>
+  <ul>
+      <li><a href="/apps/timeseries-viewer/api/list_apps_help">1. list_apps</a></li>
+  </ul>
+{% endblock %}
