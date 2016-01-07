@@ -158,8 +158,9 @@ def parse_1_0_and_1_1(root):
             mean = float(format(mean, '.2f'))
             median = numpy.median(for_graph)
             sd = numpy.std(for_graph)
-
-
+            print units
+            print variable_name
+            print "BBB"
             return {
                 'site_name': site_name,
                 'start_date': str(smallest_time),
@@ -296,6 +297,7 @@ def parse_2_0(root):
                 if t> largest_time:
                     largest_time = t
 
+
             return {'time_series': ts,
                     'site_name': site_name,
                     'start_date': smallest_time,
@@ -313,7 +315,7 @@ def parse_2_0(root):
                     'status': 'success',
                     'datatype' :datatype,
                     'valuetype' :valuetype,
-                    'samplemedium ':samplemedium
+                    'samplemedium':samplemedium
                     }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"
@@ -362,6 +364,7 @@ def unzip_waterml(request, res_id):
 
     else:
         url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
+
 
     r = requests.get(url_zip, verify=False)
     try:
