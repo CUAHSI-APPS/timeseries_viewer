@@ -63,6 +63,10 @@ margin:10px !important;
 #app-content-wrapper #app-content #app-navigation {
   left: -350px;
   width: 350px;
+
+  overflow:scroll;
+
+
 }
 
 #app-content-wrapper.show-nav #app-content {
@@ -77,6 +81,7 @@ margin:10px !important;
   -ms-transform: translate3d(350px, 0, 0);
   -o-transform: translate3d(350px, 0, 0);
    transform: translate3d(350px, 0, 0);
+
 }
 #app-header .tethys-app-header .icon-wrapper img{
     height: 48px !important;

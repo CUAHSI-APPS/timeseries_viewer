@@ -31,8 +31,8 @@ var chart_options = {
             contextButton:{
 
                 align: 'right',
-                verticalAlign: 'top',
-                
+                verticalAlign: 'bottom',
+
                 text: 'print / export chart',
                 symbol: 'url(/static/timeseries_viewer/images/print16.png)'
             }
@@ -82,6 +82,7 @@ var chart_options = {
         ],
 	legend: {
 		align: 'center',
+        layout:"vertical",
         itemStyle:{
             fontWeight: 'bold',
             fontSize: '17px'
@@ -89,8 +90,9 @@ var chart_options = {
         title: {text:'Legend'},
         borderColor: '#C98657',
         borderWidth: 1,
-        symbolHeight:50,
-        symbolWidth:20
+
+
+
 	},
 	plotOptions: {
 		line: {
@@ -196,6 +198,7 @@ function add_series_to_chart(chart, res_id) {
             }
 
 
+
             // now we can hide the loading... indicator
             chart.hideLoading();
 
@@ -264,6 +267,10 @@ function add_series_to_chart(chart, res_id) {
             "<td>" + json.stdev.toFixed(4) + "</td></tr>";
 
             $("#stats-table").append(stats_info);
+
+            $("#app-content-wrapper #app-content #app-navigation").css({overflow:"auto"});
+
+            $(window).resize();//This fixes an error where the grid lines are misdrawn when legend layout is set to vertical
         },
         error: function() {
             show_error("Error loading time series from " + res_id);
