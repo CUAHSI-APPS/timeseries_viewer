@@ -26,7 +26,7 @@ def list_apps(request):
             'url': 'http://apps.hydroshare.org/apps/timeseries-viewer',
             'description': 'View graph and descriptive statistics of one time series',
             'min_series': 1,
-            'max_series': 1,
+            'max_series': 5,
             'icon': 'http://apps.hydroshare.org/static/timeseries_viewer/images/viewer_icon2.gif'}
 
     app2 = {'name': 'Time Series Converter',
