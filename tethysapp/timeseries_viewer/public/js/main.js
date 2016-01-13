@@ -10,8 +10,10 @@ function find_query_parameter(name) {
 
 
 // here we set up the configuration of the highCharts chart
-console.log(Highcharts.getOptions().colors[90])
+
 var unit_tracker =[];
+var counter = 0;
+unit_different1=null;
 // here we set up the configuration of the highCharts chart
 var chart_options = {
 	chart: {
@@ -31,7 +33,7 @@ var chart_options = {
             contextButton:{
 
                 align: 'right',
-                verticalAlign: 'bottom',
+                verticalAlign: 'top',
 
                 text: 'print / export chart',
                 symbol: 'url(/static/timeseries_viewer/images/print16.png)'
@@ -160,17 +162,51 @@ function add_series_to_chart(chart, res_id) {
 
             unit_tracker.push(units);//tracks the units of the different time series
             unit1 = unit_tracker[0];
-            same_unit = 1
 
+            unit_different2=null;
+            same_unit = 1
+            //console.log(units);
             if (unit1 !=units)
             {
-              same_unit = 2;
-              console.log("Not the same unit");
-            };
+              same_unit = 2;//flags which axis is to be used
+                console.log(unit_different1)
+              if(unit_different1 == null)
+              {
+                  unit_different1 =units //this tracks the second unit type if there is one
+                    console.log(unit_different1)
+              }
+             };
+
+
+            //console.log(unit1);
+            //console.log(unit_different1);
+            //console.log(units);
+            if(unit1 != units && unit_different1 !=units )//this triggers if more than different units are used
+            {
+
+                console.log(unit1);
+                console.log(unit_different1);
+                console.log(units);
+
+                chart.hideLoading();
+                $('#metadata-loading').hide();
+                chart.destroy();
+
+                $("#stats-table").hide();
+                $("#metadata-list").hide();
+                $('#error-message').text("Error loading time series "+ res_id+". More than two unit types detected.");
+
+                return;
+
+            }
+
+
+
 
             yaxis=0;
             if (same_unit == 2)
             {
+
                 yaxis = 1;
             }
 
@@ -198,7 +234,7 @@ function add_series_to_chart(chart, res_id) {
             }
 
 
-
+            chart.setTitle({ text: "Time Series Viewer" });
             // now we can hide the loading... indicator
             chart.hideLoading();
 
@@ -245,7 +281,7 @@ function add_series_to_chart(chart, res_id) {
             // set the metadata elements content
             var metadata_info =
 
-             "<b>Site: </b>"+site_name +"<br>"+
+             "<b>Site:</b>"+site_name +"<br>"+
              "<b>Variable: </b>"+variable_name +"<br>"+
              "<b>Organization: </b>"+organization +"<br>"+
              "<b>Quality: </b>"+quality +"<br>"+
@@ -276,6 +312,7 @@ function add_series_to_chart(chart, res_id) {
             show_error("Error loading time series from " + res_id);
         }
     });
+    counter = counter +1
 }
 
 var popupDiv = $('#welcome-popup');
@@ -303,13 +340,11 @@ $(document).ready(function () {
     var chart = $('#ts-chart').highcharts();
 
     res_ids = res_id.split(",");
-    console.log(res_ids);
+
 
     for  (var  res_id in res_ids)
     {
-        console.log("AAAAAAAA");
-        console.log(res_ids[res_id]);
-        console.log("AAAAAAAA");
+
 
         add_series_to_chart(chart, res_ids[res_id]);
     };

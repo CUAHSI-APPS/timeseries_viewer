@@ -63,12 +63,18 @@ margin:10px !important;
 #app-content-wrapper #app-content #app-navigation {
   left: -350px;
   width: 350px;
+  height:100%;
 
-  overflow:scroll;
+  overflow-y:auto;
+    overflow:visible;
+    direction:rtl;
 
 
 }
-
+#metadata-list{
+    text-align:left;
+    padding-left:15px;
+}
 #app-content-wrapper.show-nav #app-content {
   padding-right: 350px;
   -webkit-transform: translateX(-350px);
@@ -81,6 +87,8 @@ margin:10px !important;
   -ms-transform: translate3d(350px, 0, 0);
   -o-transform: translate3d(350px, 0, 0);
    transform: translate3d(350px, 0, 0);
+
+
 
 }
 #app-header .tethys-app-header .icon-wrapper img{
