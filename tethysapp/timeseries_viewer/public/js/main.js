@@ -325,6 +325,9 @@ $(document).ready(function () {
 
 
     if (res_id == null) {
+        if (document.referrer == "https://apps.hydroshare.org/apps/") {
+            $('#extra-buttons').append('<a class="btn btn-default btn" href="https://apps.hydroshare.org/apps/">Return to HydroShare Apps</a>');
+        }
         popupDiv.modal('show');
     }
 

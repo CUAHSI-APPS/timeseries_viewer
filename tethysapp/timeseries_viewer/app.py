@@ -13,6 +13,7 @@ class TsConverter(TethysAppBase):
     package = 'timeseries_viewer'
     root_url = 'timeseries_viewer'
     # color = '#ffff4d'
+    description = 'View time series from CUAHSI HydroClient'
 
     def url_maps(self):
         """
