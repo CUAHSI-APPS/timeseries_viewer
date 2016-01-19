@@ -1,4 +1,3 @@
-
 function find_query_parameter(name) {
   url = location.href;
   //name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
@@ -281,6 +280,7 @@ function add_series_to_chart(chart, res_id) {
             // set the metadata elements content
             var metadata_info =
 
+
              "<b>Site:</b>"+site_name +"<br>"+
              "<b>Variable: </b>"+variable_name +"<br>"+
              "<b>Organization: </b>"+organization +"<br>"+
@@ -288,10 +288,10 @@ function add_series_to_chart(chart, res_id) {
              "<b>Method: </b>"+method +"<br>"+
              "<b>Data Type: </b>"+datatype +"<br>"+
              "<b>Value Type: </b>"+valuetype +"<br>"+
-             "<b>Sample Medium: </b>"+samplemedium+"<br>"+'<hr>'
+             "<b>Sample Medium: </b>"+samplemedium+"<br>"
 
 
-            $('#metadata-list').append(metadata_info);
+            $('#metadata').append(metadata_info);
             $('#metadata-loading').hide();
 
             // add the row to the statistics table

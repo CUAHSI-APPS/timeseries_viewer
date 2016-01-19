@@ -1,6 +1,7 @@
 {% extends "timeseries_viewer/base.html" %}
 {% load staticfiles%}
 
+
 {%block title%}
 CUAHSI Time Series Viewer
 {%endblock%}
@@ -26,10 +27,7 @@ CUAHSI Time Series Viewer
                         <p>Select the time series from the search results</p>
                         <h6>3. Launch the time series viewer</h6>
                         <p>In your workspace, select the time series for visualization, choose Time series viewer, and launch tool.</p>
-                        <div id="extra-buttons">
-                            <a class="btn btn-default" href="https://github.com/mmbayles/timeseries_viewer" target="_blank">More Info</a>
-                            <a class="btn btn-default" href='http://bcc-hiswebclient.azurewebsites.net'>Go to CUAHSI HydroClient</a>
-                        </div>
+                        <a class="btn btn-default" href='http://bcc-hiswebclient.azurewebsites.net'>Go to CUAHSI HydroClient website</a>
                     </ol>
                 </div>
             </div>
@@ -65,19 +63,29 @@ CUAHSI Time Series Viewer
     <tbody></tbody>
 </table>
 
+
+
+
 {% endblock %}
 <h1>Statistics</h1>
 {% block app_navigation_items %}
 
 
-    <ul id="metadata-list">
+    <ul id="metadata-list" class ="collapsibleList" style ="list-style-type:none">
 
+         <li >
+             <label for=mylist-node2>Additional Data</label>
+             <input type='checkbox' id='mylist-node2' />
+             <ul id = "metadata">
+
+             </ul>
+         </li>
         <li id="metadata-loading">Loading...</li>
     </ul>
 <hr>
 
 
-<hr>
+
 {% endblock %}
 
 {% block app_actions %}
@@ -90,3 +98,4 @@ CUAHSI Time Series Viewer
 <script src="{% static 'timeseries_viewer/js/main.js' %}"></script>
   {{ block.super }}
 {% endblock %}
+
