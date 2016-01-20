@@ -86,11 +86,14 @@ var chart_options = {
         layout:"vertical",
         itemStyle:{
             fontWeight: 'bold',
-            fontSize: '17px'
+            fontSize: '14px',
+            width:1000
         },
         title: {text:'Legend'},
         borderColor: '#C98657',
         borderWidth: 1,
+        symbolWidth: 50,
+        symbolHeight:50
 
 
 
@@ -213,7 +216,8 @@ function add_series_to_chart(chart, res_id) {
             var series =
             {
                 id: res_id,
-                name: json.site_name + ' ' + json.variable_name,
+                name: 'Site: '+json.site_name
+                +'. Variable: ' + json.variable_name,
                 data: [],
                 yAxis: yaxis
             }
@@ -281,7 +285,7 @@ function add_series_to_chart(chart, res_id) {
             var metadata_info =
 
 
-             "<b>Site:</b>"+site_name +"<br>"+
+             "<b>Site: </b>"+site_name +"<br>"+
              "<b>Variable: </b>"+variable_name +"<br>"+
              "<b>Organization: </b>"+organization +"<br>"+
              "<b>Quality: </b>"+quality +"<br>"+
@@ -292,11 +296,20 @@ function add_series_to_chart(chart, res_id) {
 
 
             $('#metadata').append(metadata_info);
+            $('#metadata_test1').append(metadata_info);
             $('#metadata-loading').hide();
 
             // add the row to the statistics table
             var stats_info = "<tr>" +
+            "<td>" + 'legend' + "</td>" +
             "<td>" + json.site_name + "</td>" +
+            "<td>" + variable_name + "</td>" +
+            "<td>" + organization + "</td>" +
+            "<td>" + quality + "</td>" +
+            "<td>" + method + "</td>" +
+            "<td>" + datatype + "</td>" +
+            "<td>" + valuetype + "</td>" +
+            "<td>" + samplemedium + "</td>" +
             "<td>" + json.count + "</td>" +
             "<td>" + json.mean + "</td>" +
             "<td>" + json.median + "</td>" +
