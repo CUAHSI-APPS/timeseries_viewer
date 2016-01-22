@@ -47,21 +47,21 @@ CUAHSI Time Series Viewer
 {% block app_content %}
 
 
+
 <div id="error-message"></div>
 <div id="ts-chart" class="highcharts-plot"></div>
+<button id = 'button' type="button">Toggle Statistics</button>
 <div id = "stat_div" >
     <table id="stats-table" style="width:100%">
 
         <thead>
       <tr>
-          <th>Legend</th>
+          <th></th>
           <th>Site Name</th>
           <th>Variable</th>
           <th>Organization</th>
           <th>Quality</th>
           <th>Method</th>
-          <th>Data Type</th>
-          <th>Value Type</th>
           <th>Sample Medium</th>
           <th>Value Count</th>
           <th>Mean</th>
@@ -74,8 +74,6 @@ CUAHSI Time Series Viewer
     </table>
 </div>
 
-<br>
-
 
 
 
@@ -85,25 +83,25 @@ CUAHSI Time Series Viewer
 
 {% endblock %}
 <h1>Statistics</h1>
-{% block app_navigation_items %}
-
-
-    <ul id="metadata-list" class ="collapsibleList" style ="list-style-type:none">
-
-         <li >
-             <label for=mylist-node2>Additional Data</label>
-             <input type='checkbox' id='mylist-node2' />
-             <ul id = "metadata">
-
-             </ul>
-         </li>
-        <li id="metadata-loading">Loading...</li>
-    </ul>
-<hr>
 
 
 
-{% endblock %}
+    <!--<ul id="metadata-list" class ="collapsibleList" style ="list-style-type:none">-->
+
+         <!--<li >-->
+             <!--<label for=mylist-node2>Additional Data</label>-->
+             <!--<input type='checkbox' id='mylist-node2' />-->
+             <!--<ul id = "metadata">-->
+
+             <!--</ul>-->
+         <!--</li>-->
+        <!--<li id="metadata-loading">Loading...</li>-->
+    <!--</ul>-->
+<!--<hr>-->
+
+
+
+
 
 {% block app_actions %}
 {% endblock %}

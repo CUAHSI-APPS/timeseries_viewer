@@ -52,8 +52,7 @@ width:700px;
     padding: 0px 0px 20px 500px !important;
 }
 #app-header .toggle-nav{
-width:25px !important;
-margin:10px !important;
+display:none !important;
 }
 
 #app-header .tethys-app-header .app-title-wrapper .app-title{
@@ -62,31 +61,26 @@ margin:10px !important;
 
 #app-content-wrapper #app-content #app-navigation {
   left: -350px;
-  width: 350px;
+  width: 0px;
   height:100%;
 
-  overflow-y:auto;
-    overflow:visible;
-    direction:rtl;
+
 
 
 }
-#metadata-list{
-    text-align:left;
-    padding-left:15px;
-}
+
 #app-content-wrapper.show-nav #app-content {
-  padding-right: 350px;
-  -webkit-transform: translateX(-350px);
-  -moz-transform: translateX(-350px);
-  -ms-transform: translateX(-350px);
-  -o-transform: translateX(-350px);
-  transform: translateX(-350px);
-  -webkit-transform: translate3d(350px, 0, 0);
-  -moz-transform: translate3d(350px, 0, 0);
-  -ms-transform: translate3d(350px, 0, 0);
-  -o-transform: translate3d(350px, 0, 0);
-   transform: translate3d(350px, 0, 0);
+  padding-right: 0px;
+  -webkit-transform: translateX(0px);
+  -moz-transform: translateX(0px);
+  -ms-transform: translateX(0px);
+  -o-transform: translateX(0px);
+  transform: translateX(0px);
+  -webkit-transform: translate3d(0px, 0, 0);
+  -moz-transform: translate3d(0px, 0, 0);
+  -ms-transform: translate3d(0px, 0, 0);
+  -o-transform: translate3d(0px, 0, 0);
+   transform: translate3d(0px, 0, 0);
 
 
 
@@ -140,9 +134,10 @@ margin:10px !important;
 }
 
 #stat_div{
-    max-height:100px;
+    max-height:200px;
     width: 100%;
-    
+    overflow:auto;
+
 }
 #stats-table{
     height:100px;

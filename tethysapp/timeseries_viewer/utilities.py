@@ -85,7 +85,7 @@ def parse_1_0_and_1_1(root):
             datatype = None
             valuetype = None
             samplemedium = None
-
+            smallest_value = 0
             # iterate through xml document and read all values
             for element in root.iter():
 
@@ -127,6 +127,10 @@ def parse_1_0_and_1_1(root):
             # Measuring the WaterML processing time ...
             t0 = time.time()
 
+            for  v in range(0, len(my_values)):
+                if v >= smallest_value:
+                    smallest_value = v
+
             for i in range(0, len(my_times)):
 
                 # if we get past the threshold, break
@@ -158,9 +162,7 @@ def parse_1_0_and_1_1(root):
             mean = float(format(mean, '.2f'))
             median = numpy.median(for_graph)
             sd = numpy.std(for_graph)
-            print units
-            print variable_name
-            print "BBB"
+
             return {
                 'site_name': site_name,
                 'start_date': str(smallest_time),
@@ -179,7 +181,8 @@ def parse_1_0_and_1_1(root):
                 'status': 'success',
                 'datatype' :datatype,
                 'valuetype' :valuetype,
-                'samplemedium':samplemedium
+                'samplemedium':samplemedium,
+                'smallest_value':smallest_value
             }
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
@@ -228,6 +231,7 @@ def parse_2_0(root):
             datatype = None
             valuetype = None
             samplemedium = None
+            smallest_value = 0
             for element in root.iter():
                 if 'MeasurementTVP' in element.tag:
                         for e in element:
@@ -296,6 +300,10 @@ def parse_2_0(root):
                     smallest_time = t
                 if t> largest_time:
                     largest_time = t
+            for v in list(values.vals()):
+                if v < smallest_value:
+                    smallest_value = t
+
 
 
             return {'time_series': ts,
@@ -315,7 +323,8 @@ def parse_2_0(root):
                     'status': 'success',
                     'datatype' :datatype,
                     'valuetype' :valuetype,
-                    'samplemedium':samplemedium
+                    'samplemedium':samplemedium,
+                    'smallest_value':smallest_value
                     }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"

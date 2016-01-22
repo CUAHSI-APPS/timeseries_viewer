@@ -13,6 +13,7 @@ function find_query_parameter(name) {
 var unit_tracker =[];
 var counter = 0;
 unit_different1=null;
+counter1 =[];
 // here we set up the configuration of the highCharts chart
 var chart_options = {
 	chart: {
@@ -64,7 +65,7 @@ var chart_options = {
                 },
                 lineWidth:2,
                 lineColor: 'lightgray',
-                min:0
+
 	        },
         {
             // Secondary yAxis
@@ -75,25 +76,14 @@ var chart_options = {
                     color: Highcharts.getOptions().colors[1]
                 }
             },
-            min:0,
+            
             lineWidth:2,
 
         opposite: true
         }
         ],
 	legend: {
-		align: 'center',
-        layout:"vertical",
-        itemStyle:{
-            fontWeight: 'bold',
-            fontSize: '14px',
-            width:1000
-        },
-        title: {text:'Legend'},
-        borderColor: '#C98657',
-        borderWidth: 1,
-        symbolWidth: 50,
-        symbolHeight:50
+
 
 
 
@@ -127,8 +117,10 @@ function show_error(chart, error_message) {
     $('#error-message').text(error_message);
     chart.setTitle({ text: "" });
 }
+var number2 = -1
+function add_series_to_chart(chart, res_id,number1) {
 
-function add_series_to_chart(chart, res_id) {
+
 
     current_url = location.href;
     index = current_url.indexOf("timeseries-viewer");
@@ -167,15 +159,15 @@ function add_series_to_chart(chart, res_id) {
 
             unit_different2=null;
             same_unit = 1
-            //console.log(units);
+
             if (unit1 !=units)
             {
               same_unit = 2;//flags which axis is to be used
-                console.log(unit_different1)
+
               if(unit_different1 == null)
               {
                   unit_different1 =units //this tracks the second unit type if there is one
-                    console.log(unit_different1)
+
               }
              };
 
@@ -186,9 +178,7 @@ function add_series_to_chart(chart, res_id) {
             if(unit1 != units && unit_different1 !=units )//this triggers if more than different units are used
             {
 
-                console.log(unit1);
-                console.log(unit_different1);
-                console.log(units);
+
 
                 chart.hideLoading();
                 $('#metadata-loading').hide();
@@ -212,11 +202,12 @@ function add_series_to_chart(chart, res_id) {
                 yaxis = 1;
             }
 
-
+            console.log(yaxis);
+            console.log("yaxis")
             var series =
             {
                 id: res_id,
-                name: 'Site: '+json.site_name
+                name:  'Site: '+json.site_name
                 +'. Variable: ' + json.variable_name,
                 data: [],
                 yAxis: yaxis
@@ -228,19 +219,21 @@ function add_series_to_chart(chart, res_id) {
             series.data = json.for_highchart;
 
             chart.addSeries(series);
-
+            //console.log(json.smallest_value)
             if (yaxis ==0){
                 chart.yAxis[0].setTitle({ text: json.variable_name + ' ' + units });
+                //chart.yAxis[0].setExtremes(json.smallest_value,null,true,false);
             }
             else{
                 chart.yAxis[1].setTitle({text: json.variable_name + ' ' + units})
+                //chart.yAxis[1].setExtremes(json.smallest_value,null,true,false);
             }
 
 
             chart.setTitle({ text: "Time Series Viewer" });
             // now we can hide the loading... indicator
             chart.hideLoading();
-
+            chart.legend.group.hide();
             // if we have values more than threshold, show title
             if (json.count >= 50000) {
                 chart.setTitle({text: 'Showing first 50000 values'})
@@ -286,12 +279,10 @@ function add_series_to_chart(chart, res_id) {
 
 
              "<b>Site: </b>"+site_name +"<br>"+
-             "<b>Variable: </b>"+variable_name +"<br>"+
+             "<b>Variable: </b>"+variable_name+","+ datatype+","+valuetype +"<br>"+
              "<b>Organization: </b>"+organization +"<br>"+
              "<b>Quality: </b>"+quality +"<br>"+
              "<b>Method: </b>"+method +"<br>"+
-             "<b>Data Type: </b>"+datatype +"<br>"+
-             "<b>Value Type: </b>"+valuetype +"<br>"+
              "<b>Sample Medium: </b>"+samplemedium+"<br>"
 
 
@@ -300,15 +291,18 @@ function add_series_to_chart(chart, res_id) {
             $('#metadata-loading').hide();
 
             // add the row to the statistics table
+            number2 = number2+1
+            number  = number2;
+
+
             var stats_info = "<tr>" +
-            "<td>" + 'legend' + "</td>" +
+            "<td style='text-align:center' bgcolor = "+chart.series[number].color+"><input id ="+number
+                + " type='checkbox'onClick ='myFunc(this.id);'checked = 'checked'>" + "</td>" +
             "<td>" + json.site_name + "</td>" +
-            "<td>" + variable_name + "</td>" +
+            "<td>" + variable_name+", "+ datatype+", "+valuetype  + "</td>" +
             "<td>" + organization + "</td>" +
             "<td>" + quality + "</td>" +
             "<td>" + method + "</td>" +
-            "<td>" + datatype + "</td>" +
-            "<td>" + valuetype + "</td>" +
             "<td>" + samplemedium + "</td>" +
             "<td>" + json.count + "</td>" +
             "<td>" + json.mean + "</td>" +
@@ -325,7 +319,23 @@ function add_series_to_chart(chart, res_id) {
             show_error("Error loading time series from " + res_id);
         }
     });
-    counter = counter +1
+
+
+}
+
+
+$('#button').click(function() {
+    $('#stats-table').toggle();
+});
+function myFunc(id){
+
+    var chart1 = $('#ts-chart').highcharts();
+    var series = chart1.series[id];
+        if (series.visible) {
+            series.hide();
+        } else {
+            series.show();
+        }
 }
 
 var popupDiv = $('#welcome-popup');
@@ -361,8 +371,10 @@ $(document).ready(function () {
     for  (var  res_id in res_ids)
     {
 
+        counter1.push(counter);
+        add_series_to_chart(chart, res_ids[res_id],counter1);
 
-        add_series_to_chart(chart, res_ids[res_id]);
+
     };
 
 
@@ -375,4 +387,6 @@ $(document).ready(function () {
             $(window).resize(); // this forces the chart to redraw
         }
     });
+
+
 })
