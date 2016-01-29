@@ -51,6 +51,7 @@ CUAHSI Time Series Viewer
 <div id="error-message"></div>
 <div id="ts-chart" class="highcharts-plot"></div>
 <button id = 'button' type="button">Toggle Statistics</button>
+<p></p>
 <div id = "stat_div" >
     <table id="stats-table" style="width:100%">
 
@@ -74,30 +75,25 @@ CUAHSI Time Series Viewer
     </table>
 </div>
 
-
-
+<!--<img src="{% static 'timeseries_viewer/images/394.gif' %}"/>-->
+<div id = loading>
+    <!--http://cssload.net/-->
+    <div id = images_container>
+        <div class="cssload-loader">
+	<div class="cssload-dot"></div>
+	<div class="cssload-dot"></div>
+	<div class="cssload-dot"></div>
+	<div class="cssload-dot"></div>
+	<div class="cssload-dot"></div>
+</div>
+    </div>
+</div>
 
 
 
 
 
 {% endblock %}
-<h1>Statistics</h1>
-
-
-
-    <!--<ul id="metadata-list" class ="collapsibleList" style ="list-style-type:none">-->
-
-         <!--<li >-->
-             <!--<label for=mylist-node2>Additional Data</label>-->
-             <!--<input type='checkbox' id='mylist-node2' />-->
-             <!--<ul id = "metadata">-->
-
-             <!--</ul>-->
-         <!--</li>-->
-        <!--<li id="metadata-loading">Loading...</li>-->
-    <!--</ul>-->
-<!--<hr>-->
 
 
 
@@ -111,6 +107,7 @@ CUAHSI Time Series Viewer
 <script src="/static/tethys_gizmos/vendor/highcharts/js/highcharts-more.js"></script>
 <script src="/static/tethys_gizmos/vendor/highcharts/js/modules/exporting.js"></script>
 <script src="{% static 'timeseries_viewer/js/main.js' %}"></script>
+<script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
   {{ block.super }}
 {% endblock %}
 

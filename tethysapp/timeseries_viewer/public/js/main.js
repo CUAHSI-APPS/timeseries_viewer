@@ -76,7 +76,7 @@ var chart_options = {
                     color: Highcharts.getOptions().colors[1]
                 }
             },
-            
+
             lineWidth:2,
 
         opposite: true
@@ -118,17 +118,18 @@ function show_error(chart, error_message) {
     chart.setTitle({ text: "" });
 }
 var number2 = -1
+
 function add_series_to_chart(chart, res_id,number1) {
 
-
+    console.log(number1)
 
     current_url = location.href;
     index = current_url.indexOf("timeseries-viewer");
     base_url = current_url.substring(0, index);
 
     // in the start we show the loading...
-    chart.showLoading();
-    $('#metadata-loading').show();
+
+
 
     // the res_id can contain multiple IDs separated by comma
 
@@ -171,15 +172,11 @@ function add_series_to_chart(chart, res_id,number1) {
               }
              };
 
-
             //console.log(unit1);
             //console.log(unit_different1);
             //console.log(units);
             if(unit1 != units && unit_different1 !=units )//this triggers if more than different units are used
             {
-
-
-
                 chart.hideLoading();
                 $('#metadata-loading').hide();
                 chart.destroy();
@@ -187,13 +184,8 @@ function add_series_to_chart(chart, res_id,number1) {
                 $("#stats-table").hide();
                 $("#metadata-list").hide();
                 $('#error-message').text("Error loading time series "+ res_id+". More than two unit types detected.");
-
                 return;
-
             }
-
-
-
 
             yaxis=0;
             if (same_unit == 2)
@@ -202,8 +194,6 @@ function add_series_to_chart(chart, res_id,number1) {
                 yaxis = 1;
             }
 
-            console.log(yaxis);
-            console.log("yaxis")
             var series =
             {
                 id: res_id,
@@ -212,8 +202,6 @@ function add_series_to_chart(chart, res_id,number1) {
                 data: [],
                 yAxis: yaxis
             }
-
-
 
             // add the time series to the chart
             series.data = json.for_highchart;
@@ -229,10 +217,9 @@ function add_series_to_chart(chart, res_id,number1) {
                 //chart.yAxis[1].setExtremes(json.smallest_value,null,true,false);
             }
 
-
             chart.setTitle({ text: "Time Series Viewer" });
             // now we can hide the loading... indicator
-            chart.hideLoading();
+            //chart.hideLoading();
             chart.legend.group.hide();
             // if we have values more than threshold, show title
             if (json.count >= 50000) {
@@ -277,7 +264,6 @@ function add_series_to_chart(chart, res_id,number1) {
             // set the metadata elements content
             var metadata_info =
 
-
              "<b>Site: </b>"+site_name +"<br>"+
              "<b>Variable: </b>"+variable_name+","+ datatype+","+valuetype +"<br>"+
              "<b>Organization: </b>"+organization +"<br>"+
@@ -285,16 +271,13 @@ function add_series_to_chart(chart, res_id,number1) {
              "<b>Method: </b>"+method +"<br>"+
              "<b>Sample Medium: </b>"+samplemedium+"<br>"
 
-
             $('#metadata').append(metadata_info);
             $('#metadata_test1').append(metadata_info);
             $('#metadata-loading').hide();
 
             // add the row to the statistics table
-            number2 = number2+1
+            number2 = number2+1//keeps track of row number for stats table
             number  = number2;
-
-
             var stats_info = "<tr>" +
             "<td style='text-align:center' bgcolor = "+chart.series[number].color+"><input id ="+number
                 + " type='checkbox'onClick ='myFunc(this.id);'checked = 'checked'>" + "</td>" +
@@ -313,14 +296,17 @@ function add_series_to_chart(chart, res_id,number1) {
 
             $("#app-content-wrapper #app-content #app-navigation").css({overflow:"auto"});
 
+
+            if (number == number1-1)//checks to see if all the data is loaded before displaying
+            {
+                finishloading();
+            }
             $(window).resize();//This fixes an error where the grid lines are misdrawn when legend layout is set to vertical
         },
         error: function() {
             show_error("Error loading time series from " + res_id);
         }
     });
-
-
 }
 
 
@@ -328,7 +314,6 @@ $('#button').click(function() {
     $('#stats-table').toggle();
 });
 function myFunc(id){
-
     var chart1 = $('#ts-chart').highcharts();
     var series = chart1.series[id];
         if (series.visible) {
@@ -340,12 +325,8 @@ function myFunc(id){
 
 var popupDiv = $('#welcome-popup');
 
-$(document).ready(function () {
-
-    $('#metadata-loading').hide();
-
+$(document).ready(function (callback) {
     var res_id = find_query_parameter("res_id");
-
 
     if (res_id == null) {
         if (document.referrer == "https://apps.hydroshare.org/apps/") {
@@ -361,26 +342,20 @@ $(document).ready(function () {
     }
 
     $('#ts-chart').highcharts(chart_options);
+    $('#ts-chart').hide()
+    $('#stats-table').hide();
+    $('#button').hide();
+
 
     // add the series to the chart
     var chart = $('#ts-chart').highcharts();
 
-    res_ids = res_id.split(",");
 
-
-    for  (var  res_id in res_ids)
-    {
-
-        counter1.push(counter);
-        add_series_to_chart(chart, res_ids[res_id],counter1);
-
-
-    };
+    addingseries();
 
 
     // change the app title
     document.title = 'Time Series Viewer';
-
     // force to adjust chart width when user hides or shows the side bar
     $("#app-content").on("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(event) {
         if (event.originalEvent.propertyName == 'padding-right') {
@@ -388,5 +363,32 @@ $(document).ready(function () {
         }
     });
 
-
 })
+
+function finishloading(callback)
+{
+    $('#ts-chart').show()
+    $('#stats-table').show();
+    $('#button').show();
+    $('#loading').hide();
+    $(window).resize();
+}
+function addingseries(callback){
+     var res_id = find_query_parameter("res_id");
+    var series_counter =0
+     var chart = $('#ts-chart').highcharts();
+     res_ids = res_id.split(",");
+    for ( var r in res_ids)
+    {
+        series_counter = series_counter +1
+    }
+
+     for  (var  res_id in res_ids)
+    {
+        counter1.push(counter);
+        add_series_to_chart(chart, res_ids[res_id],series_counter);
+
+    };
+
+
+}
