@@ -9,7 +9,7 @@ function find_query_parameter(name) {
 
 
 // here we set up the configuration of the highCharts chart
-
+var data = [];
 var unit_tracker =[];
 var counter = 0;
 unit_different1=null;
@@ -294,6 +294,56 @@ function add_series_to_chart(chart, res_id,number1) {
 
             $("#stats-table").append(stats_info);
 
+            //new table
+            var site_name = json.site_name
+            var variable_name = json.variable_name
+            var organization = json.organization
+            var quality = json.quality
+            var method = json.method
+            var datatype = json.datatype
+            var valuetype = json.valuetype
+            var samplemedium = json.samplemedium
+            var count = json.count
+            var mean = json.mean
+            var median = json.median
+            var stdev = json.stdev
+
+            if(site_name==null){
+                site_name = "N/A"
+            }
+            if(variable_name==null){
+                variable_name= "N/A"
+            }
+            if(organization==null){
+                organization= "N/A"
+            }
+            if(quality==null){
+                quality= "N/A"
+            }
+            if(method==null){
+                method= "N/A"
+            }
+            if(datatype==null){
+                datatype= "N/A"
+            }
+            if(valuetype==null){
+                valuetype= "N/A"
+            }
+            if(samplemedium==null){
+                samplemedium= "N/A"
+            }
+
+            var dataset = {name:site_name,variable:variable_name,organization:organization,quality:quality,method:method,datatype:datatype,valuetype:valuetype,
+                samplemedium:samplemedium, count:count,mean:mean,median:median,stdev:stdev}
+            var table = $('#example').DataTable();
+            table.row.add(dataset).draw();
+
+
+
+
+            //end new table
+
+
             $("#app-content-wrapper #app-content #app-navigation").css({overflow:"auto"});
 
 
@@ -324,9 +374,45 @@ function myFunc(id){
 }
 
 var popupDiv = $('#welcome-popup');
+  // Add event listener for opening and closing details
+    $('#example tbody').on('click', 'td.details-control', function () {
+        var tr = $(this).closest('tr');
+        var row = table.row( tr );
 
+        if ( row.child.isShown() ) {
+            // This row is already open - close it
+            row.child.hide();
+            tr.removeClass('shown');
+        }
+        else {
+            // Open this row
+            row.child( format(row.data()) ).show();
+            tr.addClass('shown');
+        }
+    } );
+
+    //end new table
 $(document).ready(function (callback) {
     var res_id = find_query_parameter("res_id");
+
+    var table = $('#example').DataTable( {
+        data: data,
+        "columns": [
+            {
+                "className":      'details-control',
+                "orderable":      false,
+                "data":           null,
+                "defaultContent": ''
+            },
+            { "data": "name" },
+            { "data": "variable" },
+            { "data": "count" },
+            { "data": "mean" },
+            { "data": "median" },
+            { "data": "organization" }
+        ],
+        "order": [[1, 'asc']]
+    } );
 
     if (res_id == null) {
         if (document.referrer == "https://apps.hydroshare.org/apps/") {
@@ -367,6 +453,7 @@ $(document).ready(function (callback) {
 
 function finishloading(callback)
 {
+    $(window).resize();
     $('#ts-chart').show()
     $('#stats-table').show();
     $('#button').show();
@@ -392,3 +479,31 @@ function addingseries(callback){
 
 
 }
+
+/* Formatting function for row details - modify as you need */
+function format ( d ) {
+    // `d` is the original data object for the row
+    return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
+        '<tr>'+
+            '<td>Full name:</td>'+
+            '<td>'+d.quality+'</td>'+
+        '</tr>'+
+        '<tr>'+
+            '<td>Extension number:</td>'+
+            '<td>'+d.method+'</td>'+
+        '</tr>'+
+        '<tr>'+
+            '<td>Extra info:</td>'+
+            '<td>'+ d.datatype+'</td>'+
+        '</tr>'+
+            '<tr>'+
+            '<td>Full name:</td>'+
+            '<td>'+d.valuetype+'</td>'+
+        '</tr>'+
+            '<tr>'+
+            '<td>Full name:</td>'+
+            '<td>'+d.samplemedium+'</td>'+
+        '</tr>'
+    '</table>';
+}
+

@@ -163,6 +163,18 @@ display:none !important;
     margine-right: auto;
     text-align:center;
 }
+td.details-control {
+    background:  url('byu-medallion.png') no-repeat center center;
+    cursor: pointer;
+}
+tr.shown td.details-control {
+    background:  url('globe.png') no-repeat center center;
+}
+
+
+
+
+
 
 .cssload-loader * {
 	box-sizing: border-box;
