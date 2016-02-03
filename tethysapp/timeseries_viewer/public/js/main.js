@@ -292,7 +292,7 @@ function add_series_to_chart(chart, res_id,number1) {
             "<td>" + json.median + "</td>" +
             "<td>" + json.stdev.toFixed(4) + "</td></tr>";
 
-            $("#stats-table").append(stats_info);
+            //$("#stats-table").append(stats_info);
 
             //new table
             var site_name = json.site_name
@@ -332,20 +332,14 @@ function add_series_to_chart(chart, res_id,number1) {
             if(samplemedium==null){
                 samplemedium= "N/A"
             }
-
-            var dataset = {name:site_name,variable:variable_name,organization:organization,quality:quality,method:method,datatype:datatype,valuetype:valuetype,
+            var hi = "<td style='text-align:center' bgcolor = "+chart.series[number].color+"><input id ="+number
+                + " type='checkbox' STYLE ='color:"+chart.series[number].color+"' onClick ='myFunc(this.id);'checked = 'checked'>" + "</td>"
+            var dataset = {legend:hi,name:site_name,variable:variable_name,organization:organization,quality:quality,method:method,datatype:datatype,valuetype:valuetype,
                 samplemedium:samplemedium, count:count,mean:mean,median:median,stdev:stdev}
             var table = $('#example').DataTable();
             table.row.add(dataset).draw();
 
-
-
-
             //end new table
-
-
-            $("#app-content-wrapper #app-content #app-navigation").css({overflow:"auto"});
-
 
             if (number == number1-1)//checks to see if all the data is loaded before displaying
             {
@@ -374,7 +368,39 @@ function myFunc(id){
 }
 
 var popupDiv = $('#welcome-popup');
-  // Add event listener for opening and closing details
+
+
+    //end new table
+$(document).ready(function (callback) {
+    var res_id = find_query_parameter("res_id");
+
+    var table = $('#example').DataTable( {
+        "createdRow":function(row,data,dataIndex){
+
+            $('td',row).eq(1).css("backgroundColor", chart.series[number].color)
+            console.log("cell added")
+        },
+        data: data,
+        "columns":
+            [
+            {
+                "className":      'details-control',
+                "orderable":      false,
+                "data":           null,
+                "defaultContent": ''
+            },
+            {   "className": "legend",
+                "data": "legend" },
+            { "data": "name" },
+            { "data": "variable" },
+            { "data": "count" },
+            { "data": "mean" },
+            { "data": "median" },
+            { "data": "organization" }
+            ],
+        "order": [[1, 'asc']]
+    } );
+    // Add event listener for opening and closing details
     $('#example tbody').on('click', 'td.details-control', function () {
         var tr = $(this).closest('tr');
         var row = table.row( tr );
@@ -389,29 +415,6 @@ var popupDiv = $('#welcome-popup');
             row.child( format(row.data()) ).show();
             tr.addClass('shown');
         }
-    } );
-
-    //end new table
-$(document).ready(function (callback) {
-    var res_id = find_query_parameter("res_id");
-
-    var table = $('#example').DataTable( {
-        data: data,
-        "columns": [
-            {
-                "className":      'details-control',
-                "orderable":      false,
-                "data":           null,
-                "defaultContent": ''
-            },
-            { "data": "name" },
-            { "data": "variable" },
-            { "data": "count" },
-            { "data": "mean" },
-            { "data": "median" },
-            { "data": "organization" }
-        ],
-        "order": [[1, 'asc']]
     } );
 
     if (res_id == null) {
@@ -429,7 +432,7 @@ $(document).ready(function (callback) {
 
     $('#ts-chart').highcharts(chart_options);
     $('#ts-chart').hide()
-    $('#stats-table').hide();
+    $('#stat_div').hide();
     $('#button').hide();
 
 
@@ -455,10 +458,11 @@ function finishloading(callback)
 {
     $(window).resize();
     $('#ts-chart').show()
-    $('#stats-table').show();
+    $('#stat_div').show();
     $('#button').show();
-    $('#loading').hide();
     $(window).resize();
+    $('#loading').hide();
+
 }
 function addingseries(callback){
      var res_id = find_query_parameter("res_id");
@@ -485,23 +489,23 @@ function format ( d ) {
     // `d` is the original data object for the row
     return '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
         '<tr>'+
-            '<td>Full name:</td>'+
+            '<td>Quality:</td>'+
             '<td>'+d.quality+'</td>'+
         '</tr>'+
         '<tr>'+
-            '<td>Extension number:</td>'+
+            '<td>Method:</td>'+
             '<td>'+d.method+'</td>'+
         '</tr>'+
         '<tr>'+
-            '<td>Extra info:</td>'+
+            '<td>Data Type:</td>'+
             '<td>'+ d.datatype+'</td>'+
         '</tr>'+
             '<tr>'+
-            '<td>Full name:</td>'+
+            '<td>Value Type:</td>'+
             '<td>'+d.valuetype+'</td>'+
         '</tr>'+
             '<tr>'+
-            '<td>Full name:</td>'+
+            '<td>Sample Medium:</td>'+
             '<td>'+d.samplemedium+'</td>'+
         '</tr>'
     '</table>';

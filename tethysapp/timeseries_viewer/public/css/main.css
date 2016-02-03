@@ -63,10 +63,6 @@ display:none !important;
   left: -350px;
   width: 0px;
   height:100%;
-
-
-
-
 }
 
 #app-content-wrapper.show-nav #app-content {
@@ -81,9 +77,6 @@ display:none !important;
   -ms-transform: translate3d(0px, 0, 0);
   -o-transform: translate3d(0px, 0, 0);
    transform: translate3d(0px, 0, 0);
-
-
-
 }
 #app-header .tethys-app-header .icon-wrapper img{
     height: 48px !important;
@@ -112,35 +105,8 @@ display:none !important;
 }
 
 
-
-.collapsibleList li > input + * {
- display: block;
-}
-
-.collapsibleList li > input:checked + * {
- display: none;
-}
-
-.collapsibleList li > input {
- display: none;
-}
-
-.collapsibleList label {
- cursor: pointer;
-}
-
 #metadata_test1{
     font-size:20px;
-}
-
-#stat_div{
-    max-height:200px;
-    width: 100%;
-    overflow:auto;
-
-}
-#stats-table{
-    height:100px;
 }
 
 
@@ -164,15 +130,12 @@ display:none !important;
     text-align:center;
 }
 td.details-control {
-    background:  url('byu-medallion.png') no-repeat center center;
+    background:  url('open.png') no-repeat center center;
     cursor: pointer;
 }
 tr.shown td.details-control {
-    background:  url('globe.png') no-repeat center center;
+	background: url('close.png') no-repeat center center;
 }
-
-
-
 
 
 
