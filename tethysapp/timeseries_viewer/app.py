@@ -1,10 +1,9 @@
 from tethys_apps.base import TethysAppBase, url_map_maker
-from tethys_apps.base import PersistentStore
 
 
-class TsConverter(TethysAppBase):
+class TimeSeriesViewer(TethysAppBase):
     """
-    Tethys app class for ts converter.
+    Tethys app class for time series viewer
     """
 
     name = 'CUAHSI Time Series Viewer'

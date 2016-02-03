@@ -1,2 +1,0 @@
-tethysapp
-tethysapp.ts_converter

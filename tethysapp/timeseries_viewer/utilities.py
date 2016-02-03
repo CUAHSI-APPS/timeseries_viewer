@@ -3,13 +3,11 @@ from datetime import datetime
 from datetime import timedelta
 from dateutil import parser
 from django.http import HttpResponse
-from .app import TsConverter as app
+from .app import TimeSeriesViewer as app
 import csv
 import zipfile
 import StringIO
 import requests
-from tethys_sdk.gizmos import TimeSeries
-import xml.etree.ElementTree as ET
 import time
 import numpy
 import zipfile
