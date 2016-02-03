@@ -1,7 +1,7 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from django.http import HttpResponse
-from django.core.servers.basehttp import FileWrapper
+from django.shortcuts import render
+from wsgiref.util import FileWrapper
 import os
 import utilities
 
@@ -39,4 +39,5 @@ def chart_data(request, res_id):
 
 # home page controller
 def home(request):
-    return render(request, 'timeseries_viewer/home.html', {})
+    context = {}
+    return render(request, 'timeseries_viewer/home.html', context)

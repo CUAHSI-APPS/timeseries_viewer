@@ -21,7 +21,7 @@ class TimeSeriesViewer(TethysAppBase):
         UrlMap = url_map_maker(self.root_url)
 
         url_maps = (UrlMap(name='home',
-                           url='timeseries_viewer/',
+                           url='timeseries_viewer',
                            controller='timeseries_viewer.controllers.home'),
 
                     UrlMap(name='temp_waterml',

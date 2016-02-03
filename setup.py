@@ -6,7 +6,7 @@ from tethys_apps.app_installation import custom_develop_command, custom_install_
 ### Apps Definition ###
 app_package = 'timeseries_viewer'
 release_package = 'tethysapp-' + app_package
-app_class = 'timeseries_viewer.app:TimeSeries_Viewer'
+app_class = 'timeseries_viewer.app:TimeSeriesViewer'
 app_package_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tethysapp', app_package)
 
 ### Python Dependencies ###

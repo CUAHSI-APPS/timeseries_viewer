@@ -1,15 +1,17 @@
 from lxml import etree
+import numpy
+import requests
+
 from datetime import datetime
 from datetime import timedelta
 from dateutil import parser
 from django.http import HttpResponse
-from .app import TimeSeriesViewer as app
+
+from .app import TimeSeriesViewer
 import csv
 import zipfile
 import StringIO
-import requests
 import time
-import numpy
 import zipfile
 import os
 import dateutil.parser
@@ -23,7 +25,8 @@ def get_app_base_uri(request):
 
 
 def get_workspace():
-    return app.get_app_workspace().path
+    return TimeSeriesViewer.get_app_workspace().path
+    #return app.get_app_workspace().path
 
 
 def get_version(root):
