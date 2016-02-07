@@ -79,7 +79,9 @@ def parse_1_0_and_1_1(root):
             my_times = []
             my_values = []
             nodata = "-9999"  # default NoData value. The actual NoData value is read from the XML noDataValue tag
-
+            timeunit=None
+            sourcedescription = None
+            timesupport =None
             # metadata items
             units, site_name, variable_name,quality,method, organization = None, None, None, None, None, None
             unit_is_set = False
@@ -104,7 +106,6 @@ def parse_1_0_and_1_1(root):
                         if not unit_is_set:
                             units = element.text
                             unit_is_set = True
-
                     if 'noDataValue' == tag:
                         nodata = element.text
                     if 'siteName' == tag:
@@ -117,13 +118,18 @@ def parse_1_0_and_1_1(root):
                         quality = element.text
                     if 'methodDescription' == tag:
                         method = element.text
-
                     if 'dataType' == tag:
                         datatype = element.text
                     if 'valueType' == tag:
                         valuetype = element.text
                     if "sampleMedium" == tag:
                         samplemedium = element.text
+                    if "timeSupport"== tag:
+                        timesupport =element.text
+                    if"unitName"== tag:
+                        timeunit =element.text
+                    if"sourceDescription"== tag:
+                        sourcedescription =element.text
 
             # Measuring the WaterML processing time ...
             t0 = time.time()
@@ -183,7 +189,10 @@ def parse_1_0_and_1_1(root):
                 'datatype' :datatype,
                 'valuetype' :valuetype,
                 'samplemedium':samplemedium,
-                'smallest_value':smallest_value
+                'smallest_value':smallest_value,
+                'timeunit':timeunit,
+                'sourcedescription' :sourcedescription,
+                'timesupport' : timesupport
             }
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
@@ -232,6 +241,9 @@ def parse_2_0(root):
             datatype = None
             valuetype = None
             samplemedium = None
+            timeunit=None
+            sourcedescription = None
+            timesupport =None
             smallest_value = 0
             for element in root.iter():
                 if 'MeasurementTVP' in element.tag:
@@ -277,6 +289,12 @@ def parse_2_0(root):
                     valuetype = element.text
                 if "sampleMedium" in element.tag:
                     samplemedium = element.text
+                if"timeSupport"in element.text:
+                    timesupport =element.text
+                if"unitName"in element.text:
+                    timeunit =element.text
+                if"sourceDescription"in element.text:
+                    sourcedescription =element.text
 
             for i in range(0,len(keys)):
                 time_str=keys[i]
@@ -325,7 +343,10 @@ def parse_2_0(root):
                     'datatype' :datatype,
                     'valuetype' :valuetype,
                     'samplemedium':samplemedium,
-                    'smallest_value':smallest_value
+                    'smallest_value':smallest_value,
+                    'timeunit':timeunit,
+                    'sourcedescription' :sourcedescription,
+                    'timesupport' : timesupport
                     }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"
