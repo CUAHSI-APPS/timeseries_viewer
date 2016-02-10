@@ -75,6 +75,7 @@ def parse_1_0_and_1_1(root):
 
             # lists to store the time-series data
             for_graph = []
+            boxplot = []
             for_highchart = []
             my_times = []
             my_values = []
@@ -167,7 +168,18 @@ def parse_1_0_and_1_1(root):
 
             mean = numpy.mean(for_graph)
             mean = float(format(mean, '.2f'))
-            median = numpy.median(for_graph)
+            median = float(format(numpy.median(for_graph), '.2f'))
+            quar1 = float(format(numpy.percentile(for_graph,25), '.2f'))
+            quar3 = float(format(numpy.percentile(for_graph,75), '.2f'))
+            min1 = float(format(min(for_graph), '.2f'))
+            max1 = float(format(max(for_graph), '.2f'))
+            boxplot.append(1)
+            boxplot.append(min1)#adding data for the boxplot
+            boxplot.append(quar1)
+            boxplot.append(median)
+            boxplot.append(quar3)
+            boxplot.append(max1)
+            #boxplot ="hi"
             sd = numpy.std(for_graph)
 
             return {
@@ -192,7 +204,9 @@ def parse_1_0_and_1_1(root):
                 'smallest_value':smallest_value,
                 'timeunit':timeunit,
                 'sourcedescription' :sourcedescription,
-                'timesupport' : timesupport
+                'timesupport' : timesupport,
+
+                'boxplot':boxplot
             }
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
@@ -325,6 +339,7 @@ def parse_2_0(root):
 
 
 
+
             return {'time_series': ts,
                     'site_name': site_name,
                     'start_date': smallest_time,
@@ -346,7 +361,8 @@ def parse_2_0(root):
                     'smallest_value':smallest_value,
                     'timeunit':timeunit,
                     'sourcedescription' :sourcedescription,
-                    'timesupport' : timesupport
+                    'timesupport' : timesupport,
+                    'values':vals
                     }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"

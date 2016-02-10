@@ -83,10 +83,6 @@ var chart_options = {
         }
         ],
 	legend: {
-
-
-
-
 	},
 	plotOptions: {
 		line: {
@@ -117,31 +113,18 @@ function show_error(chart, error_message) {
     $('#error-message').text(error_message);
     chart.setTitle({ text: "" });
 }
+
 var number2 = -1
-
 function add_series_to_chart(chart, res_id,number1) {
-
-    console.log(number1)
-
     current_url = location.href;
     index = current_url.indexOf("timeseries-viewer");
     base_url = current_url.substring(0, index);
-
     // in the start we show the loading...
-
-
-
     // the res_id can contain multiple IDs separated by comma
-
-
-
     data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/';
-
     $.ajax({
         url: data_url,
         success: function(json) {
-
-
             // first of all check for the status
             var status = json.status;
             if (status !== 'success') {
@@ -226,41 +209,6 @@ function add_series_to_chart(chart, res_id,number1) {
                 chart.setTitle({text: 'Showing first 50000 values'})
             }
 
-            // prepare data for the metadata display
-            var site_name = json.site_name
-            var variable_name = json.variable_name
-            var organization = json.organization
-            var quality = json.quality
-            var method = json.method
-            var datatype = json.datatype
-            var valuetype = json.valuetype
-            var samplemedium = json.samplemedium
-
-            if(site_name==null){
-                site_name = "N/A"
-            }
-            if(variable_name==null){
-                variable_name= "N/A"
-            }
-            if(organization==null){
-                organization= "N/A"
-            }
-            if(quality==null){
-                quality= "N/A"
-            }
-            if(method==null){
-                method= "N/A"
-            }
-            if(datatype==null){
-                datatype= "N/A"
-            }
-            if(valuetype==null){
-                valuetype= "N/A"
-            }
-            if(samplemedium==null){
-                samplemedium= "N/A"
-            }
-
             // set the metadata elements content
             var metadata_info =
 
@@ -271,26 +219,27 @@ function add_series_to_chart(chart, res_id,number1) {
              "<b>Method: </b>"+method +"<br>"+
              "<b>Sample Medium: </b>"+samplemedium+"<br>"
 
-            $('#metadata').append(metadata_info);
-            $('#metadata_test1').append(metadata_info);
-            $('#metadata-loading').hide();
+            //$('#metadata').append(metadata_info);
+            //$('#metadata_test1').append(metadata_info);
+            //$('#metadata-loading').hide();
 
             // add the row to the statistics table
             number2 = number2+1//keeps track of row number for stats table
             number  = number2;
-            var stats_info = "<tr>" +
-            "<td style='text-align:center' bgcolor = "+chart.series[number].color+"><input id ="+number
-                + " type='checkbox'onClick ='myFunc(this.id);'checked = 'checked'>" + "</td>" +
-            "<td>" + json.site_name + "</td>" +
-            "<td>" + variable_name+", "+ datatype+", "+valuetype  + "</td>" +
-            "<td>" + organization + "</td>" +
-            "<td>" + quality + "</td>" +
-            "<td>" + method + "</td>" +
-            "<td>" + samplemedium + "</td>" +
-            "<td>" + json.count + "</td>" +
-            "<td>" + json.mean + "</td>" +
-            "<td>" + json.median + "</td>" +
-            "<td>" + json.stdev.toFixed(4) + "</td></tr>";
+            console.log(number2)
+            //var stats_info = "<tr>" +
+            //"<td style='text-align:center' bgcolor = "+chart.series[number].color+"><input id ="+number
+            //    + " type='checkbox'onClick ='myFunc(this.id);'checked = 'checked'>" + "</td>" +
+            //"<td>" + json.site_name + "</td>" +
+            //"<td>" + variable_name+", "+ datatype+", "+valuetype  + "</td>" +
+            //"<td>" + organization + "</td>" +
+            //"<td>" + quality + "</td>" +
+            //"<td>" + method + "</td>" +
+            //"<td>" + samplemedium + "</td>" +
+            //"<td>" + json.count + "</td>" +
+            //"<td>" + json.mean + "</td>" +
+            //"<td>" + json.median + "</td>" +
+            //"<td>" + json.stdev.toFixed(4) + "</td></tr>";
 
             //$("#stats-table").append(stats_info);
 
@@ -311,7 +260,9 @@ function add_series_to_chart(chart, res_id,number1) {
             var timesupport = json.timesupport
             var timeunit = json.timeunit
             var sourcedescription = json.sourcedescription
+            var boxplot_count = number2
 
+            var boxplot = json.boxplot
 
             if(site_name==null){
                 site_name = "N/A"
@@ -351,13 +302,13 @@ function add_series_to_chart(chart, res_id,number1) {
             }
 
 
-
+            console.log(boxplot)
             var legend = "<td style='text-align:center' bgcolor = "+chart.series[number].color+"><input id ="+number
                 + " type='checkbox' STYLE ='color:"+chart.series[number].color+"' onClick ='myFunc(this.id);'checked = 'checked'>" + "</td>"
             var dataset = {legend:legend,organization:organization,name:site_name,variable:variable_name,unit:unit,samplemedium:samplemedium,count:count,
                 quality:quality,method:method,datatype:datatype,valuetype:valuetype, timesupport:timesupport,timeunit:timeunit,
                 sourcedescription:sourcedescription,
-                mean:mean,median:median,stdev:stdev}
+                mean:mean,median:median,stdev:stdev,boxplot:boxplot,boxplot_count:boxplot_count}
             var table = $('#example').DataTable();
             table.row.add(dataset).draw();
 
@@ -375,11 +326,8 @@ function add_series_to_chart(chart, res_id,number1) {
     });
 }
 
-
-$('#button').click(function() {
-    $('#stats-table').toggle();
-});
-function myFunc(id){
+function myFunc(id)
+{
     var chart1 = $('#ts-chart').highcharts();
     var series = chart1.series[id];
         if (series.visible) {
@@ -390,8 +338,6 @@ function myFunc(id){
 }
 
 var popupDiv = $('#welcome-popup');
-
-
     //end new table
 $(document).ready(function (callback) {
     var res_id = find_query_parameter("res_id");
@@ -399,9 +345,7 @@ $(document).ready(function (callback) {
     var table = $('#example').DataTable( {
         "createdRow":function(row,data,dataIndex)
         {
-
             $('td',row).eq(0).css("backgroundColor", chart.series[number].color)
-            console.log("cell added")
         },
         data: data,
         "columns":
@@ -427,18 +371,33 @@ $(document).ready(function (callback) {
     $('#example tbody').on('click', 'td.details-control', function () {
         var tr = $(this).closest('tr');
         var row = table.row( tr );
-
-        if ( row.child.isShown() ) {
+        if ( row.child.isShown() )
+        {
             // This row is already open - close it
             row.child.hide();
             tr.removeClass('shown');
         }
-        else {
+        else
+        {
             // Open this row
+            console.log(row.data().number1)
             row.child( format(row.data()) ).show();
-            box();
-            var chart = $('#container').highcharts();
+            box(row.data().boxplot_count);
+            var series =
+            {
+                name:  'Site:'+row.data().name+
+                'Variable:'+row.data().variable,
+                data: [],
+                groupPadding:0,
+            }
+            // add the time series to the chart
+            series.data = [row.data().boxplot.map(Number)];
 
+            var name_plot = '#container'+row.data().boxplot_count
+            console.log(name_plot)
+            var chart = $(name_plot).highcharts();
+            chart.setTitle({ text: row.data().name });
+            chart.addSeries(series);
             tr.addClass('shown');
         }
     } );
@@ -485,16 +444,13 @@ $(document).ready(function (callback) {
 /* Formatting function for row details - modify as you need */
 function format ( d ) {
     // `d` is the original data object for the row
-    var chart1 = $('#container').highcharts();
-    console.log(chart1);
-    return '<object"><div id = "container" class ="highcharts-boxplot" style = "float:right"></div></object>'+
-    '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:50px;">'+
+    console.log(d.boxplot_count)
+    name ='container'+ d.boxplot_count
+    console.log(name)
 
-                '<tr>'+
-                    '<th></th>'+
-                    '<th>hello</th>'+
-                    '<th></th>'+
-                '</tr>'+
+    return '<div id = "container'+ d.boxplot_count+'"class ="highcharts-boxplot" style = "float:right;height:250px;width:40%" ></div>'+
+
+    '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:100px; margin-left:8.5%;font-size: 9pt">'+
 
         '<tr>'+
             '<td>Quality Control:</td>'+
@@ -527,56 +483,34 @@ function format ( d ) {
     '</table>';
 }
 
-function box () {
-    $('#container').highcharts({
+function box (number) {
+    var name = '#container'+number
+    console.log(name)
+
+    $(name).highcharts({
 
         chart: {
+
             type: 'boxplot'
         },
-
-        title: {
-            text: 'Highcharts box plot styling'
+        legend:{
+            enabled:false
         },
-
-        legend: {
-            enabled: false
-        },
-
         xAxis: {
-            categories: ['1', '2', '3', '4', '5'],
-            title: {
-                text: 'Experiment No.'
-            }
-        },
+            categories: 1,
+            minRange: 1,
+            labels:{enabled:false}
 
-        yAxis: {
-            title: {
-                text: 'Observations'
-            }
         },
-
+        title:{
+            align: 'center'
+        },
         plotOptions: {
-            boxplot: {
-                fillColor: '#F0F0E0',
-                lineWidth: 2,
-                medianColor: '#0C5DA5',
-                medianWidth: 3,
-                stemColor: '#A63400',
-                stemDashStyle: 'dot',
-                stemWidth: 1,
-                whiskerColor: '#3D9200',
-                whiskerLength: '20%',
-                whiskerWidth: 3
+            series: {
+                groupPadding: 0
             }
         },
 
-        series: [{
-            name: 'Observations',
-            data: [
-                [760, 801, 848, 895, 965]
-
-            ]
-        }]
 
     });
 };
@@ -588,7 +522,6 @@ function finishloading(callback)
     $('#button').show();
     $(window).resize();
     $('#loading').hide();
-
 }
 function addingseries(callback){
      var res_id = find_query_parameter("res_id");
