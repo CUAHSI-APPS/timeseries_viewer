@@ -192,11 +192,11 @@ function add_series_to_chart(chart, res_id,number1) {
             chart.addSeries(series);
             //console.log(json.smallest_value)
             if (yaxis ==0){
-                chart.yAxis[0].setTitle({ text: json.variable_name + ' ' + units });
+                chart.yAxis[0].setTitle({ text: json.variable_name + ' (' + units+')' });
                 //chart.yAxis[0].setExtremes(json.smallest_value,null,true,false);
             }
             else{
-                chart.yAxis[1].setTitle({text: json.variable_name + ' ' + units})
+                chart.yAxis[1].setTitle({text: json.variable_name + ' (' + units+')'})
                 //chart.yAxis[1].setExtremes(json.smallest_value,null,true,false);
             }
 
@@ -386,7 +386,7 @@ $(document).ready(function (callback) {
             var series =
             {
                 name:  'Site:'+row.data().name+
-                'Variable:'+row.data().variable,
+                ' Variable:'+row.data().variable,
                 data: [],
                 groupPadding:0,
             }
@@ -397,6 +397,7 @@ $(document).ready(function (callback) {
             console.log(name_plot)
             var chart = $(name_plot).highcharts();
             chart.setTitle({ text: row.data().name });
+            chart.yAxis[0].setTitle({ text: row.data().variable + ' (' + row.data().unit+')' })
             chart.addSeries(series);
             tr.addClass('shown');
         }
