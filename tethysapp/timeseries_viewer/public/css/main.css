@@ -1,6 +1,3 @@
-ul li{
-    font0size:20px;
-}
 #url_name {
 width:700px;
 }
@@ -26,6 +23,7 @@ width:700px;
     height:50px;
     width:250px;
     border-radius: 0%;
+	background: rgba(211, 211, 211, 1) !important;
 }
 #app-header .tethys-app-header {
     background: rgba(211, 211, 211, 1) !important;
@@ -95,6 +93,7 @@ display:none !important;
 
 
 #loading{
+	/*display: block !important;*/
     width: 100px;
 	height: 100px;
 	position: absolute;
@@ -129,7 +128,6 @@ tr.shown td.details-control {
 #example_paginate{
 	visibility: hidden;
 }
-
 
 .cssload-loader * {
 	box-sizing: border-box;

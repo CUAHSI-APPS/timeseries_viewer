@@ -10,6 +10,7 @@ function find_query_parameter(name) {
 
 // here we set up the configuration of the highCharts chart
 var data = [];
+
 var unit_tracker =[];
 var counter = 0;
 unit_different1=null;
@@ -104,18 +105,21 @@ var chart_options = {
 
 // shows an error message in the chart title
 function show_error(chart, error_message) {
-    chart.legend.group.hide();
-    var button = chart.exportSVGElements[0];
-    button.destroy();
-    chart.hideLoading();
-    $('#metadata-loading').hide();
+    //var button = chart.exportSVGElements[0];
+   // button.destroy();
+     $('#loading').hide();
     console.log(error_message);
+    $('#ts-chart').show()
     $('#error-message').text(error_message);
     chart.setTitle({ text: "" });
 }
 
 var number2 = -1
-function add_series_to_chart(chart, res_id,number1) {
+var unit_list =[];
+function add_series_to_chart(res_id,number1) {
+
+    var time = new Date();
+    console.log("start "+time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds());
     current_url = location.href;
     index = current_url.indexOf("timeseries-viewer");
     base_url = current_url.substring(0, index);
@@ -158,17 +162,7 @@ function add_series_to_chart(chart, res_id,number1) {
             //console.log(unit1);
             //console.log(unit_different1);
             //console.log(units);
-            if(unit1 != units && unit_different1 !=units )//this triggers if more than different units are used
-            {
-                chart.hideLoading();
-                $('#metadata-loading').hide();
-                chart.destroy();
 
-                $("#stats-table").hide();
-                $("#metadata-list").hide();
-                $('#error-message').text("Error loading time series "+ res_id+". More than two unit types detected.");
-                return;
-            }
 
             yaxis=0;
             if (same_unit == 2)
@@ -176,48 +170,50 @@ function add_series_to_chart(chart, res_id,number1) {
 
                 yaxis = 1;
             }
+            //
+            //var series =
+            //{
+            //    id: res_id,
+            //    name:  'Site: '+json.site_name
+            //    +'. Variable: ' + json.variable_name,
+            //    data: [],
+            //    yAxis: yaxis
+            //}
+            //
+            //// add the time series to the chart
+            //series.data = json.for_highchart;
+            //
+            //
+            //
+            //chart.addSeries(series);
+            ////console.log(json.smallest_value)
+            //if (yaxis ==0){
+            //    chart.yAxis[0].setTitle({ text: json.variable_name + ' (' + units+')' });
+            //    //chart.yAxis[0].setExtremes(json.smallest_value,null,true,false);
+            //}
+            //else{
+            //    chart.yAxis[1].setTitle({text: json.variable_name + ' (' + units+')'})
+            //    //chart.yAxis[1].setExtremes(json.smallest_value,null,true,false);
+            //}
 
-            var series =
-            {
-                id: res_id,
-                name:  'Site: '+json.site_name
-                +'. Variable: ' + json.variable_name,
-                data: [],
-                yAxis: yaxis
-            }
-
-            // add the time series to the chart
-            series.data = json.for_highchart;
-
-            chart.addSeries(series);
-            //console.log(json.smallest_value)
-            if (yaxis ==0){
-                chart.yAxis[0].setTitle({ text: json.variable_name + ' (' + units+')' });
-                //chart.yAxis[0].setExtremes(json.smallest_value,null,true,false);
-            }
-            else{
-                chart.yAxis[1].setTitle({text: json.variable_name + ' (' + units+')'})
-                //chart.yAxis[1].setExtremes(json.smallest_value,null,true,false);
-            }
-
-            chart.setTitle({ text: "Time Series Viewer" });
-            // now we can hide the loading... indicator
-            //chart.hideLoading();
-            chart.legend.group.hide();
-            // if we have values more than threshold, show title
-            if (json.count >= 50000) {
-                chart.setTitle({text: 'Showing first 50000 values'})
-            }
+            //chart.setTitle({ text: "Time Series Viewer" });
+            //// now we can hide the loading... indicator
+            ////chart.hideLoading();
+            //chart.legend.group.hide();
+            //// if we have values more than threshold, show title
+            //if (json.count >= 50000) {
+            //    chart.setTitle({text: 'Showing first 50000 values'})
+            //}
 
             // set the metadata elements content
-            var metadata_info =
-
-             "<b>Site: </b>"+site_name +"<br>"+
-             "<b>Variable: </b>"+variable_name+","+ datatype+","+valuetype +"<br>"+
-             "<b>Organization: </b>"+organization +"<br>"+
-             "<b>Quality: </b>"+quality +"<br>"+
-             "<b>Method: </b>"+method +"<br>"+
-             "<b>Sample Medium: </b>"+samplemedium+"<br>"
+            //var metadata_info =
+             //
+             //"<b>Site: </b>"+site_name +"<br>"+
+             //"<b>Variable: </b>"+variable_name+","+ datatype+","+valuetype +"<br>"+
+             //"<b>Organization: </b>"+organization +"<br>"+
+             //"<b>Quality: </b>"+quality +"<br>"+
+             //"<b>Method: </b>"+method +"<br>"+
+             //"<b>Sample Medium: </b>"+samplemedium+"<br>"
 
             //$('#metadata').append(metadata_info);
             //$('#metadata_test1').append(metadata_info);
@@ -226,7 +222,7 @@ function add_series_to_chart(chart, res_id,number1) {
             // add the row to the statistics table
             number2 = number2+1//keeps track of row number for stats table
             number  = number2;
-            console.log(number2)
+
             //var stats_info = "<tr>" +
             //"<td style='text-align:center' bgcolor = "+chart.series[number].color+"><input id ="+number
             //    + " type='checkbox'onClick ='myFunc(this.id);'checked = 'checked'>" + "</td>" +
@@ -242,6 +238,32 @@ function add_series_to_chart(chart, res_id,number1) {
             //"<td>" + json.stdev.toFixed(4) + "</td></tr>";
 
             //$("#stats-table").append(stats_info);
+
+
+
+
+            values1 = json.for_highchart;
+           // console.log(values1);
+            console.log('hi');
+            zingchart.exec('chartDiv', 'addplot', {
+            //data:{
+            //    dataurl: "http://localhost:8000/apps/timeseries-viewer/plot_data/cuahsi-wdc-2016-02-29-73695396/",
+            //    text: "hello"}
+
+                data : {
+                    values : values1,
+                    text : "My new plot"
+                }
+            });
+
+            var plot_attr = zingchart.exec('chartDiv', 'getobjectinfo', {
+            object : 'plot'
+         });
+
+            var line_color = plot_attr.lineColor
+        console.log(line_color)
+
+
 
             //new table
             var site_name = json.site_name
@@ -302,16 +324,43 @@ function add_series_to_chart(chart, res_id,number1) {
             }
 
 
-            console.log(boxplot)
-            var legend = "<td style='text-align:center' bgcolor = "+chart.series[number].color+"><input id ="+number
-                + " type='checkbox' STYLE ='color:"+chart.series[number].color+"' onClick ='myFunc(this.id);'checked = 'checked'>" + "</td>"
+            var unit_com = variable_name+unit
+            unit_com = unit_com.replace(/[()]/g,'')
+            unit_list.push([number,unit_com])
+
+            var  diff_unit = false;//this section checks to see if more than two units are displayed. If true it will not display the data after the first two sets of units
+            if(unit1 != units && unit_different1 !=units )//this triggers if more than 2 different units are used
+            {
+                //chart.hideLoading();
+                //$('#metadata-loading').hide();
+                //chart.destroy();
+                //$("#stats-table").hide();
+                //$("#metadata-list").hide();
+                //$('#error-message').text("Error loading time series "+ res_id+". More than two unit types detected.");
+                //return;
+                var legend = "<td style='text-align:center' bgcolor = red><input id ="+number
+                + " type='checkbox' STYLE ='color:red onClick ='myFunc(this.id);'checked'>" + "</td>"
+
+                var series = chart.series[number];
+                if (series.visible) {
+                    series.hide();
+                }
+            }
+            else{
+                var legend = "<div style='text-align:center' background-color = '#E6E6FA'><input id ="+number
+                + " type='checkbox' onClick ='myFunc(this.id);'checked = 'checked'>" + "</div>"
+            }
             var dataset = {legend:legend,organization:organization,name:site_name,variable:variable_name,unit:unit,samplemedium:samplemedium,count:count,
                 quality:quality,method:method,datatype:datatype,valuetype:valuetype, timesupport:timesupport,timeunit:timeunit,
                 sourcedescription:sourcedescription,
                 mean:mean,median:median,stdev:stdev,boxplot:boxplot,boxplot_count:boxplot_count}
+
             var table = $('#example').DataTable();
             table.row.add(dataset).draw();
 
+
+
+            console.log("end "+time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds());
             //end new table
 
             if (number == number1-1)//checks to see if all the data is loaded before displaying
@@ -328,14 +377,45 @@ function add_series_to_chart(chart, res_id,number1) {
 
 function myFunc(id)
 {
-    var chart1 = $('#ts-chart').highcharts();
-    var series = chart1.series[id];
-        if (series.visible) {
-            series.hide();
-        } else {
-            series.show();
-        }
+
+
+    var check = document.getElementById(id).checked
+    if(check == false)
+    {
+       zingchart.exec('chartDiv', 'hideplot', {
+
+
+        plotindex : id
+
+        });
+    }
+
+    if(check == true)
+    {
+        zingchart.exec('chartDiv', 'showplot', {
+            plotindex: id
+        });
+    }
+
+    //var chart1 = $('#ts-chart').highcharts();
+    //var series = chart1.series[id];
+    //    if (series.visible) {
+    //        series.hide();
+    //    } else {
+    //        series.show();
+    //    }
+    //
+    //var popupDiv1 = $('#hello');
+    // popupDiv1.modal('show');
+    //
+    //
+    //for(var i = 0; i< unit_list.length; i++)
+    //{
+    //    console.log(unit_list[i][1])
+    //}
+
 }
+
 
 var popupDiv = $('#welcome-popup');
     //end new table
@@ -345,7 +425,7 @@ $(document).ready(function (callback) {
     var table = $('#example').DataTable( {
         "createdRow":function(row,data,dataIndex)
         {
-            $('td',row).eq(0).css("backgroundColor", chart.series[number].color)
+            //$('td',row).eq(0).css("backgroundColor", 'red')
         },
         data: data,
         "columns":
@@ -380,7 +460,7 @@ $(document).ready(function (callback) {
         else
         {
             // Open this row
-            console.log(row.data().number1)
+
             row.child( format(row.data()) ).show();
             box(row.data().boxplot_count);
             var series =
@@ -394,7 +474,7 @@ $(document).ready(function (callback) {
             series.data = [row.data().boxplot.map(Number)];
 
             var name_plot = '#container'+row.data().boxplot_count
-            console.log(name_plot)
+
             var chart = $(name_plot).highcharts();
             chart.setTitle({ text: row.data().name });
             chart.yAxis[0].setTitle({ text: row.data().variable + ' (' + row.data().unit+')' })
@@ -417,13 +497,14 @@ $(document).ready(function (callback) {
     }
 
     $('#ts-chart').highcharts(chart_options);
-    $('#ts-chart').hide()
+    $('#chartDiv').hide();
+   // $('#ts-chart').hide()
     $('#stat_div').hide();
     $('#button').hide();
-
+    $('#loading').show();
 
     // add the series to the chart
-    var chart = $('#ts-chart').highcharts();
+    //var chart = $('#ts-chart').highcharts();
 
 
     addingseries();
@@ -445,9 +526,9 @@ $(document).ready(function (callback) {
 /* Formatting function for row details - modify as you need */
 function format ( d ) {
     // `d` is the original data object for the row
-    console.log(d.boxplot_count)
+
     name ='container'+ d.boxplot_count
-    console.log(name)
+
 
     return '<div id = "container'+ d.boxplot_count+'"class ="highcharts-boxplot" style = "float:right;height:250px;width:40%" ></div>'+
 
@@ -486,7 +567,7 @@ function format ( d ) {
 
 function box (number) {
     var name = '#container'+number
-    console.log(name)
+
 
     $(name).highcharts({
 
@@ -518,28 +599,109 @@ function box (number) {
 function finishloading(callback)
 {
     $(window).resize();
-    $('#ts-chart').show()
+
     $('#stat_div').show();
     $('#button').show();
+    $('#chartDiv').show();
     $(window).resize();
     $('#loading').hide();
+    var time = new Date();
+    console.log("final"+time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds());
 }
-function addingseries(callback){
+function addingseries(){
      var res_id = find_query_parameter("res_id");
-    var series_counter =0
-     var chart = $('#ts-chart').highcharts();
-     res_ids = res_id.split(",");
+     var series_counter =0
+     //var chart = $('#ts-chart').highcharts();
+     if (res_id != null)
+	{
+     	res_ids = res_id.split(",");
+	}
+	else
+     {
+        res_ids =''
+         $('#loading').hide();
+     }
     for ( var r in res_ids)
     {
         series_counter = series_counter +1
     }
-
+    counter2 = 0
      for  (var  res_id in res_ids)
     {
         counter1.push(counter);
-        add_series_to_chart(chart, res_ids[res_id],series_counter);
 
+        add_series_to_chart(res_ids[res_id],series_counter); //highchart
+        //add_series_to_chart1(chart, res_ids[res_id],series_counter); //zing chart
+        counter2 = counter2+1
+        console.log(counter2)
     };
 
+
+}
+function dtime(ref){
+    var time = new Date();
+    console.log(" "+time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds());
+}
+
+var chartData={
+    "type":"line",
+
+    "scale-x":{
+        "transform":{
+                    "type":"date",
+                    "all":"%M-%Y",
+            "item":{"visible":false}
+    }},
+
+    "series":[
+
+    ]
+  };
+
+  window.onload=function(){  // Render Method[2]
+    zingchart.render({
+      id:'chartDiv',
+      output:"svg",
+      data:chartData,
+      height:400,
+      width:600
+    });
+  };
+number_test = -1
+function add_series_to_chart1(chart, res_id,number1) {
+
+    var time = new Date();
+    console.log("start " + time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds());
+    current_url = location.href;
+    index = current_url.indexOf("timeseries-viewer");
+    base_url = current_url.substring(0, index);
+    // in the start we show the loading...
+    // the res_id can contain multiple IDs separated by comma
+    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/';
+    $.ajax({
+        url: data_url,
+        success: function (json) {
+            values1 = json.for_highchart;
+           // console.log(values1);
+            console.log('hi');
+            zingchart.exec('chartDiv', 'addplot', {
+            //data:{
+            //    dataurl: "http://localhost:8000/apps/timeseries-viewer/plot_data/cuahsi-wdc-2016-02-29-73695396/",
+            //    text: "hello"}
+
+            data : {
+                values : values1,
+                text : "My new plot"
+            }
+        });
+
+        }
+    })
+
+    number_test = number_test +1
+    if (number_test == number1-1)//checks to see if all the data is loaded before displaying
+            {
+                finishloading();
+            }
 
 }

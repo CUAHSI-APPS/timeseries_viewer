@@ -3,6 +3,7 @@ import numpy
 import requests
 
 from datetime import datetime
+import time
 from datetime import timedelta
 from dateutil import parser
 from django.http import HttpResponse
@@ -68,8 +69,9 @@ def parse_1_0_and_1_1(root):
     root_tag = root.tag.lower()
     print "root tag: " + root_tag
 
+
     # we only display the first 50000 values
-    threshold = 50000
+    threshold = 50000000
     try:
         if 'timeseriesresponse' in root_tag or 'timeseries' in root_tag or "envelope" in root_tag:
 
@@ -91,6 +93,8 @@ def parse_1_0_and_1_1(root):
             samplemedium = None
             smallest_value = 0
             # iterate through xml document and read all values
+            print "xml parse***********************************************888"
+            print datetime.now()
             for element in root.iter():
 
                 bracket_lock = -1
@@ -133,39 +137,36 @@ def parse_1_0_and_1_1(root):
                         sourcedescription =element.text
 
             # Measuring the WaterML processing time ...
-            t0 = time.time()
 
+
+            print "xml parse end ***********************************************888"
+            print datetime.now()
             for  v in range(0, len(my_values)):
                 if v >= smallest_value:
                     smallest_value = v
-
             for i in range(0, len(my_times)):
-
                 # if we get past the threshold, break
                 if i >= threshold:
                     break
-
                 # parse date and time
-                t = dateutil.parser.parse(my_times[i], ignoretz=True)
 
+                # t = dateutil.parser.parse(my_times[i], ignoretz=True)
                 # formatting time for HighCharts (milliseconds since Jan1 1970)
-                t = int((t - datetime(1970, 1, 1)).total_seconds() * 1000)
+                # t = int((t - datetime(1970, 1, 1)).total_seconds() * 1000)
+                # check to see  there are null values in the time series
+                #new time converter
+                t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%S").timetuple())
+                t =t*1000# zing chart uses miliseconds. This adds three extra zeros for correct formatting
 
-                # check to see if there are null values in the time series
                 if my_values[i] == nodata:
                     for_highchart.append([t, None])
                 else:
                     for_highchart.append([t, float(my_values[i])])
                     for_graph.append(float(my_values[i]))
-
-
             smallest_time = for_highchart[0][0]
             value_count = len(for_highchart)
             largest_time = for_highchart[value_count - 1][0]
-
             # End of measuring the WaterML processing time...
-            print "convert time time: " + str(time.time() - t0)
-
             mean = numpy.mean(for_graph)
             mean = float(format(mean, '.2f'))
             median = float(format(numpy.median(for_graph), '.2f'))
@@ -181,6 +182,8 @@ def parse_1_0_and_1_1(root):
             boxplot.append(max1)
             #boxplot ="hi"
             sd = numpy.std(for_graph)
+            print "assigned all values to variables*********************************888"
+            print datetime.now()
 
             return {
                 'site_name': site_name,
@@ -374,7 +377,8 @@ def parse_2_0(root):
 
 
 def Original_Checker(xml_file):
-
+    print "original checker start***************************"
+    print datetime.now()
     try:
         tree = etree.parse(xml_file)
         root = tree.getroot()
@@ -400,6 +404,7 @@ def read_error_file(xml_file):
 
 def unzip_waterml(request, res_id):
     print "create water ml"
+    print datetime.now()
     # this is where we'll unzip the waterML file to
     temp_dir = get_workspace()
     print temp_dir
@@ -455,6 +460,8 @@ def unzip_waterml(request, res_id):
             return False
 
     # finally we return the waterml_url
+    print "End of download***************************"
+    print datetime.now()
     return waterml_url
 
 
