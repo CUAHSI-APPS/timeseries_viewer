@@ -6,8 +6,6 @@ function find_query_parameter(name) {
   var results = regex.exec( url );
   return results == null ? null : results[1];
 }
-
-
 // here we set up the configuration of the highCharts chart
 var data = [];
 var unit_tracker =[];
@@ -17,87 +15,6 @@ var unit2=null;
 var resid_on = null;
 counter1 =[];
 // here we set up the configuration of the highCharts chart
-Highcharts.setOptions({
-    plotOptions: {
-        //area: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //arearange: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //areaspline: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //areasplinerange: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //bar: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //boxplot: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //bubble: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //column: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //columnrange: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //errorbar: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //funnel: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //gauge: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //heatmap: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //line: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //pie: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //polygon: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //pyramid: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //scatter: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //series: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //solidgauge: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //spline: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //treemap: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-        //waterfall: { animation: false, enableMouseTracking: false, stickyTracking: true, shadow: false, dataLabels: { style: { textShadow: false } } },
-    }
-    //chart: {
-//        //reflow: false,
-//        //events: {
-//        //    redraw: function() {
-//        //        console.log("highcharts redraw, rendering-done");
-//        //        $('body').addClass('rendering-done');
-//        //    }
-//        //},
-//        //animation: false
-//    },
-//    tooltip: {
-//        enabled: true,
-//        animation: true
-//    },
-//    exporting: {
-//        enabled:false
-//    },
-//    credits: {
-//        enabled: false
-//    }
-//});
-//var chartData={
-//    "type":"line",
-//    "legend":{
-//
-//  },
-//    "title":{
-//        "text": "Time Series Viewer"
-//    },
-//
-//    "scale-x":{
-//
-//        "transform":{
-//                    "type":"date",
-//                    "all":"%M-%Y",
-//            "item":{"visible":false}
-//    }},
-//    "scale-y":{
-//        //"line-color":"#29A2CC",
-//        "label":{
-//          "text":""
-//        }
-//    },
-//    "scale-y-2":{ /*you must associate your data to the correct scale when using multiple scales*/
-//        //"line-color":"#D31E1E",
-//
-//        "label":{
-//            "text":""
-//    }
-//},
-//
-//    "series":[
-//
-//    ]
-  });
 var chart_options = {
 	chart: {
 
@@ -189,17 +106,17 @@ var chart_options = {
 
 // shows an error message in the chart title
 function show_error(chart, error_message) {
-    //var button = chart.exportSVGElements[0];
-   // button.destroy();
+
      $('#loading').hide();
     console.log(error_message);
-    //$('#ts-chart').show()
+
     $('#error-message').text(error_message);
-    //chart.setTitle({ text: "" });
+
 }
 
 var number2 = -1
 var unit_list =[];
+var title = 0
 function add_series_to_chart(chart,res_id,number1,unit_off) {
     current_url = location.href;
     index = current_url.indexOf("timeseries-viewer");
@@ -278,13 +195,6 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
 
             }
 
-
-            //console.log(unit1)
-            //console.log(unit_different1)
-            //console.log(yaxis)
-
-
-
             if (same_unit == 2 )
             {
 
@@ -306,108 +216,28 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
             //
             //// add the time series to the chart
             series.data = json.for_highchart;
-            //
-            //
-            //
+
             chart.addSeries(series);
-            ////console.log(json.smallest_value)
 
-
-
-            //values1 = json.for_highchart;
-            //var scales =''
             console.log(units)
             if (y_title ==0){//sets the y-axis title and flags that data should be plotted on this axis
 
                 chart.yAxis[0].setTitle({ text: json.variable_name + ' (' + json.units+')' });
 
-                //zingchart.exec('chartDiv', 'modify', {
-                //data: {
-                //    scaleY: {
-                //        label: {
-                //            text: json.variable_name + ' (' + units+')',
-                //            fontSize: "10px"
-                //        }
-                //    }
-                //}
-                //});
-                //scales1 = "scale-x,scale-y"
-                //
-                //zingchart.exec('chartDiv', 'addplot', {
-                //        data :
-                //            {
-                //                values : values1,
-                //                scales: scales1
-                //            }
-                //        });
+
             }
             else if(y_title ==1){//sets the y-axis 2 title and flags that data should be plotted on this axis
 
                 chart.yAxis[1].setTitle({text: json.variable_name + ' (' + json.units+')'})
-                //zingchart.exec('chartDiv', 'modify', {
-                //data: {
-                //    "scale-y-2": {
-                //        label: {
-                //            text: json.variable_name + ' (' + units+')',
-                //            fontSize: "10px",
-                //            lineColor:"#29A2CC",
-                //        }
-                //    }
-                //}
-                //});
-                //scales1 = "scale-x,scale-y-2"
-                // zingchart.exec('chartDiv', 'addplot', {
-                //        data :
-                //            {
-                //                values : values1,
-                //                scales: scales1
-                //            }
-                //        });
 
             }
 
 
 
-            //// now we can hide the loading... indicator
-            ////chart.hideLoading();
             chart.legend.group.hide();
-            //// if we have values more than threshold, show title
-            //if (json.count >= 50000) {
-            //    chart.setTitle({text: 'Showing first 50000 values'})
-            //}
 
-            // set the metadata elements content
-            //var metadata_info =
-             //
-             //"<b>Site: </b>"+site_name +"<br>"+
-             //"<b>Variable: </b>"+variable_name+","+ datatype+","+valuetype +"<br>"+
-             //"<b>Organization: </b>"+organization +"<br>"+
-             //"<b>Quality: </b>"+quality +"<br>"+
-             //"<b>Method: </b>"+method +"<br>"+
-             //"<b>Sample Medium: </b>"+samplemedium+"<br>"
-
-            //$('#metadata').append(metadata_info);
-            //$('#metadata_test1').append(metadata_info);
-            //$('#metadata-loading').hide();
-
-            // add the row to the statistics table
             number2 = number2+1//keeps track of row number for stats table
             number  = number2;
-            //var stats_info = "<tr>" +
-            //"<td style='text-align:center' bgcolor = "+chart.series[number].color+"><input id ="+number
-            //    + " type='checkbox'onClick ='myFunc(this.id);'checked = 'checked'>" + "</td>" +
-            //"<td>" + json.site_name + "</td>" +
-            //"<td>" + variable_name+", "+ datatype+", "+valuetype  + "</td>" +
-            //"<td>" + organization + "</td>" +
-            //"<td>" + quality + "</td>" +
-            //"<td>" + method + "</td>" +
-            //"<td>" + samplemedium + "</td>" +
-            //"<td>" + json.count + "</td>" +
-            //"<td>" + json.mean + "</td>" +
-            //"<td>" + json.median + "</td>" +
-            //"<td>" + json.stdev.toFixed(4) + "</td></tr>";
-            //$("#stats-table").append(stats_info);
-            //new table
             var site_name = json.site_name
             var variable_name = json.variable_name
             var unit = json.units
@@ -484,13 +314,7 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
             //this section checks to see if more than two units are displayed. If true it will not display the data after the first two sets of units
             if((unit1 != units && unit2 !=units)|| unit_off_bool == true  )//this triggers if more than 2 different units are used
             {
-                //chart.hideLoading();
-                //$('#metadata-loading').hide();
-                //chart.destroy();
-                //$("#stats-table").hide();
-                //$("#metadata-list").hide();
-                //$('#error-message').text("Error loading time series "+ res_id+". More than two unit types detected.");
-                //return;
+
                 var legend = "<div style='text-align:center'><input class = 'checkbox' id ="+number+" name ="+ units+" data-resid ="+res_id
                 + " type='checkbox' onClick ='myFunc(this.id,this.name);' >" + "</div"
                 var series = chart.series[number];
@@ -500,7 +324,8 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
 
                 $('#multiple_units').html("")
                 $('#multiple_units').append('* Only two types of units are displayed at a time.');
-                 chart.setTitle({ text: "CUAHSI Time Series Viewer*" });
+                title = 1
+
             }
             else{
                  chart.setTitle({ text: "CUAHSI Time Series Viewer" });
@@ -520,6 +345,13 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
             if (number == number1-1)//checks to see if all the data is loaded before displaying
             {
                 $(window).resize();
+                if(title ==1){
+                    chart.setTitle({ text: "CUAHSI Time Series Viewer*" });
+                }
+                else{
+                    chart.setTitle({ text: "CUAHSI Time Series Viewer" });
+                }
+
                 finishloading();
 
             }
@@ -537,19 +369,6 @@ var unit3 =''
 var res = null
 function myFunc(id,name)
 {
-    //var check = document.getElementById(id).checked
-    //if(check == false)
-    //{
-    //   zingchart.exec('chartDiv', 'hideplot', {
-    //    plotindex : id
-    //    });
-    //}
-    //if(check == true)
-    //{
-    //    zingchart.exec('chartDiv', 'showplot', {
-    //        plotindex: id
-    //    });
-    //}
     var chart1 = $('#ts-chart').highcharts();
     var number_chk = $('.checkbox').length
     var selected_box = document.getElementById(id)
@@ -570,21 +389,6 @@ function myFunc(id,name)
             //first_unit =''
             if (chk_unit != unit1 && chk_unit != unit2) {
 
-                //for(i =0; i<=number_chk; i++) {
-                //
-                //    if ($('#' + i).is(':checked')) {
-                //        //console.log("checked")
-                //        var unit_name = $('#' + i).attr('name')
-                //        if (i == 0) {
-                //            check_unit.push(unit_name)
-                //            first_unit = unit_name
-                //        }
-                //        else if (first_unit != unit_name) {
-                //            check_unit.push(unit_name)
-                //        }
-                //
-                //    }
-                //}
                 var test1 = 'Please select a unit type to hide.<br>' +
                     '<input type="radio" id ="r1" name ="units" value=' + unit1 + ' checked>' + unit1 + '<br>' +
                     '<input type="radio" id ="r2" name ="units" value=' + unit2 + '>' + unit2 + '<br>' +
@@ -604,22 +408,6 @@ function myFunc(id,name)
             }
 
         }
-
-    //console.log(check_unit)
-    //var chart1 = $('#ts-chart').highcharts();
-    //var series = chart1.series[id];
-    //    if (series.visible) {
-    //        series.hide();
-    //    } else {
-    //        series.show();
-    //    }
-    //
-    //
-    //for(var i = 0; i< unit_list.length; i++)
-    //{
-    //    console.log(unit_list[i][1])
-    //}
-
 }
 
 
@@ -641,9 +429,6 @@ $(document).ready(function (callback) {
                 sTitle = "Click here to see more data"
                 this.setAttribute( 'title', sTitle );
                 } );
-                //$('#example tbody tr').setAttribute( 'title', 'hi' );
-                //$('td'.row).setAttribute('title',"hello");
-                 /* Apply the tooltips */
 
                 var table = $('#example').DataTable()
                 table.$('td').tooltip( {
@@ -656,17 +441,6 @@ $(document).ready(function (callback) {
 
 
         },
-
-        //"fnCreatedRow":function(nRow,aData, iDataIndex){
-        //    //var plot_attr = zingchart.exec('chartDiv', 'getobjectinfo', {
-        //    //object : 'plot'
-        // });
-        //    var line_color = plot_attr.lineColor
-            //$('td',nRow).eq(0).css("backgroundColor", line_color);
-
-         //   var plot_attr = zingchart.exec('chartDiv', 'getscales', {
-         //   object : 'plot'
-         //});
 
         data: data,
         "columns":
@@ -725,12 +499,7 @@ $(document).ready(function (callback) {
             ' Maximum: '+row.data().max +'  Minimum : '+row.data().min})
 
             chart.addSeries(series);
-            //chart.renderer.label('Mean: '+row.data().mean +' Median: '+row.data().median, 240, 232,0,0,true)
-            //    .css({
-            //
-            //        fontSize: '12px'
-            //    })
-            //    .add();
+
             tr.addClass('shown');
         }
     } );
@@ -749,7 +518,6 @@ $(document).ready(function (callback) {
 
     //// initialize the chart and set chart height
 
-
     //$('#chartDiv').hide();
     $('#ts-chart').hide()
     $('#stat_div').hide();
@@ -766,14 +534,6 @@ $(document).ready(function (callback) {
 
     // change the app title
     document.title = 'Time Series Viewer';
-    // force to adjust chart width when user hides or shows the side bar
-    //$("#app-content").on("transitionend webkitTransitionEnd oTransitionEnd MSTransitionEnd", function(event) {
-    //    if (event.originalEvent.propertyName == 'padding-right') {
-    //        //$(window).resize(); // this forces the chart to redraw
-    //    }
-    //});
-    //$("#chartDiv").hideAllPlots();
-
 })
 
 
@@ -816,14 +576,6 @@ function format ( d ) {
         '<tr>'+
             '<td>Source Description:</td>'+
             '<td>'+d.sourcedescription+'</td>'+
-        '</tr>'+
-        '<tr>'+
-            '<td>Mean:</td>'+
-            '<td>'+d.mean+'</td>'+
-        '</tr>'+
-            '<tr>'+
-            '<td>Median:</td>'+
-            '<td>'+d.median+'</td>'+
         '</tr>'+
     '</table>';
 }
@@ -879,12 +631,6 @@ function addingseries(unit_off){
      var res_id = find_query_parameter("res_id");
      var series_counter =0
 
-    var page_height = $(document).height();
-      var page_width = $(document).width();
-    if (page_height > 500) {
-        height1 = page_height - 225;
-    }
-
 
     var page_height = $(document).height();
     if (page_height > 500) {
@@ -892,17 +638,6 @@ function addingseries(unit_off){
     }
     console.log("highchart")
     $('#ts-chart').highcharts(chart_options);
-
-    // Render Method[2]
-    //  chart = zingchart.render({
-    //  id:'chartDiv',
-    //  output:"svg",
-    //  data:chartData,
-    //  height:height1,
-    //  width: '100%'
-    //
-    //});
-
 
      var chart = $('#ts-chart').highcharts();
 
@@ -933,13 +668,6 @@ function addingseries(unit_off){
         counter2 = counter2+1
         //console.log(counter2)
     };
-
-
-
-}
-function dtime(ref){
-    var time = new Date();
-
 }
 function multipletime()
 {
@@ -962,35 +690,3 @@ function multipletime()
     addingseries(unit_off);
 
 }
-
-
-  //window.onload=function(){
-  //   var page_height = $(document).height();
-  //    var page_width = $(document).width();
-  //  if (page_height > 500) {
-  //      height1 = page_height - 225;
-  //  }
-  //  // Render Method[2]
-  //    chart = zingchart.render({
-  //    id:'chartDiv',
-  //    output:"svg",
-  //    data:chartData,
-  //    height:height1,
-  //        width: 1200
-  //
-  //  });
-  //};
-//function hideplot(index){
-//    console.log('hide plot')
-//    console.log(index)
-//    zingchart.exec('chartDiv', 'hideplot', {
-//                plotindex : index
-//                });
-//
-//}
-// $(function () {
-//        $("example").tooltip({
-//            selector: '[data-toggle="tooltip"]',
-//            container: 'body'
-//        });
-//    })
