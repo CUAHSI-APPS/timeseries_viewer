@@ -195,6 +195,8 @@ def parse_1_0_and_1_1(root):
                 'for_highchart': for_highchart,
                 'mean': mean,
                 'median': median,
+                'max':max1,
+                'min':min1,
                 'stdev': sd,
                 'count': value_count,
                 'organization': organization,

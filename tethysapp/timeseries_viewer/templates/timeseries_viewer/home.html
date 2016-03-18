@@ -41,48 +41,37 @@ CUAHSI Time Series Viewer
     </div>
 </div>
 <!-- End Modal -->
+<div class="modal fade" id="hello" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+                <h4 class="modal-title">This application only displays two different units types at a time.</h4>
+            </div>
+            <div class="modal-body">
+                <div id="hello2">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-default" id="close-popup1" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 {{block.super}}
 {% endblock %}
 
 {% block app_content %}
 
 
-<div class="modal fade" id="hello" role="dialog">
-    <div class="modal-dialog1">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Welcome to the CUAHSI time series viewer!</h4>
-            </div>
-            <div class="modal-body">
-                <div id="welcome-info1">
-                    <p>
-                        This app should be launched from the HydroClient page on <a href='http://bcc-hiswebclient.azurewebsites.net'>CUAHSI</a>
-                    </p>
-                    <ol>
-                        <h6>1. Go to the CUAHSI HydroClient page</h6>
-                        <p>Use the map to search for the site of interest</p>
-                        <h6>2. Select time series</h6>
-                        <p>Select the time series from the search results</p>
-                        <h6>3. Launch the time series viewer</h6>
-                        <p>In your workspace, select the time series for visualization, choose Time series viewer, and launch tool.</p>
-                        <a class="btn btn-default" href='http://bcc-hiswebclient.azurewebsites.net'>Go to CUAHSI HydroClient website</a>
-                    </ol>
-                </div>
-            </div>
-            <div class="modal-footer">
-                 <div id="byu-logo-container1">
-                    <img src="{% static 'timeseries_viewer/images/byu-medallion.png' %}"/><span><i>Developed at the BYU Hydroinformatics Lab</i></span>
-                </div>
-                <button type="button" class="btn btn-default" id="close-popup1" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id ='chartDiv'></div>
+<!--<div id = chart_cont>-->
+    <!--<div id ='chartDiv'></div>-->
+<!--</div>-->
 <div id="error-message"></div>
-<!--<div id="ts-chart" class="highcharts-plot"></div>-->
+<div id="ts-chart" class="highcharts-plot"></div>
+<!--<button class='btn btn-danger' id='resett'onclick ="hideplot(1)" >Reset</button>-->
 
 <div id = "stat_div" >
     <table id="example" class="display" cellspacing="0" width="100%">
@@ -96,10 +85,14 @@ CUAHSI Time Series Viewer
                     <th>Variable Unit</th>
                     <th>Sample Medium</th>
                     <th>Value Count</th>
+
+                    <!--<th>Download Data</th>-->
                 </tr>
             </thead>
         </table>
 </div>
+<div id = 'multiple_units'></div>
+
 
 <div id = loading>
     <!--http://cssload.net/-->
@@ -121,12 +114,15 @@ CUAHSI Time Series Viewer
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.zingchart.com/zingchart.min.js"></script>
+
 
 <script src="//cdnjs.cloudflare.com/ajax/libs/dygraph/1.1.1/dygraph-combined.js"></script>
 <script src="/static/tethys_gizmos/vendor/highcharts/js/highcharts.js"></script>
 <script src="/static/tethys_gizmos/vendor/highcharts/js/highcharts-more.js"></script>
 <script src="/static/tethys_gizmos/vendor/highcharts/js/modules/exporting.js"></script>
+<!--<script src="https://code.highcharts.com/modules/boost.js"></script>-->
+<!--<script src="{% static 'timeseries_viewer/js/zingchart.min.js'%}"></script>-->
+<!--<script src="http://cdn.zingchart.com/zingchart.jquery.min.js"></script>-->
 <script src="{% static 'timeseries_viewer/js/main.js' %}"></script>
 <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
 <link href = 'https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css' rel ='stylesheet'>
@@ -135,5 +131,6 @@ CUAHSI Time Series Viewer
 
 <!--<script src = "https://code.jquery.com/jquery-1.12.0.min.js"></script>-->
   {{ block.super }}
+
 {% endblock %}
 

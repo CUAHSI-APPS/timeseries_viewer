@@ -16,6 +16,7 @@ width:700px;
 
 #inner-app-content {
     margin-right: 20px;
+
 }
 
 #app-header .tethys-app-header .icon-wrapper img
@@ -40,7 +41,10 @@ display:none !important;
 #app-header .tethys-app-header .app-title-wrapper .app-title{
     padding: 20px 0px 20px 500px;
 }
-
+#app-content.show-app-content
+{
+	padding-top: 60px !important;
+}
 #app-content-wrapper #app-content #app-navigation {
   left: -350px;
   width: 0px;
@@ -110,11 +114,11 @@ display:none !important;
     text-align:center;
 }
 td.details-control {
-    background:  url('open.png') no-repeat center center;
+    background:  url('open1.png') no-repeat center center;
     cursor: pointer;
 }
 tr.shown td.details-control {
-	background: url('close.png') no-repeat center center;
+	background: url('close1.png') no-repeat center center;
 }
 #example_length{
 	visibility: hidden;
@@ -127,6 +131,17 @@ tr.shown td.details-control {
 }
 #example_paginate{
 	visibility: hidden;
+}
+
+#chartDiv{
+	width:100% !important;
+	height:100% !important;
+
+
+}
+#chart_cont{
+	width:100% !important;
+	height:100% !important;
 }
 
 .cssload-loader * {
