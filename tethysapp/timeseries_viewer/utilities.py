@@ -1,8 +1,6 @@
 from lxml import etree
 import numpy
 import requests
-
-from datetime import datetime
 import time
 from datetime import timedelta
 from dateutil import parser
@@ -16,7 +14,7 @@ import time
 import zipfile
 import os
 import dateutil.parser
-
+from datetime import datetime
 
 def get_app_base_uri(request):
     base_url = request.build_absolute_uri()
@@ -381,10 +379,10 @@ def parse_2_0(root):
 def Original_Checker(xml_file):
     print "original checker start***************************"
     print datetime.now()
+
     try:
         tree = etree.parse(xml_file)
         root = tree.getroot()
-
         wml_version = get_version(root)
         if wml_version == '1':
             return parse_1_0_and_1_1(root)
@@ -412,14 +410,15 @@ def unzip_waterml(request, res_id):
     print temp_dir
     # get the URL of the remote zipped WaterML resource
     src = 'test'
+    print os.getcwd()
+    if not os.path.exists(temp_dir+"/id"):
+        os.makedirs(temp_dir+"/id")
 
     if 'cuahsi-wdc'in res_id:
         url_zip = 'http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
 
     else:
         url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
-
-
     r = requests.get(url_zip, verify=False)
     try:
         z = zipfile.ZipFile(StringIO.StringIO(r.content))
@@ -428,7 +427,7 @@ def unzip_waterml(request, res_id):
         try:
             for file in file_list:
                 file_data = z.read(file)
-                file_temp_name = temp_dir + '/' + res_id + '.xml'
+                file_temp_name = temp_dir + '/id/' + res_id + '.xml'
                 file_temp = open(file_temp_name, 'wb')
                 file_temp.write(file_data)
                 file_temp.close()
@@ -436,7 +435,7 @@ def unzip_waterml(request, res_id):
                 base_url = request.build_absolute_uri()
                 if "?" in base_url:
                     base_url = base_url.split("?")[0]
-                waterml_url = base_url + "temp_waterml/cuahsi/" + res_id + '.xml'
+                waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
 
         # error handling
 
@@ -470,7 +469,7 @@ def unzip_waterml(request, res_id):
 # finds the waterML file path in the workspace folder
 def waterml_file_path(res_id):
     base_path = get_workspace()
-    file_path = base_path + "/" + res_id
+    file_path = base_path + "/id/" + res_id
     if not file_path.endswith('.xml'):
         file_path += '.xml'
     return file_path
@@ -480,25 +479,20 @@ def file_unzipper(url_cuashi):
     #this function is for unzipping files
     r = requests.get(url_cuashi)
     z = zipfile.ZipFile(StringIO.StringIO(r.content))
-
     file_list = z.namelist()
     for  file in file_list:
         z.read(file)
     return file_list
+def error_report(file):
+    temp_dir = get_workspace()
+    file_temp_name = temp_dir + '/error_report.txt'
+    file_temp = open(file_temp_name, 'a')
+
+    time = datetime.now()
+    time2 = time.strftime('%Y-%m-%d %H:%M')
+    print time2
 
 
-
-def csv_reader(file):
-    #this was designed to read the cuashi data which is in csv format, however, this likely change to waterml format
-    for_highchart=[]
-    z_object = file.open("nwisuv-salt_creek_at_nephi,_ut-gage_height,_feet.csv")
-    csv_cuashi = csv.reader(z_object)
-
-    for row in csv_cuashi:
-        #row   associate time_obj and val_obj with row values
-        time_obj = row[0]
-        val_obj = row[3]
-        item=[time_obj,val_obj]
-        for_highchart.append(item)
-
-    return for_highchart
+    file_temp.write(time2+"\n"+file+"\n")
+    file_temp.close()
+    file_temp.close()

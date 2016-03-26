@@ -295,23 +295,6 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
                 samplemedium= "N/A"
             }
 
-            //$("#chartDiv").minimizeLegend();
-
-        //    $("#chartDiv").hidePlot({
-        //        plotindex:number
-        //});
-
-
-        console.log(units)
-            console.log(unit)
-
-
-            //hideplot(0);
-
-            //$("#chartDiv").hideAllPlots();
-            //var download = '<a href = "http://google.com"  class="btn btn-primary">CSV</a>'+
-            //        '<a href = "http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip" class="btn btn-info">Water ML </a>'
-            //this section checks to see if more than two units are displayed. If true it will not display the data after the first two sets of units
             if((unit1 != units && unit2 !=units)|| unit_off_bool == true  )//this triggers if more than 2 different units are used
             {
 
@@ -328,7 +311,7 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
 
             }
             else{
-                 chart.setTitle({ text: "CUAHSI Time Series Viewer" });
+                 //chart.setTitle({ text: "CUAHSI Data Series Viewer" });
                 var legend = "<div style='text-align:center' '><input class = 'checkbox' id ="+number+" name ="+ units+" data-resid ="+res_id
                 + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
             }
@@ -346,10 +329,10 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
             {
                 $(window).resize();
                 if(title ==1){
-                    chart.setTitle({ text: "CUAHSI Time Series Viewer*" });
+                    chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
                 }
                 else{
-                    chart.setTitle({ text: "CUAHSI Time Series Viewer" });
+                    chart.setTitle({ text: "CUAHSI Data Series Viewer" });
                 }
 
                 finishloading();
@@ -379,35 +362,31 @@ function myFunc(id,name)
     var series = chart1.series[id];
     res = selected_box.getAttribute("data-resid")
 
-    console.log(res);
-    console.log(chk_unit)
-    console.log(unit1)
-    console.log(unit2)
-        if (series.visible ==true) {
-            series.hide();
-        } else if (series.visible == false){
-            //first_unit =''
-            if (chk_unit != unit1 && chk_unit != unit2) {
+    if (series.visible ==true) {
+        series.hide();
+    } else if (series.visible == false){
+        //first_unit =''
+        if (chk_unit != unit1 && chk_unit != unit2) {
 
-                var test1 = 'Please select a unit type to hide.<br>' +
-                    '<input type="radio" id ="r1" name ="units" value=' + unit1 + ' checked>' + unit1 + '<br>' +
-                    '<input type="radio" id ="r2" name ="units" value=' + unit2 + '>' + unit2 + '<br>' +
-                    '<button class="btn btn-danger" id="change_unit" onclick ="multipletime()" >submit</button>'
-                $('#' + id).attr('checked', false);
-                $('#hello2').html("")
-                $('#hello2').append(test1)
+            var test1 = 'Please select a unit type to hide.<br>' +
+                '<input type="radio" id ="r1" name ="units" value=' + unit1 + ' checked>' + unit1 + '<br>' +
+                '<input type="radio" id ="r2" name ="units" value=' + unit2 + '>' + unit2 + '<br>' +
+                '<button class="btn btn-danger" id="change_unit" onclick ="multipletime()" >submit</button>'
+            $('#' + id).attr('checked', false);
+            $('#hello2').html("")
+            $('#hello2').append(test1)
 
-                unit3 = chk_unit
-                var popupDiv = $('#hello');
-                popupDiv.modal('show');
-                check_unit.length = 0;
-            }
-            else
-            {
-                series.show();
-            }
-
+            unit3 = chk_unit
+            var popupDiv = $('#hello');
+            popupDiv.modal('show');
+            check_unit.length = 0;
         }
+        else
+        {
+            series.show();
+        }
+
+    }
 }
 
 
@@ -533,7 +512,7 @@ $(document).ready(function (callback) {
     //hideplot(0);
 
     // change the app title
-    document.title = 'Time Series Viewer';
+    document.title = 'Data Series Viewer';
 })
 
 
@@ -615,16 +594,12 @@ function box (number) {
 };
 function finishloading(callback)
 {
-    $(window).resize();
-
-
-    //$('#button').show();
+    $(window).resize()
     $('#stat_div').show();
     $('#ts-chart').show();
     $(window).resize();
     $('#loading').hide();
     $('#multiple_units').show();
-
 
 }
 function addingseries(unit_off){
