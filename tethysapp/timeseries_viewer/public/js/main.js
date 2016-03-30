@@ -18,6 +18,7 @@ counter1 =[];
 var chart_options = {
 	chart: {
 
+
 		zoomType: 'x',
 		resetZoomButton: {
             position: {
@@ -86,6 +87,10 @@ var chart_options = {
         ],
 	legend: {
 	},
+    series:[{
+
+    }],
+
 	plotOptions: {
 		line: {
 			color: Highcharts.getOptions().colors[90],
@@ -201,8 +206,6 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
                 yaxis = 1;
             }
             console.log(yaxis)
-
-
             //
             var series =
             {
@@ -211,6 +214,7 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
                 +'. Variable: ' + json.variable_name,
                 data: [],
                 yAxis: yaxis,
+                animation:false
 
             }
             //
