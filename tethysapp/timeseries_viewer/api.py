@@ -29,12 +29,12 @@ def list_apps(request):
             'max_series': 5,
             'icon': 'http://appsdev.hydroshare.org/static/timeseries_viewer/images/viewer_icon2.gif'}
 
-    app2 = {'name': 'Time Series Converter',
-            'url': 'http://appsdev.hydroshare.org/apps/ts-converter',
-            'description': 'Convert time series to daily, weekly, monthly, or yearly aggregate',
-            'min_series': 1,
-            'max_series': 1,
-            'icon': 'http://appsdev.hydroshare.org/static/ts_converter/images/hydro.gif',
+    app2 = {'name': 'Correlation Tool',
+            'url': 'http://appsdev.hydroshare.org/apps/correlation-tool',
+            'description': 'Correlation analysis and scatter plot of two time series',
+            'min_series': 2,
+            'max_series': 2,
+            'icon': 'http://appsdev.hydroshare.org/static/correlation_tool/images/corelation_2.gif',
             }
 
-    return JsonResponse({"apps":[app1]})
+    return JsonResponse({"apps":[app1, app2]})
