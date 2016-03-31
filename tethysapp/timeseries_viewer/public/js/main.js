@@ -25,7 +25,7 @@ var chart_options = {
                 align: 'left', // by default
                 verticalAlign: 'bottom', // by default
                 x: 0,
-                y: 60
+                y: 40
             }
         }
 	},
@@ -87,9 +87,8 @@ var chart_options = {
         ],
 	legend: {
 	},
-    series:[{
 
-    }],
+
 
 	plotOptions: {
 		line: {
@@ -236,9 +235,9 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
 
             }
 
+            console.log("series graphed")
 
-
-            chart.legend.group.hide();
+            //chart.legend.group.hide();
 
             number2 = number2+1//keeps track of row number for stats table
             number  = number2;
@@ -669,3 +668,4 @@ function multipletime()
     addingseries(unit_off);
 
 }
+

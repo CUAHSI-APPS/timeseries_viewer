@@ -16,6 +16,7 @@ width:700px;
 
 #inner-app-content {
     margin-right: 20px;
+	overflow:hidden !important;
 
 }
 
