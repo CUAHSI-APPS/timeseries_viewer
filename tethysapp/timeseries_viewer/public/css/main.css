@@ -13,7 +13,9 @@ width:700px;
 #metadata-list ul {
     font-size:16px;
 }
-
+#app-content-wrapper{
+	overflow:hidden !important;
+}
 #inner-app-content {
     margin-right: 20px;
 	overflow:hidden !important;
