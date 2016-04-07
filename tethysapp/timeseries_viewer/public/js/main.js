@@ -17,8 +17,6 @@ counter1 =[];
 // here we set up the configuration of the highCharts chart
 var chart_options = {
 	chart: {
-
-
 		zoomType: 'x',
 		resetZoomButton: {
             position: {
