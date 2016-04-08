@@ -22,7 +22,7 @@ def list_apps(request):
     """
     Controller for the list_apps page.
     """
-    app1 = {'name': 'Time Series Viewer',
+    app1 = {'name': 'Data Series Viewer',
             # 'url': 'http://appsdev.hydroshare.org/apps/timeseries-viewer',
             'url': 'http://apps.hydroshare.org/apps/timeseries-viewer',
             'description': 'View graph and descriptive statistics for selected time series',
