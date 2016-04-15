@@ -111,7 +111,6 @@ function show_error(chart, error_message) {
 
      $('#loading').hide();
     console.log(error_message);
-
     $('#error-message').text(error_message);
 
 }
@@ -523,9 +522,9 @@ function format ( d ) {
     // `d` is the original data object for the row
 
     name ='container'+ d.boxplot_count
+    console.log("hello world")
 
-
-    return '<div id = "container'+ d.boxplot_count+'"class ="highcharts-boxplot" style = "float:right;height:250px;width:40%" ></div>'+
+    return '<div id = "container'+ d.boxplot_count+'"class ="highcharts-boxplot" style = "float:right;height:300px;width:40%" ></div>'+
 
     '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:100px; margin-left:8.5%;font-size: 9pt">'+
 
@@ -580,6 +579,14 @@ function box (number) {
             minRange: 1,
             labels:{enabled:false}
 
+        },
+        yAxis:{
+            labels:{
+                style:{
+                    width:'20px'
+                },
+                step:1
+            }
         },
         title:{
             align: 'center'

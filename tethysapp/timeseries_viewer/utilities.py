@@ -64,14 +64,16 @@ def time_to_int(t):
 
 def parse_1_0_and_1_1(root):
     print "running parse_1_0_and_1_1"
+    print root
     root_tag = root.tag.lower()
-    print "root tag: " + root_tag
+    print root_tag
+    print "AAAAAAAAAAAAAAAAAAAAAAAAAA"
 
 
     # we only display the first 50000 values
     threshold = 50000000
     try:
-        if 'timeseriesresponse' in root_tag or 'timeseries' in root_tag or "envelope" in root_tag:
+        if 'timeseriesresponse' in root_tag or 'timeseries' in root_tag or "envelope" in root_tag or 'timeSeriesResponse' in root_tag:
 
             # lists to store the time-series data
             for_graph = []
@@ -92,7 +94,7 @@ def parse_1_0_and_1_1(root):
             smallest_value = 0
             # iterate through xml document and read all values
             print "xml parse***********************************************888"
-            print datetime.now()
+
             for element in root.iter():
 
                 bracket_lock = -1
@@ -102,10 +104,14 @@ def parse_1_0_and_1_1(root):
 
                 if 'value' == tag:
                     my_times.append(element.attrib['dateTime'])
+                    try:
+                        quality= element.attrib['qualityControlLevel']
+                    except:
+                        quality1 =''
                     my_values.append(element.text)
                 else:
                     # in the xml there is a unit for the value, then for time. just take the first
-                    if 'unitName' == tag:
+                    if 'unitName' == tag or 'units' ==tag:
                         if not unit_is_set:
                             units = element.text
                             unit_is_set = True
@@ -115,11 +121,11 @@ def parse_1_0_and_1_1(root):
                         site_name = element.text
                     if 'variableName' == tag:
                         variable_name = element.text
-                    if 'organization'==tag:
+                    if 'organization'==tag or 'Organization'==tag:
                         organization = element.text
                     if 'definition' == tag:
                         quality = element.text
-                    if 'methodDescription' == tag:
+                    if 'methodDescription' == tag or 'MethodDescription'==tag:
                         method = element.text
                     if 'dataType' == tag:
                         datatype = element.text
@@ -127,11 +133,11 @@ def parse_1_0_and_1_1(root):
                         valuetype = element.text
                     if "sampleMedium" == tag:
                         samplemedium = element.text
-                    if "timeSupport"== tag:
+                    if "timeSupport"== tag or"timeInterval" ==tag:
                         timesupport =element.text
-                    if"unitName"== tag:
+                    if"unitName"== tag or "UnitName"==tag:
                         timeunit =element.text
-                    if"sourceDescription"== tag:
+                    if"sourceDescription"== tag or "SourceDescription"==tag:
                         sourcedescription =element.text
 
             # Measuring the WaterML processing time ...
@@ -153,7 +159,11 @@ def parse_1_0_and_1_1(root):
                 # t = int((t - datetime(1970, 1, 1)).total_seconds() * 1000)
                 # check to see  there are null values in the time series
                 #new time converter
-                t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%S").timetuple())
+                try:
+                    t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%S").timetuple())
+                except:
+                    t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%SZ").timetuple())
+
                 t =t*1000# zing chart uses miliseconds. This adds three extra zeros for correct formatting
 
                 if my_values[i] == nodata:
@@ -407,6 +417,7 @@ def unzip_waterml(request, res_id):
     print datetime.now()
     # this is where we'll unzip the waterML file to
     temp_dir = get_workspace()
+    waterml_url = ''
     print temp_dir
     # get the URL of the remote zipped WaterML resource
     src = 'test'
