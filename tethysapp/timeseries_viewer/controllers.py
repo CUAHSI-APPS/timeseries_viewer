@@ -15,7 +15,6 @@ def temp_waterml(request, id):
     file_path = base_path + "/" +id
     response = HttpResponse(FileWrapper(open(file_path)), content_type='application/xml')
 
-    print datetime.now()
     return response
 
 

@@ -63,11 +63,9 @@ def time_to_int(t):
 
 
 def parse_1_0_and_1_1(root):
-    print "running parse_1_0_and_1_1"
-    print root
+
     root_tag = root.tag.lower()
-    print root_tag
-    print "AAAAAAAAAAAAAAAAAAAAAAAAAA"
+
 
 
     # we only display the first 50000 values
@@ -93,7 +91,7 @@ def parse_1_0_and_1_1(root):
             samplemedium = None
             smallest_value = 0
             # iterate through xml document and read all values
-            print "xml parse***********************************************888"
+
 
             for element in root.iter():
 
@@ -103,7 +101,10 @@ def parse_1_0_and_1_1(root):
                     tag = element.tag[bracket_lock+1:]     # Takes only actual tag, no namespace
 
                 if 'value' == tag:
-                    my_times.append(element.attrib['dateTime'])
+                    try:
+                        my_times.append(element.attrib['dateTimeUTC'])
+                    except:
+                        my_times.append(element.attrib['dateTime'])
                     try:
                         quality= element.attrib['qualityControlLevel']
                     except:
@@ -143,8 +144,7 @@ def parse_1_0_and_1_1(root):
             # Measuring the WaterML processing time ...
 
 
-            print "xml parse end ***********************************************888"
-            print datetime.now()
+
             for  v in range(0, len(my_values)):
                 if v >= smallest_value:
                     smallest_value = v
@@ -163,8 +163,7 @@ def parse_1_0_and_1_1(root):
                     t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%S").timetuple())
                 except:
                     t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%SZ").timetuple())
-
-                t =t*1000# zing chart uses miliseconds. This adds three extra zeros for correct formatting
+                t =t*1000# This adds three extra zeros for correct formatting
 
                 if my_values[i] == nodata:
                     for_highchart.append([t, None])
@@ -190,8 +189,7 @@ def parse_1_0_and_1_1(root):
             boxplot.append(max1)
             #boxplot ="hi"
             sd = numpy.std(for_graph)
-            print "assigned all values to variables*********************************888"
-            print datetime.now()
+
 
             return {
                 'site_name': site_name,
@@ -307,7 +305,7 @@ def parse_2_0(root):
 
                 if 'definition' in element.tag:
                     quality = element.text
-                    print "the quality"+quality
+
                 if 'methodDescription' in element.tag:
                     method = element.text
                 if 'dataType' in element.tag:
@@ -387,8 +385,7 @@ def parse_2_0(root):
 
 
 def Original_Checker(xml_file):
-    print "original checker start***************************"
-    print datetime.now()
+
 
     try:
         tree = etree.parse(xml_file)
@@ -413,24 +410,27 @@ def read_error_file(xml_file):
 
 
 def unzip_waterml(request, res_id):
-    print "create water ml"
-    print datetime.now()
+    # print "unzip!!!!!!!"
+    print "hello"
+    print res_id
     # this is where we'll unzip the waterML file to
     temp_dir = get_workspace()
-    waterml_url = ''
-    print temp_dir
+    # waterml_url = ''
+
     # get the URL of the remote zipped WaterML resource
     src = 'test'
-    print os.getcwd()
+
     if not os.path.exists(temp_dir+"/id"):
         os.makedirs(temp_dir+"/id")
-
+    print "id directory"
     if 'cuahsi-wdc'in res_id:
-        url_zip = 'http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
-
+        # url_zip = 'http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
+        url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
     else:
         url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
     r = requests.get(url_zip, verify=False)
+
+    print url_zip
     try:
         z = zipfile.ZipFile(StringIO.StringIO(r.content))
         file_list = z.namelist()
@@ -472,8 +472,7 @@ def unzip_waterml(request, res_id):
             return False
 
     # finally we return the waterml_url
-    print "End of download***************************"
-    print datetime.now()
+
     return waterml_url
 
 
@@ -501,7 +500,7 @@ def error_report(file):
 
     time = datetime.now()
     time2 = time.strftime('%Y-%m-%d %H:%M')
-    print time2
+
 
 
     file_temp.write(time2+"\n"+file+"\n")
