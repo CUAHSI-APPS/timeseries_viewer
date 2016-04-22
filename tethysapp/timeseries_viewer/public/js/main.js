@@ -334,8 +334,9 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
                 else{
                     chart.setTitle({ text: "CUAHSI Data Series Viewer" });
                 }
-
+                $(window).resize();
                 finishloading();
+                 $(window).resize();
 
             }
 
