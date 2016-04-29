@@ -45,5 +45,5 @@ def list_apps(request):
             'icon': 'http://appsdev.hydroshare.org/static/gap_filler_tool/images/icon.gif',
             }
 
-    # return JsonResponse({"apps":[app1, app2, app3]})
-    return JsonResponse({"apps":[app1]})
+    return JsonResponse({"apps":[app1, app2, app3]})
+    # return JsonResponse({"apps":[app1]})
