@@ -122,10 +122,11 @@ function add_series_to_chart(chart,res_id,number1,unit_off) {
     current_url = location.href;
     index = current_url.indexOf("timeseries-viewer");
     base_url = current_url.substring(0, index);
+    var src = find_query_parameter("src");
     // in the start we show the loading...
     // the res_id can contain multiple IDs separated by comma
     console.log(unit_off)
-    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/';
+    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/'+src+'/';
     $.ajax({
         url: data_url,
         success: function(json) {

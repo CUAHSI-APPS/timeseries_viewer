@@ -409,44 +409,57 @@ def read_error_file(xml_file):
         return {'status': 'invalid WaterML file'}
 
 
-def unzip_waterml(request, res_id):
+def unzip_waterml(request, res_id,src):
     # print "unzip!!!!!!!"
-    print "hello"
-    print res_id
+
     # this is where we'll unzip the waterML file to
     temp_dir = get_workspace()
     # waterml_url = ''
 
     # get the URL of the remote zipped WaterML resource
-    src = 'test'
+    print src
 
     if not os.path.exists(temp_dir+"/id"):
         os.makedirs(temp_dir+"/id")
-    print "id directory"
-    if 'cuahsi-wdc'in res_id:
+
+    if 'cuahsi'in src :
         # url_zip = 'http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
         url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
+    elif 'hydroshare' in src:
+        url_zip = 'https://www.hydroshare.org/hsapi/_internal/'+res_id+'/download-refts-bag/'
     else:
         url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
     r = requests.get(url_zip, verify=False)
 
-    print url_zip
+
     try:
         z = zipfile.ZipFile(StringIO.StringIO(r.content))
         file_list = z.namelist()
-
+        print file_list
         try:
             for file in file_list:
-                file_data = z.read(file)
-                file_temp_name = temp_dir + '/id/' + res_id + '.xml'
-                file_temp = open(file_temp_name, 'wb')
-                file_temp.write(file_data)
-                file_temp.close()
-                # getting the URL of the zip file
-                base_url = request.build_absolute_uri()
-                if "?" in base_url:
-                    base_url = base_url.split("?")[0]
-                waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
+                if 'hydroshare' in src:
+                    if 'wml_1_' in file:
+                        file_data = z.read(file)
+                        file_temp_name = temp_dir + '/id/' + res_id + '.xml'
+                        file_temp = open(file_temp_name, 'wb')
+                        file_temp.write(file_data)
+                        file_temp.close()
+                        base_url = request.build_absolute_uri()
+                        if "?" in base_url:
+                            base_url = base_url.split("?")[0]
+                        waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
+                else:
+                    file_data = z.read(file)
+                    file_temp_name = temp_dir + '/id/' + res_id + '.xml'
+                    file_temp = open(file_temp_name, 'wb')
+                    file_temp.write(file_data)
+                    file_temp.close()
+                    # getting the URL of the zip file
+                    base_url = request.build_absolute_uri()
+                    if "?" in base_url:
+                        base_url = base_url.split("?")[0]
+                    waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
 
         # error handling
 

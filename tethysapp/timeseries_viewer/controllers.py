@@ -19,13 +19,13 @@ def temp_waterml(request, id):
 
 
 # formats the time series for highcharts
-def chart_data(request, res_id):
-
+def chart_data(request, res_id, src):
+    print res_id
     # checks if we already have an unzipped xml file
     file_path = utilities.waterml_file_path(res_id)
     # if we don't have the xml file, downloads and unzips it
     if not os.path.exists(file_path):
-        utilities.unzip_waterml(request, res_id)
+        utilities.unzip_waterml(request, res_id,src)
 
     # returns an error message if the unzip_waterml failed
     if not os.path.exists(file_path):
