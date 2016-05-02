@@ -159,10 +159,14 @@ def parse_1_0_and_1_1(root):
                 # t = int((t - datetime(1970, 1, 1)).total_seconds() * 1000)
                 # check to see  there are null values in the time series
                 #new time converter
+
+                # time5 = my_times[i] used to fix an issue with WOFpy
+                # time1 = time5[:-6]
+
                 try:
                     t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%S").timetuple())
                 except:
-                    t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%SZ").timetuple())
+                    t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%SZ-").timetuple())
                 t =t*1000# This adds three extra zeros for correct formatting
 
                 if my_values[i] == nodata:
