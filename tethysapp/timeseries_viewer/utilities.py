@@ -5,7 +5,7 @@ import time
 from datetime import timedelta
 from dateutil import parser
 from django.http import HttpResponse
-
+import urllib2
 from .app import TimeSeriesViewer
 import csv
 import zipfile
@@ -166,7 +166,11 @@ def parse_1_0_and_1_1(root):
                 try:
                     t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%S").timetuple())
                 except:
-                    t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%SZ-").timetuple())
+                    try:
+                        t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%SZ-").timetuple())
+                    except:
+                        t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%SZ").timetuple())
+
                 t =t*1000# This adds three extra zeros for correct formatting
 
                 if my_values[i] == nodata:
@@ -422,7 +426,6 @@ def unzip_waterml(request, res_id,src):
 
     # get the URL of the remote zipped WaterML resource
     print src
-
     if not os.path.exists(temp_dir+"/id"):
         os.makedirs(temp_dir+"/id")
 
@@ -431,62 +434,69 @@ def unzip_waterml(request, res_id,src):
         url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
     elif 'hydroshare' in src:
         url_zip = 'https://www.hydroshare.org/hsapi/_internal/'+res_id+'/download-refts-bag/'
+    elif 'hydroshare_generic' in src:
+        target_url =  'https://www.hydroshare.org/django_irods/download/'+res_id+'/data/contents/HIS_reference_timeseries.txt'
+        data = urllib2.urlopen(target_url) # it's a file like object and works just like a file
+        for line in data: # files are iterable
+            print line
     else:
         url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
-    r = requests.get(url_zip, verify=False)
 
 
-    try:
-        z = zipfile.ZipFile(StringIO.StringIO(r.content))
-        file_list = z.namelist()
-        print file_list
+    if src != 'hydroshare_generic':
+        r = requests.get(url_zip, verify=False)
         try:
-            for file in file_list:
-                if 'hydroshare' in src:
-                    if 'wml_1_' in file:
+            z = zipfile.ZipFile(StringIO.StringIO(r.content))
+            file_list = z.namelist()
+            print file_list
+            try:
+                for file in file_list:
+                    if 'hydroshare' in src:
+                        if 'wml_1_' in file:
+                            file_data = z.read(file)
+                            file_temp_name = temp_dir + '/id/' + res_id + '.xml'
+                            file_temp = open(file_temp_name, 'wb')
+                            file_temp.write(file_data)
+                            file_temp.close()
+                            base_url = request.build_absolute_uri()
+                            if "?" in base_url:
+                                base_url = base_url.split("?")[0]
+                            waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
+
+                    else:
                         file_data = z.read(file)
                         file_temp_name = temp_dir + '/id/' + res_id + '.xml'
                         file_temp = open(file_temp_name, 'wb')
                         file_temp.write(file_data)
                         file_temp.close()
+                        # getting the URL of the zip file
                         base_url = request.build_absolute_uri()
                         if "?" in base_url:
                             base_url = base_url.split("?")[0]
                         waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
-                else:
-                    file_data = z.read(file)
-                    file_temp_name = temp_dir + '/id/' + res_id + '.xml'
-                    file_temp = open(file_temp_name, 'wb')
-                    file_temp.write(file_data)
-                    file_temp.close()
-                    # getting the URL of the zip file
-                    base_url = request.build_absolute_uri()
-                    if "?" in base_url:
-                        base_url = base_url.split("?")[0]
-                    waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
 
-        # error handling
+            # error handling
 
-        # checks to see if data is an xml
-        except etree.XMLSyntaxError as e:
-            print "Error:Not XML"
-            return False
+            # checks to see if data is an xml
+            except etree.XMLSyntaxError as e:
+                print "Error:Not XML"
+                return False
 
-        # checks to see if Url is valid
-        except ValueError, e:
-            print "Error:invalid Url"
-            return False
+            # checks to see if Url is valid
+            except ValueError, e:
+                print "Error:invalid Url"
+                return False
 
-        # checks to see if xml is formatted correctly
-        except TypeError, e:
-            print "Error:string indices must be integers not str"
-            return False
+            # checks to see if xml is formatted correctly
+            except TypeError, e:
+                print "Error:string indices must be integers not str"
+                return False
 
-    # check if the zip file is valid
-    except zipfile.BadZipfile as e:
-            error_message = "Bad Zip File"
-            print "Bad Zip file"
-            return False
+        # check if the zip file is valid
+        except zipfile.BadZipfile as e:
+                error_message = "Bad Zip File"
+                print "Bad Zip file"
+                return False
 
     # finally we return the waterml_url
 

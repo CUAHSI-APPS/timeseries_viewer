@@ -44,3 +44,16 @@ def home(request):
     print datetime.now()
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
+
+
+
+ #Code for getting waterml from hydroshare
+
+#modify utilites method to get generic resource .txt file with parameters for accessing waterml from the hydroserver
+
+    #these parameters come from the generic txt file from hydroshare
+ # service_url = 'http://worldwater.byu.edu/interactive/snotel/services/index.php/cuahsi_1_1.asmx?WSDL'
+ #        site_code =
+ #        variable_code =
+ #        client = connect_wsdl_url(service_url)
+ #        response = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
