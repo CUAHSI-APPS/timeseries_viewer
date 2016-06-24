@@ -34,8 +34,9 @@ def chart_data(request, res_id, src):
         # parses the WaterML to a chart data object
         data_for_chart = utilities.Original_Checker(file_path)
 
-        print datetime.now()
 
+    print "JSON Reponse"
+    print datetime.now()
     return JsonResponse(data_for_chart)
 
 # home page controller

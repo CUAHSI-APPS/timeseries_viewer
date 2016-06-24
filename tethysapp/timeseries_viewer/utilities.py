@@ -92,7 +92,8 @@ def parse_1_0_and_1_1(root):
             smallest_value = 0
             # iterate through xml document and read all values
 
-
+            print "parsing values from water ml"
+            print datetime.now()
             for element in root.iter():
 
                 bracket_lock = -1
@@ -197,6 +198,9 @@ def parse_1_0_and_1_1(root):
             boxplot.append(max1)
             #boxplot ="hi"
             sd = numpy.std(for_graph)
+
+            print "parse end !!!!!!!!!!!!!!!!!!!!!"
+            print datetime.now()
 
 
             return {
@@ -419,7 +423,8 @@ def read_error_file(xml_file):
 
 def unzip_waterml(request, res_id,src):
     # print "unzip!!!!!!!"
-
+    print "unzipping"
+    print datetime.now()
     # this is where we'll unzip the waterML file to
     temp_dir = get_workspace()
     # waterml_url = ''
@@ -499,7 +504,8 @@ def unzip_waterml(request, res_id,src):
                 return False
 
     # finally we return the waterml_url
-
+    print "File created"
+    print datetime.now()
     return waterml_url
 
 
