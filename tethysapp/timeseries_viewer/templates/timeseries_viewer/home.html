@@ -8,6 +8,7 @@ CUAHSI Time Series Viewer
 
 {% block app_content_wrapper_override %}
 <!-- Modal  -->
+<!--<button id = 'hello'  type="button" class="btn btn-primary">Primary</button>-->
 <div class="modal fade" id="welcome-popup" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -72,8 +73,11 @@ CUAHSI Time Series Viewer
     <!--<div id ='chartDiv'></div>-->
 <!--</div>-->
 <div id="error-message"></div>
-<div id="ts-chart" class="highcharts-plot"></div>
-<!--<button class='btn btn-danger' id='resett'onclick ="hideplot(1)" >Reset</button>-->
+<!--<div id="ts-chart" class="highcharts-plot"></div>-->
+<div id = 'chart' style='height:600px;width:100% '>
+    <div id="chartContainer"></div>
+</div>
+<!--<button class='btn btn-danger' id='reset' >Reset</button>-->
 
 <div id = "stat_div" >
     <table id="example" class="display" cellspacing="0" width="100%">
@@ -125,11 +129,13 @@ CUAHSI Time Series Viewer
 <script src="/static/tethys_gizmos/vendor/highcharts/js/highcharts.js"></script>
 <script src="/static/tethys_gizmos/vendor/highcharts/js/highcharts-more.js"></script>
 <script src="/static/tethys_gizmos/vendor/highcharts/js/modules/exporting.js"></script>
-
+<link href = 'https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css' rel ='stylesheet'>
 <script src="{% static 'timeseries_viewer/js/main.js' %}"></script>
+<script src="{% static 'timeseries_viewer/js/canvasjs.min.js' %}" type="text/javascript"></script>
+<script src="{% static 'timeseries_viewer/js/jquery.canvasjs.min.js' %}" type="text/javascript"></script>
 <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
 
-<link href = 'https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css' rel ='stylesheet'>
+
 
 
 

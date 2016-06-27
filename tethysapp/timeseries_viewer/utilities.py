@@ -15,6 +15,7 @@ import zipfile
 import os
 import dateutil.parser
 from datetime import datetime
+import pandas as pd
 
 def get_app_base_uri(request):
     base_url = request.build_absolute_uri()
@@ -66,8 +67,6 @@ def parse_1_0_and_1_1(root):
 
     root_tag = root.tag.lower()
 
-
-
     # we only display the first 50000 values
     threshold = 50000000
     try:
@@ -77,6 +76,7 @@ def parse_1_0_and_1_1(root):
             for_graph = []
             boxplot = []
             for_highchart = []
+            for_canvas = []
             my_times = []
             my_values = []
             nodata = "-9999"  # default NoData value. The actual NoData value is read from the XML noDataValue tag
@@ -90,6 +90,12 @@ def parse_1_0_and_1_1(root):
             valuetype = None
             samplemedium = None
             smallest_value = 0
+            n = None
+            v = None
+            t= 0
+            times =[]
+            x = 'x'
+            y = 'y'
             # iterate through xml document and read all values
 
             print "parsing values from water ml"
@@ -103,14 +109,33 @@ def parse_1_0_and_1_1(root):
 
                 if 'value' == tag:
                     try:
-                        my_times.append(element.attrib['dateTimeUTC'])
+                        # my_times.append(element.attrib['dateTimeUTC'])
+                        n = element.attrib['dateTimeUTC']
+
                     except:
-                        my_times.append(element.attrib['dateTime'])
+                        # my_times.append(element.attrib['dateTime'])
+                        n =element.attrib['dateTime']
+
                     try:
                         quality= element.attrib['qualityControlLevel']
                     except:
                         quality1 =''
                     my_values.append(element.text)
+                    v = element.text
+                    ti = pd.Timestamp(n)#pandas convert string to time object
+                    tii = ti.value/1000000 #gets timestamp and convert time to milliseconds
+                    t =t*1000# This adds three extra zeros for correct formatting
+
+                    if v == nodata:
+                        value = None
+                        for_canvas.append({x:tii,y:value})
+                        # for_highchart.append({x:t, y:value})
+                        # dy = str(t)+',NaN\n'
+                        # for_dy.append(dy)
+                    else:
+                        for_canvas.append({x:tii,y:float(v)})
+                        for_graph.append(float(v))
+
                 else:
                     # in the xml there is a unit for the value, then for time. just take the first
                     if 'unitName' == tag or 'units' ==tag:
@@ -141,47 +166,8 @@ def parse_1_0_and_1_1(root):
                         timeunit =element.text
                     if"sourceDescription"== tag or "SourceDescription"==tag:
                         sourcedescription =element.text
-
-            # Measuring the WaterML processing time ...
-
-
-
-            for  v in range(0, len(my_values)):
-                if v >= smallest_value:
-                    smallest_value = v
-            for i in range(0, len(my_times)):
-                # if we get past the threshold, break
-                if i >= threshold:
-                    break
-                # parse date and time
-
-                # t = dateutil.parser.parse(my_times[i], ignoretz=True)
-                # formatting time for HighCharts (milliseconds since Jan1 1970)
-                # t = int((t - datetime(1970, 1, 1)).total_seconds() * 1000)
-                # check to see  there are null values in the time series
-                #new time converter
-
-                # time5 = my_times[i] used to fix an issue with WOFpy
-                # time1 = time5[:-6]
-
-                try:
-                    t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%S").timetuple())
-                except:
-                    try:
-                        t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%SZ-").timetuple())
-                    except:
-                        t= time.mktime(datetime.strptime(my_times[i],"%Y-%m-%dT%H:%M:%SZ").timetuple())
-
-                t =t*1000# This adds three extra zeros for correct formatting
-
-                if my_values[i] == nodata:
-                    for_highchart.append([t, None])
-                else:
-                    for_highchart.append([t, float(my_values[i])])
-                    for_graph.append(float(my_values[i]))
-            smallest_time = for_highchart[0][0]
-            value_count = len(for_highchart)
-            largest_time = for_highchart[value_count - 1][0]
+            value_count = len(for_canvas)
+            # largest_time = for_canvas[value_count - 1][0]
             # End of measuring the WaterML processing time...
             mean = numpy.mean(for_graph)
             mean = float(format(mean, '.2f'))
@@ -196,21 +182,18 @@ def parse_1_0_and_1_1(root):
             boxplot.append(median)
             boxplot.append(quar3)
             boxplot.append(max1)
-            #boxplot ="hi"
             sd = numpy.std(for_graph)
-
             print "parse end !!!!!!!!!!!!!!!!!!!!!"
             print datetime.now()
-
-
             return {
                 'site_name': site_name,
-                'start_date': str(smallest_time),
-                'end_date': str(largest_time),
+                # 'start_date': str(smallest_time),
+                # 'end_date': str(largest_time),
                 'variable_name': variable_name,
                 'units': units,
                 'wml_version': '1',
-                'for_highchart': for_highchart,
+                # 'for_highchart': for_highchart,
+                'for_canvas':for_canvas,
                 'mean': mean,
                 'median': median,
                 'max':max1,
@@ -449,7 +432,9 @@ def unzip_waterml(request, res_id,src):
 
 
     if src != 'hydroshare_generic':
+        waterml_url = "test"
         r = requests.get(url_zip, verify=False)
+        # print r
         try:
             z = zipfile.ZipFile(StringIO.StringIO(r.content))
             file_list = z.namelist()
@@ -463,10 +448,10 @@ def unzip_waterml(request, res_id,src):
                             file_temp = open(file_temp_name, 'wb')
                             file_temp.write(file_data)
                             file_temp.close()
-                            base_url = request.build_absolute_uri()
-                            if "?" in base_url:
-                                base_url = base_url.split("?")[0]
-                            waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
+                            # base_url = request.build_absolute_uri()
+                            # if "?" in base_url:
+                            #     base_url = base_url.split("?")[0]
+                            # waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
 
                     else:
                         file_data = z.read(file)
@@ -475,10 +460,10 @@ def unzip_waterml(request, res_id,src):
                         file_temp.write(file_data)
                         file_temp.close()
                         # getting the URL of the zip file
-                        base_url = request.build_absolute_uri()
-                        if "?" in base_url:
-                            base_url = base_url.split("?")[0]
-                        waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
+                        # base_url = request.build_absolute_uri()
+                        # if "?" in base_url:
+                        #     base_url = base_url.split("?")[0]
+                        # waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
 
             # error handling
 
