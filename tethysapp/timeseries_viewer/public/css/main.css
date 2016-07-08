@@ -1,22 +1,8 @@
-#url_name {
-width:700px;
-}
-#url_name.form-control{
-    width:1000px;
-}
-#input_group{
-    width:100px;
-}
-#metadata-list {
-     font-size:20px;
-}
-#metadata-list ul {
-    font-size:16px;
-}
+/*makes the scroll bar appear */
 #app-content-wrapper{
 	overflow:inherit !important;
 }
-
+/*formats the logo*/
 #app-header .tethys-app-header .icon-wrapper img
 {
     height:50px;
@@ -88,12 +74,6 @@ display:none !important;
     margin-left: 10px;
 }
 
-
-#metadata_test1{
-    font-size:20px;
-}
-
-
 #images_container{
     display: block;
     margin-left: auto;
@@ -120,16 +100,6 @@ tr.shown td.details-control {
 	visibility: hidden;
 }
 
-#chartDiv{
-	width:100% !important;
-	height:100% !important;
-
-
-}
-#chart_cont{
-	width:100% !important;
-	height:100% !important;
-}
 #loading{
 	/*display: block !important;*/
     width: 300px;

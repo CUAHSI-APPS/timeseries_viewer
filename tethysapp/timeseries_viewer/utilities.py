@@ -6,6 +6,7 @@ from datetime import timedelta
 from dateutil import parser
 from django.http import HttpResponse
 import urllib2
+import urllib
 from .app import TimeSeriesViewer
 import csv
 import zipfile
@@ -79,6 +80,8 @@ def parse_1_0_and_1_1(root):
             for_canvas = []
             my_times = []
             my_values = []
+            x_value = []
+            y_value = []
             nodata = "-9999"  # default NoData value. The actual NoData value is read from the XML noDataValue tag
             timeunit=None
             sourcedescription = None
@@ -101,41 +104,73 @@ def parse_1_0_and_1_1(root):
             print "parsing values from water ml"
             print datetime.now()
             for element in root.iter():
-
                 bracket_lock = -1
                 if '}' in element.tag:
                     bracket_lock = element.tag.index('}')  # The namespace in the tag is enclosed in {}.
                     tag = element.tag[bracket_lock+1:]     # Takes only actual tag, no namespace
 
-                if 'value' == tag:
-                    try:
-                        # my_times.append(element.attrib['dateTimeUTC'])
-                        n = element.attrib['dateTimeUTC']
+                    if 'value'!= tag:
+                        # in the xml there is a unit for the value, then for time. just take the first
+                        if 'unitName' == tag or 'units' ==tag:
+                            if not unit_is_set:
+                                units = element.text
+                                unit_is_set = True
+                        if 'noDataValue' == tag:
+                            nodata = element.text
+                        if 'siteName' == tag:
+                            site_name = element.text
+                        if 'variableName' == tag:
+                            variable_name = element.text
+                        if 'organization'==tag or 'Organization'==tag:
+                            organization = element.text
+                        if 'definition' == tag:
+                            quality = element.text
+                        if 'methodDescription' == tag or 'MethodDescription'==tag:
+                            method = element.text
+                        if 'dataType' == tag:
+                            datatype = element.text
+                        if 'valueType' == tag:
+                            valuetype = element.text
+                        if "sampleMedium" == tag:
+                            samplemedium = element.text
+                        if "timeSupport"== tag or"timeInterval" ==tag:
+                            timesupport =element.text
+                        if"unitName"== tag or "UnitName"==tag:
+                            timeunit =element.text
+                        if"sourceDescription"== tag or "SourceDescription"==tag:
+                            sourcedescription =element.text
 
-                    except:
-                        # my_times.append(element.attrib['dateTime'])
-                        n =element.attrib['dateTime']
+                    elif 'value' == tag:
+                        try:
+                            # my_times.append(element.attrib['dateTimeUTC'])
+                            n = element.attrib['dateTimeUTC']
+                        except:
+                            # my_times.append(element.attrib['dateTime'])
+                            n =element.attrib['dateTime']
+                        try:
+                            quality= element.attrib['qualityControlLevel']
+                        except:
+                            quality1 =''
 
-                    try:
-                        quality= element.attrib['qualityControlLevel']
-                    except:
-                        quality1 =''
-                    my_values.append(element.text)
-                    v = element.text
-                    ti = pd.Timestamp(n)#pandas convert string to time object
-                    tii = ti.value/1000000 #gets timestamp and convert time to milliseconds
-                    t =t*1000# This adds three extra zeros for correct formatting
+                        v = element.text
 
-                    if v == nodata:
-                        value = None
-                        for_canvas.append({x:tii,y:value})
-                        # for_highchart.append({x:t, y:value})
-                        # dy = str(t)+',NaN\n'
-                        # for_dy.append(dy)
-                    else:
-                        for_canvas.append({x:tii,y:float(v)})
-                        for_graph.append(float(v))
+                        # tii = pd.Timestamp(n).value/1000000#pandas convert string to time object
+                        # tii = ti.value/1000000 #gets timestamp and convert time to milliseconds
+                        # t =t*1000# This adds three extra zeros for correct formatting
 
+                        if v == nodata:
+                            value = None
+                            # for_canvas.append({x:n,y:value})
+                            # for_graph.append(value)
+                            x_value.append(n)
+                            y_value.append(value)
+
+                        else:
+                            # for_canvas.append({x:n,y:v})
+                            v = float(element.text)
+                            for_graph.append(v)
+                            x_value.append(n)
+                            y_value.append(v)
                 else:
                     # in the xml there is a unit for the value, then for time. just take the first
                     if 'unitName' == tag or 'units' ==tag:
@@ -166,7 +201,11 @@ def parse_1_0_and_1_1(root):
                         timeunit =element.text
                     if"sourceDescription"== tag or "SourceDescription"==tag:
                         sourcedescription =element.text
-            value_count = len(for_canvas)
+
+            print "parse custom values !!!!!!!!!!!!!!!!!!!!!"
+            print datetime.now()
+
+            value_count = len(x_value)
             # largest_time = for_canvas[value_count - 1][0]
             # End of measuring the WaterML processing time...
             mean = numpy.mean(for_graph)
@@ -211,17 +250,22 @@ def parse_1_0_and_1_1(root):
                 'timeunit':timeunit,
                 'sourcedescription' :sourcedescription,
                 'timesupport' : timesupport,
-
-                'boxplot':boxplot
+                'boxplot':boxplot,
+                'xvalue':x_value,
+                'yvalue':y_value,
+                'max':max1,
+                'min':min1
             }
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
+            error_report("Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series")
             print parse_error
             return {
                 'status': parse_error
             }
     except Exception, e:
         data_error = "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
+        error_report("Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
         print data_error
         print e
         return {
@@ -372,16 +416,16 @@ def parse_2_0(root):
                     }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"
+            error_report("Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series")
             return "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"
     except:
         print "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
+        error_report("Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
 
 
 
 def Original_Checker(xml_file):
-
-
     try:
         tree = etree.parse(xml_file)
         root = tree.getroot()
@@ -391,20 +435,21 @@ def Original_Checker(xml_file):
         elif wml_version == '2.0':
             return parse_2_0(root)
     except ValueError, e:
+        error_report("xml parse error")
         return read_error_file(xml_file)
     except:
+        error_report("xml parse error")
         return read_error_file(xml_file)
-
 
 def read_error_file(xml_file):
     try:
         f = open(xml_file)
         return {'status': f.readline()}
     except:
+        error_report('invalid WaterML file')
         return {'status': 'invalid WaterML file'}
 
-
-def unzip_waterml(request, res_id,src):
+def unzip_waterml(request, res_id,src,res_id2):
     # print "unzip!!!!!!!"
     print "unzipping"
     print datetime.now()
@@ -413,7 +458,6 @@ def unzip_waterml(request, res_id,src):
     # waterml_url = ''
 
     # get the URL of the remote zipped WaterML resource
-    print src
     if not os.path.exists(temp_dir+"/id"):
         os.makedirs(temp_dir+"/id")
 
@@ -427,18 +471,40 @@ def unzip_waterml(request, res_id,src):
         data = urllib2.urlopen(target_url) # it's a file like object and works just like a file
         for line in data: # files are iterable
             print line
+    elif "xmlrest" in src:
+        url_zip = res_id2
+        res = urllib.unquote(res_id2).decode()
+        print 'AAAAAAAAAAAAAAAAAAAAA'
+        print res
+        r = requests.get(res, verify=False)
+
+        file_data = r.content
+        file_temp_name = temp_dir + '/id/test.xml'
+        file_temp = open(file_temp_name, 'wb')
+        file_temp.write(file_data)
+        file_temp.close()
     else:
         url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
 
 
-    if src != 'hydroshare_generic':
+    if src != 'hydroshare_generic' and src != 'xmlrest':
         waterml_url = "test"
+        print "request start"
+        print datetime.now()
         r = requests.get(url_zip, verify=False)
+        # r = urllib2.urlopen(url_zip)
+        # print r
+        # print r.read()
+        # print StringIO.StringIO(r.read()).read()
+        print "request end"
+        print datetime.now()
         # print r
         try:
+            # z = zipfile.ZipFile(StringIO.StringIO(r.read()))
             z = zipfile.ZipFile(StringIO.StringIO(r.content))
             file_list = z.namelist()
-            print file_list
+            print "finished getting file list"
+            print datetime.now()
             try:
                 for file in file_list:
                     if 'hydroshare' in src:
@@ -448,79 +514,82 @@ def unzip_waterml(request, res_id,src):
                             file_temp = open(file_temp_name, 'wb')
                             file_temp.write(file_data)
                             file_temp.close()
-                            # base_url = request.build_absolute_uri()
-                            # if "?" in base_url:
-                            #     base_url = base_url.split("?")[0]
-                            # waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
-
                     else:
+                        print "Reading file"
+                        print datetime.now()
                         file_data = z.read(file)
+                        print "Finished reading file"
+                        print datetime.now()
                         file_temp_name = temp_dir + '/id/' + res_id + '.xml'
+                        print "Writing file"
+                        print datetime.now()
                         file_temp = open(file_temp_name, 'wb')
                         file_temp.write(file_data)
                         file_temp.close()
-                        # getting the URL of the zip file
-                        # base_url = request.build_absolute_uri()
-                        # if "?" in base_url:
-                        #     base_url = base_url.split("?")[0]
-                        # waterml_url = base_url + "temp_waterml/cuahsi/id/" + res_id + '.xml'
-
+                        print "Finished writing file"
+                        print datetime.now()
             # error handling
-
+                print type(file_data)
             # checks to see if data is an xml
             except etree.XMLSyntaxError as e:
                 print "Error:Not XML"
+                error_report("Error:Not XML")
                 return False
 
             # checks to see if Url is valid
             except ValueError, e:
+                error_report("Error:invalid Url")
                 print "Error:invalid Url"
                 return False
 
             # checks to see if xml is formatted correctly
             except TypeError, e:
+                error_report("Error:string indices must be integers not str")
                 print "Error:string indices must be integers not str"
                 return False
 
         # check if the zip file is valid
         except zipfile.BadZipfile as e:
                 error_message = "Bad Zip File"
+                error_report(error_message)
                 print "Bad Zip file"
                 return False
 
     # finally we return the waterml_url
     print "File created"
     print datetime.now()
-    return waterml_url
+    # return waterml_url
 
 
 # finds the waterML file path in the workspace folder
 def waterml_file_path(res_id):
     base_path = get_workspace()
-    file_path = base_path + "/id/" + res_id
+    file_path = base_path + "/id/test" #+ res_id
     if not file_path.endswith('.xml'):
         file_path += '.xml'
     return file_path
 
 
-def file_unzipper(url_cuashi):
-    #this function is for unzipping files
-    r = requests.get(url_cuashi)
-    z = zipfile.ZipFile(StringIO.StringIO(r.content))
-    file_list = z.namelist()
-    for  file in file_list:
-        z.read(file)
     return file_list
-def error_report(file):
+def error_report(text):
     temp_dir = get_workspace()
     file_temp_name = temp_dir + '/error_report.txt'
     file_temp = open(file_temp_name, 'a')
-
     time = datetime.now()
     time2 = time.strftime('%Y-%m-%d %H:%M')
-
-
-
-    file_temp.write(time2+"\n"+file+"\n")
+    file_temp.write(time2+": "+text+"\n")
     file_temp.close()
+def viewer_counter():
+    temp_dir = get_workspace()
+    file_temp_name = temp_dir + '/viewer_counter.txt'
+    file_temp = open(file_temp_name, 'r+')
+    content = file_temp.read()
+    number = int(content)
+    # time = datetime.now()
+    # time2 = time.strftime('%Y-%m-%d %H:%M')
+    number  = number +1
+    number  = str(number)
+    file_temp.seek(0)
+    file_temp.write(number)
     file_temp.close()
+# def xmlrest(res_id2)

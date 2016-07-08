@@ -14,40 +14,64 @@ var unit1 = null
 var unit2 = null;
 var resid_on = null;
 counter1 = [];
+var ymax =0
+var ymin=0
+var y2max=0
+var y2min=0
 // here we set up the configuration of the highCharts chart
 var chart_options = {
     zoomEnabled: true,
     height: 600,
+    legend: {
+            cursor: "pointer",
+            itemclick: function (e) {
+                //console.log("legend click: " + e.dataPointIndex);
+                //console.log(e);
+                if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+                    e.dataSeries.visible = false;
+                } else {
+                    e.dataSeries.visible = true;
+                }
 
+                e.chart.render();
+            }
+        },
     colorSet: 'greenShades',
     title: {
         fontSize: 20,
         text: "Data Series Viewer"
     },
     toolTip: {
-        content: "{name}{y}"
+        content: "{name}{y} <br>{x}"
     },
     data: [],
     axisX: {
+
         labelFontSize: 10
     },
     axisY: {
         fontSize: 15,
         labelFontSize: 10,
         titleWrap: true,
-        titleMaxWidth: 150
+        titleMaxWidth: 150,
+        gridThickness:2,
+        includeZero: false,
+        //viewportMaximum:180,
+        //interval: 50
     },
     axisY2: {
         title: "test2",
         fontSize: 15,
         labelFontSize: 10,
-        titleWrap: true
+        titleWrap: true,
+        gridThickness:2,
+        includeZero: false,
+        //interval: 50
     }
 };
 
 // shows an error message in the chart title
 function show_error(chart, error_message) {
-
     $('#loading').hide();
     console.log(error_message);
     $('#error-message').text(error_message);
@@ -55,27 +79,49 @@ function show_error(chart, error_message) {
 var number2 = -1
 var unit_list = [];
 var title = 0
+xtime = []
 function add_series_to_chart(chart, res_id, number1, unit_off) {
+    xtime.length = 0
+    xval = ''
+    yvalu = ''
+    console.log(xtime)
     current_url = location.href;
     index = current_url.indexOf("timeseries-viewer");
     base_url = current_url.substring(0, index);
     var src = find_query_parameter("src");
+    console.log(src)
+
     // in the start we show the loading...
     // the res_id can contain multiple IDs separated by comma
-    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/' + src + '/';
+    if(src == "xmlrest"){
+        res_id1 = 'test1'
+    }
+    else{
+        res_id1 = res_id
+    }
+    console.log(res_id1)
+    var csrf_token = getCookie('csrftoken');
+    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id1 + '/' + src + '/';
     $.ajax({
+        type:"POST",
+        headers:{'X-CSRFToken':csrf_token},
+        dataType: 'json',
+        data:{'url_xml':res_id},
         url: data_url,
         success: function (json) {
             // first of all check for the status
             var status = json.status;
             if (status !== 'success') {
-                show_error(chart, "Error loading time series from " + res_id + ": " + status)
+                show_error(chart, "Error loading time series from " + res_id1 + ": " + status)
                 $('#loading').hide();
                 return;
             }
             // set the y axis title and units
             var units = json.units;
-            units = units.replace(/\s+/g, '');//removes any spaces in the units
+            if (units != null) {
+
+                units = units.replace(/\s+/g, '');//removes any spaces in the units
+            }
             if (units == null) {
                 units = "";
             }
@@ -85,11 +131,30 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             same_unit = 1//goes to 2 when more than one unit type is graphed
             yaxis = 0 //tracks which dataset set goes on which axis
             var y_title = null;//tracks which variable to use for the yaxis title
-            data1 = json.for_canvas
+            //data1 = json.for_canvas
+
+            xval = json.xvalue
+            yval = json.yvalue
+            max1= json.max
+            min1=json.min
+            stdev
+
+
+            for (i=0;i<xval.length; i++)
+            {
+                //console.log("hello")
+
+                temp_date = new Date(xval[i])
+                xtime.push({x:temp_date.getTime(),y:yval[i]})
+            }
+
+
+            data1 = xtime
+
             var chart = $("#chartContainer").CanvasJSChart()
-            console.log(unit1)
-            console.log(units)
-            console.log(unit_off)
+            //console.log(unit1)
+            //console.log(units)
+            //console.log(unit_off)
             if (unit_off == '') {
                 unit1 = unit_tracker[0];
                 if (unit1 == units) {
@@ -165,9 +230,8 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             if (valuetype == null) {
                 valuetype = "N/A"
             }
-            if (unit == null) {
-                unit = "N/A"
-            }
+
+
             if (timesupport == null) {
                 timesupport = "N/A"
             }
@@ -182,42 +246,85 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             }
             number2 = number2 + 1//keeps track of row number for stats table
             number = number2;
-            console.log(y_title)
-            if (y_title == 0) {//sets the y-axis title and flags that data should be plotted on this axis
 
+
+            //max =200
+            //min = 60
+            if (y_title == 0) {//sets the y-axis title and flags that data should be plotted on this axis
                 //chart.yAxis[0].setTitle({ text: json.variable_name + ' (' + json.units+')' });
+                if( max > ymax){
+                    ymax = max
+                }
+                console.log(ymin)
+                console.log(min)
+                if( min < ymin){
+                    ymin = min
+                }
+                console.log(ymin)
                 var newSeries =
                 {
                     type: "line",
                     axisYType: "primary",
                     //axisYType:"secondary",
                     xValueType: "dateTime",
+                    xValueFormatString:"MMM DD, YYYY: HH:mm",
                     showInLegend: false,
                     indexLabelFontSize: 1,
                     visible: true,
                     name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
                     dataPoints: data1
                 };
-                console.log("data pushed 0 " + site_name)
+                //console.log("data pushed 0 " + site_name)
                 chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
+                chart.options.axisY.titleWrap = true
                 chart.options.data.push(newSeries);
+                //maxview = Math.round(1000*(max+.1*max))/1000
+                maxview = roundUp(Math.ceil(ymax))
+                minview = roundDown(Math.floor(ymin))
+                interval = Math.round((maxview-minview)/10)
+                //console.log(maxview)
+                console.log(minview)
+                //console.log (minview)
+
+                chart.options.axisY.viewportMaximum = maxview
+                chart.options.axisY.maximum = maxview
+
+                chart.options.axisY.viewportMinimum =  minview
+                chart.options.axisY.minimum =  minview
+
+                chart.options.axisY.interval = interval
             }
             else if (y_title == 1) {//sets the y-axis 2 title and flags that data should be plotted on this axis
+                 if( max > y2max){
+                    y2max = max
+                }
+                if( min < y2min){
+                    y2min = min
+                }
                 var newSeries =
                 {
                     type: "line",
                     //axisYType:"primary",
                     axisYType: "secondary",
                     xValueType: "dateTime",
+                    xValueFormatString:"MMM DD, YYYY: HH:mm",
                     showInLegend: false,
                     indexLabelFontSize: 1,
                     visible: true,
                     name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
                     dataPoints: data1
                 };
-                console.log("data pushed 1 " + site_name)
+                //console.log("data pushed 1 " + site_name)
                 chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
+                chart.options.axisY2.titleWrap = true
                 chart.options.data.push(newSeries);
+                //maxview = Math.round(1000*(max+.1*max))/1000
+                maxview = roundUp(Math.ceil(y2max))
+                minview = roundDown(Math.floor(y2min))
+                console.log (minview)
+                chart.options.axisY2.viewportMaximum = maxview
+                chart.options.axisY2.viewportMinimum =  minview
+                chart.options.axisY2.interval = Math.round((maxview-minview)/10)
             }
             else if (y_title == 3) {//sets the y-axis 2 title and flags that data should be plotted on this axis
                 var newSeries =
@@ -239,8 +346,23 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             chart.options.axisY.titleFontSize = 15
             chart.options.axisY2.titleFontSize = 15
             chart.options.axisX.titleFontSize = 15
-            chart.options.axisY2.titleWrap = true
-            chart.options.axisY.titleWrap = false
+
+
+
+
+            //console.log(chart)
+            //console.log(chart.options.axisY.viewportMaximum)
+            //console.log(chart.options.axisY.viewportMinimum)
+            //
+            //console.log(chart.options.axisY.interval)
+            //console.log(chart.options.axisY2.viewportMaximum)
+            //console.log(chart.options.axisY2.viewportMinimum)
+            //chart.options.axisY.viewportMaximum= 350
+            //chart.options.axisY2.viewportMaximum = 330
+            //chart.options.axisY2.interval = 11
+            //console.log(chart.options.data )
+            xtime = []
+
             if ((unit1 != units && unit2 != units) || unit_off_bool == true)//this triggers if more than 2 different units are used
             {
                 var legend = "<div style='text-align:center'><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
@@ -283,7 +405,6 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             table.row.add(dataset).draw();
             //end new table
             chart.render();
-
             if (number == number1 - 1)//checks to see if all the data is loaded before displaying
             {
                 if (title == 1) {
@@ -303,6 +424,58 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             show_error("Error loading time series from " + res_id);
         }
     });
+}
+function roundUp(x){
+
+    var negative = false;
+    if(x < 0) {
+        negative = true;
+        x *= -1;
+    } var y = Math.pow(10, x.toString().length-1);
+    x = (x/y);
+    x = Math.ceil(x);
+    x = x*y;
+    if(negative)
+    {
+        x *= -1;
+    }
+    return x;
+}
+function roundDown(x){
+    //console.log(x)
+    var negative = false;
+    if(x<10 && x>=1){
+        x = 0
+        //console.log("hafasfsfsdf")
+        return x
+    }
+    else if(x < 0) {
+        if(x<0 &&x >= -10){
+            x = -10
+            return x
+        }
+        else{
+            negative = true;
+            x *= -1
+        }
+    }
+
+
+    var y = Math.pow(10, x.toString().length-1);
+    x = (x/y);
+    x = Math.floor(x);
+    x = x*y;
+
+    //console.log(x)
+
+    if(negative){
+         x *= -1;
+        //console.log(x)
+        return x;
+    }
+    else{
+        return x;
+    }
 
 }
 var unit3 = ''
@@ -337,7 +510,6 @@ function myFunc(id, name) {
             chart1.options.data[id].visible = true
             chart1.render();
         }
-
     }
 }
 
@@ -443,7 +615,7 @@ $(document).ready(function (callback) {
             chart.setTitle({text: row.data().name});
             chart.yAxis[0].setTitle({text: row.data().variable + ' (' + row.data().unit + ')'})
             chart.xAxis[0].setTitle({
-                text: 'Mean: ' + row.data().mean + ' Median: ' + row.data().median +
+                text: 'Mean: ' + row.data().mean + ' Median: ' + row.data().median +'<br>'+
                 ' Maximum: ' + row.data().max + '  Minimum : ' + row.data().min
             })
             chart.addSeries(series);
@@ -455,7 +627,7 @@ $(document).ready(function (callback) {
             $('#extra-buttons').append('<a class="btn btn-default btn" href="https://apps.hydroshare.org/apps/">Return to HydroShare Apps</a>');
         }
         popupDiv.modal('show');
-    }
+    }http://r-fiddle.org/#/query/embed?code=
     $('#stat_div').hide();
     $('#button').hide();
     $('#loading').show();
@@ -468,8 +640,6 @@ $(document).ready(function (callback) {
     // change the app title
     document.title = 'Data Series Viewer';
 })
-
-
 /* Formatting function for row details - modify as you need */
 function format(d) {
     // `d` is the original data object for the row
@@ -552,7 +722,7 @@ function finishloading(callback) {
     var chart = $("#chartContainer").CanvasJSChart()
     $("#chart").toggle();
     chart.render();
-
+    console.log(Date())
 
 }
 function addingseries(unit_off) {
@@ -589,12 +759,11 @@ function addingseries(unit_off) {
     var chart = $("#chartContainer").CanvasJSChart()
     counter2 = 0
     for (var res_id in res_ids) {
+        xtime = []
         counter1.push(counter);
         add_series_to_chart(chart, res_ids[res_id], series_counter, unit_off);
         counter2 = counter2 + 1
-
     }
-    ;
 }
 function multipletime() {
     var popupDiv = $('#hello');
@@ -610,13 +779,16 @@ function multipletime() {
     chart.options.data = []
     chart.render()
     $("#chart").toggle();
+    ymax =0
+    ymin=0
+    y2max=0
+    y2min=0
     var table = $('#example').DataTable();
     number2 = -1
     table
         .clear()
         .draw();
     addingseries(unit_off);
-
 }
 
 $('#reset').on('click', function () {
@@ -624,3 +796,18 @@ $('#reset').on('click', function () {
     chart.options.data = []
     chart.render()
 })
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
