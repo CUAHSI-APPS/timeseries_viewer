@@ -137,13 +137,10 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             yval = json.yvalue
             max1= json.max
             min1=json.min
-            stdev
-
 
             for (i=0;i<xval.length; i++)
             {
                 //console.log("hello")
-
                 temp_date = new Date(xval[i])
                 xtime.push({x:temp_date.getTime(),y:yval[i]})
             }

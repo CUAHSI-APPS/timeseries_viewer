@@ -138,6 +138,11 @@ def view_counter(request):
 def error_report(request):
     temp_dir = utilities.get_workspace()
     file_path = temp_dir + '/error_report.txt'
-    file_temp = open(file_path, 'r')
-    content = file_temp.read()
+    if not os.path.exists(temp_dir+"/error_report.txt"):
+        file_temp = open(file_path, 'a')
+        file_temp.close()
+        content = ''
+    else:
+        file_temp = open(file_path, 'r')
+        content = file_temp.read()
     return JsonResponse({"Error Reports":content})
