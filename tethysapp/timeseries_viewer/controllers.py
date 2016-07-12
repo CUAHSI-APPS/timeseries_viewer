@@ -12,6 +12,7 @@ from suds.transport import TransportError
 from suds.client import Client
 from xml.sax._exceptions import SAXParseException
 from django.conf import settings
+import uuid
 
 # -- coding: utf-8--
 
@@ -27,17 +28,19 @@ def temp_waterml(request, id):
 # formats the time series for highcharts
 def chart_data(request, res_id, src):
     test = ''
+    xml_id = None
     xml_rest = False
     if "xmlrest" in src:
         xml_rest = True
         test = request.POST['url_xml']
+        xml_id =  str(uuid.uuid4())
 
     print datetime.now()
     # checks if we already have an unzipped xml file
-    file_path = utilities.waterml_file_path(res_id,xml_rest)
+    file_path = utilities.waterml_file_path(res_id,xml_rest,xml_id)
     # if we don't have the xml file, downloads and unzips it
     if not os.path.exists(file_path):
-        utilities.unzip_waterml(request, res_id, src, test)
+        utilities.unzip_waterml(request, res_id, src, test,xml_id)
 
     # returns an error message if the unzip_waterml failed
     if not os.path.exists(file_path):
@@ -59,6 +62,7 @@ def home(request):
     # r = requests.get('http://tethys.byu.edu/apps/gaugeviewwml/waterml/?gaugeid=10254970&start=2016-06-24&end=2016-07-08', verify=False)
     # print r.content
     # getOAuthHS(request)
+
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
 

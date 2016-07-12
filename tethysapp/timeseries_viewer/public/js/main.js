@@ -99,6 +99,8 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
     else{
         res_id1 = res_id
     }
+
+
     console.log(res_id1)
     var csrf_token = getCookie('csrftoken');
     data_url = base_url + 'timeseries-viewer/chart_data/' + res_id1 + '/' + src + '/';
@@ -280,10 +282,10 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                 //maxview = Math.round(1000*(max+.1*max))/1000
                 maxview = roundUp(Math.ceil(ymax))
                 minview = roundDown(Math.floor(ymin))
-                interval = Math.round((maxview-minview)/10)
-                //console.log(maxview)
+                interval = (maxview-minview)/10
+                console.log(maxview)
                 console.log(minview)
-                //console.log (minview)
+
 
                 chart.options.axisY.viewportMaximum = maxview
                 chart.options.axisY.maximum = maxview
@@ -318,12 +320,16 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                 chart.options.axisY2.titleWrap = true
                 chart.options.data.push(newSeries);
                 //maxview = Math.round(1000*(max+.1*max))/1000
+
+
                 maxview = roundUp(Math.ceil(y2max))
                 minview = roundDown(Math.floor(y2min))
-                console.log (minview)
+                console.log(maxview)
+                console.log(minview)
+
                 chart.options.axisY2.viewportMaximum = maxview
                 chart.options.axisY2.viewportMinimum =  minview
-                chart.options.axisY2.interval = Math.round((maxview-minview)/10)
+                chart.options.axisY2.interval = ((maxview-minview)/10)
             }
             else if (y_title == 3) {//sets the y-axis 2 title and flags that data should be plotted on this axis
                 var newSeries =
@@ -345,9 +351,6 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             chart.options.axisY.titleFontSize = 15
             chart.options.axisY2.titleFontSize = 15
             chart.options.axisX.titleFontSize = 15
-
-
-
 
             //console.log(chart)
             //console.log(chart.options.axisY.viewportMaximum)

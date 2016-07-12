@@ -112,7 +112,7 @@ def parse_1_0_and_1_1(root):
 
                     if 'value'!= tag:
                         # in the xml there is a unit for the value, then for time. just take the first
-                        print tag
+
                         if 'unitName' == tag or 'units' ==tag or 'UnitName'==tag or 'unitCode'==tag:
                             if not unit_is_set:
                                 units = element.text
@@ -173,6 +173,7 @@ def parse_1_0_and_1_1(root):
 
                         else:
                             # for_canvas.append({x:n,y:v})
+
                             v = float(element.text)
                             for_graph.append(v)
                             x_value.append(n)
@@ -201,7 +202,7 @@ def parse_1_0_and_1_1(root):
             sd = numpy.std(for_graph)
             print "parse end !!!!!!!!!!!!!!!!!!!!!"
             print datetime.now()
-            print site_name
+
             return {
                 'site_name': site_name,
                 # 'start_date': str(smallest_time),
@@ -427,7 +428,7 @@ def read_error_file(xml_file):
         error_report('invalid WaterML file')
         return {'status': 'invalid WaterML file'}
 
-def unzip_waterml(request, res_id,src,res_id2):
+def unzip_waterml(request, res_id,src,res_id2,xml_id):
     # print "unzip!!!!!!!"
     print "unzipping"
     print datetime.now()
@@ -449,11 +450,6 @@ def unzip_waterml(request, res_id,src,res_id2):
         # z = zipfile.ZipFile(StringIO.StringIO(hs.content))
         # file_list = z.namelist()
 
-
-
-
-
-
     elif 'hydroshare_generic' in src:
         target_url =  'https://www.hydroshare.org/django_irods/download/'+res_id+'/data/contents/HIS_reference_timeseries.txt'
         data = urllib2.urlopen(target_url) # it's a file like object and works just like a file
@@ -464,7 +460,7 @@ def unzip_waterml(request, res_id,src,res_id2):
         res = urllib.unquote(res_id2).decode()
         r = requests.get(res, verify=False)
         file_data = r.content
-        file_temp_name = temp_dir + '/id/xmlrest.xml'
+        file_temp_name = temp_dir + '/id/'+xml_id+'.xml'
         file_temp = open(file_temp_name, 'wb')
         file_temp.write(file_data)
         file_temp.close()
@@ -547,10 +543,10 @@ def unzip_waterml(request, res_id,src,res_id2):
 
 
 # finds the waterML file path in the workspace folder
-def waterml_file_path(res_id,xml_rest):
+def waterml_file_path(res_id,xml_rest,xml_id):
     base_path = get_workspace()
     if xml_rest == True:
-        file_path = base_path + "/id/xmlrest" #+ res_id
+        file_path = base_path + "/id/"+xml_id #+ res_id
     else:
         file_path = base_path + "/id/"+ res_id
 
