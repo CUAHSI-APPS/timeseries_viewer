@@ -17,6 +17,7 @@ import os
 import dateutil.parser
 from datetime import datetime
 import pandas as pd
+from hs_restclient import HydroShare
 
 def get_app_base_uri(request):
     base_url = request.build_absolute_uri()
@@ -443,6 +444,16 @@ def unzip_waterml(request, res_id,src,res_id2):
         url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
     elif 'hydroshare' in src:
         url_zip = 'https://www.hydroshare.org/hsapi/_internal/'+res_id+'/download-refts-bag/'
+        # hs = HydroShare()
+        # hs.getResource(res_id)
+        # z = zipfile.ZipFile(StringIO.StringIO(hs.content))
+        # file_list = z.namelist()
+
+
+
+
+
+
     elif 'hydroshare_generic' in src:
         target_url =  'https://www.hydroshare.org/django_irods/download/'+res_id+'/data/contents/HIS_reference_timeseries.txt'
         data = urllib2.urlopen(target_url) # it's a file like object and works just like a file
@@ -451,11 +462,9 @@ def unzip_waterml(request, res_id,src,res_id2):
     elif "xmlrest" in src:
         url_zip = res_id2
         res = urllib.unquote(res_id2).decode()
-
         r = requests.get(res, verify=False)
-
         file_data = r.content
-        file_temp_name = temp_dir + '/id/test.xml'
+        file_temp_name = temp_dir + '/id/xmlrest.xml'
         file_temp = open(file_temp_name, 'wb')
         file_temp.write(file_data)
         file_temp.close()
@@ -541,7 +550,7 @@ def unzip_waterml(request, res_id,src,res_id2):
 def waterml_file_path(res_id,xml_rest):
     base_path = get_workspace()
     if xml_rest == True:
-        file_path = base_path + "/id/test" #+ res_id
+        file_path = base_path + "/id/xmlrest" #+ res_id
     else:
         file_path = base_path + "/id/"+ res_id
 
@@ -561,15 +570,21 @@ def error_report(text):
     file_temp.close()
 def viewer_counter():
     temp_dir = get_workspace()
-    file_temp_name = temp_dir + '/viewer_counter.txt'
-    file_temp = open(file_temp_name, 'r+')
-    content = file_temp.read()
-    number = int(content)
-    # time = datetime.now()
-    # time2 = time.strftime('%Y-%m-%d %H:%M')
-    number  = number +1
-    number  = str(number)
-    file_temp.seek(0)
-    file_temp.write(number)
-    file_temp.close()
+    file_temp_name = temp_dir + '/view_counter.txt'
+    if not os.path.exists(temp_dir+"/view_counter.txt"):
+        file_temp = open(file_temp_name, 'a')
+        first = '1'
+        file_temp.write(first)
+        file_temp.close()
+    else:
+        file_temp = open(file_temp_name, 'r+')
+        content = file_temp.read()
+        number = int(content)
+        # time = datetime.now()
+        # time2 = time.strftime('%Y-%m-%d %H:%M')
+        number  = number +1
+        number  = str(number)
+        file_temp.seek(0)
+        file_temp.write(number)
+        file_temp.close()
 # def xmlrest(res_id2)

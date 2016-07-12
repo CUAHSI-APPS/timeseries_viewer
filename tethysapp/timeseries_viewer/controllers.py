@@ -31,8 +31,6 @@ def chart_data(request, res_id, src):
     if "xmlrest" in src:
         xml_rest = True
         test = request.POST['url_xml']
-        print test
-    print 'chart_dataaaaaaaaaaaaaaaaa'
 
     print datetime.now()
     # checks if we already have an unzipped xml file
@@ -130,3 +128,16 @@ def response(request):
     response1 = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
     # response1 = {"File uploaded":"sucess"}
     return JsonResponse(response1)
+def view_counter(request):
+    temp_dir = utilities.get_workspace()
+    file_path = temp_dir + '/view_counter.txt'
+    file_temp = open(file_path, 'r')
+    content = file_temp.read()
+    return JsonResponse({"Number of Viewers":content})
+
+def error_report(request):
+    temp_dir = utilities.get_workspace()
+    file_path = temp_dir + '/error_report.txt'
+    file_temp = open(file_path, 'r')
+    content = file_temp.read()
+    return JsonResponse({"Error Reports":content})

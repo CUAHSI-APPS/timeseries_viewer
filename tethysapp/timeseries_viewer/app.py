@@ -35,6 +35,13 @@ class TimeSeriesViewer(TethysAppBase):
                     UrlMap(name='api',
                            url='api',
                            controller='timeseries_viewer.api.home'),
+                    UrlMap(name='view_counter',
+                           url='view_counter',
+                           controller='timeseries_viewer.controllers.view_counter'),
+                    UrlMap(name='error_report',
+                           url='error_report',
+                           controller='timeseries_viewer.controllers.error_report'),
+
 
                     UrlMap(name='api_list_apps',
                            url='api/list_apps',
