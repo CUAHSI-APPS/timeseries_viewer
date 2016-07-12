@@ -123,7 +123,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                 units = units.replace(/\s+/g, '');//removes any spaces in the units
             }
             if (units == null) {
-                units = "";
+                units = "N/A";
             }
             var unit_off_bool = false
             unit_tracker.push(units);//tracks the units of the different time series
@@ -230,7 +230,9 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             if (valuetype == null) {
                 valuetype = "N/A"
             }
-
+            if(unit == null){
+                unit='N/A'
+            }
 
             if (timesupport == null) {
                 timesupport = "N/A"

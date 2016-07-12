@@ -27,6 +27,7 @@ def temp_waterml(request, id):
 # formats the time series for highcharts
 def chart_data(request, res_id, src):
     test = ''
+    xml_rest = False
     if "xmlrest" in src:
         xml_rest = True
         test = request.POST['url_xml']
@@ -35,7 +36,7 @@ def chart_data(request, res_id, src):
 
     print datetime.now()
     # checks if we already have an unzipped xml file
-    file_path = utilities.waterml_file_path(res_id)
+    file_path = utilities.waterml_file_path(res_id,xml_rest)
     # if we don't have the xml file, downloads and unzips it
     if not os.path.exists(file_path):
         utilities.unzip_waterml(request, res_id, src, test)

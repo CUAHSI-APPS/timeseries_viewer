@@ -111,7 +111,8 @@ def parse_1_0_and_1_1(root):
 
                     if 'value'!= tag:
                         # in the xml there is a unit for the value, then for time. just take the first
-                        if 'unitName' == tag or 'units' ==tag:
+                        print tag
+                        if 'unitName' == tag or 'units' ==tag or 'UnitName'==tag or 'unitCode'==tag:
                             if not unit_is_set:
                                 units = element.text
                                 unit_is_set = True
@@ -121,13 +122,16 @@ def parse_1_0_and_1_1(root):
                             site_name = element.text
                         if 'variableName' == tag:
                             variable_name = element.text
-                        if 'organization'==tag or 'Organization'==tag:
-                            organization = element.text
-                        if 'definition' == tag:
+                        if 'organization'==tag or 'Organization'==tag or'siteCode'==tag:
+                            try:
+                                organization = element.attrib['agencyCode']
+                            except:
+                                organization = element.text
+                        if 'definition' == tag or 'qualifierDescription'==tag:
                             quality = element.text
                         if 'methodDescription' == tag or 'MethodDescription'==tag:
                             method = element.text
-                        if 'dataType' == tag:
+                        if 'dataType' == tag :
                             datatype = element.text
                         if 'valueType' == tag:
                             valuetype = element.text
@@ -141,6 +145,7 @@ def parse_1_0_and_1_1(root):
                             sourcedescription =element.text
 
                     elif 'value' == tag:
+
                         try:
                             # my_times.append(element.attrib['dateTimeUTC'])
                             n = element.attrib['dateTimeUTC']
@@ -171,36 +176,7 @@ def parse_1_0_and_1_1(root):
                             for_graph.append(v)
                             x_value.append(n)
                             y_value.append(v)
-                else:
-                    # in the xml there is a unit for the value, then for time. just take the first
-                    if 'unitName' == tag or 'units' ==tag:
-                        if not unit_is_set:
-                            units = element.text
-                            unit_is_set = True
-                    if 'noDataValue' == tag:
-                        nodata = element.text
-                    if 'siteName' == tag:
-                        site_name = element.text
-                    if 'variableName' == tag:
-                        variable_name = element.text
-                    if 'organization'==tag or 'Organization'==tag:
-                        organization = element.text
-                    if 'definition' == tag:
-                        quality = element.text
-                    if 'methodDescription' == tag or 'MethodDescription'==tag:
-                        method = element.text
-                    if 'dataType' == tag:
-                        datatype = element.text
-                    if 'valueType' == tag:
-                        valuetype = element.text
-                    if "sampleMedium" == tag:
-                        samplemedium = element.text
-                    if "timeSupport"== tag or"timeInterval" ==tag:
-                        timesupport =element.text
-                    if"unitName"== tag or "UnitName"==tag:
-                        timeunit =element.text
-                    if"sourceDescription"== tag or "SourceDescription"==tag:
-                        sourcedescription =element.text
+
 
             print "parse custom values !!!!!!!!!!!!!!!!!!!!!"
             print datetime.now()
@@ -224,6 +200,7 @@ def parse_1_0_and_1_1(root):
             sd = numpy.std(for_graph)
             print "parse end !!!!!!!!!!!!!!!!!!!!!"
             print datetime.now()
+            print site_name
             return {
                 'site_name': site_name,
                 # 'start_date': str(smallest_time),
@@ -474,8 +451,7 @@ def unzip_waterml(request, res_id,src,res_id2):
     elif "xmlrest" in src:
         url_zip = res_id2
         res = urllib.unquote(res_id2).decode()
-        print 'AAAAAAAAAAAAAAAAAAAAA'
-        print res
+
         r = requests.get(res, verify=False)
 
         file_data = r.content
@@ -562,9 +538,13 @@ def unzip_waterml(request, res_id,src,res_id2):
 
 
 # finds the waterML file path in the workspace folder
-def waterml_file_path(res_id):
+def waterml_file_path(res_id,xml_rest):
     base_path = get_workspace()
-    file_path = base_path + "/id/test" #+ res_id
+    if xml_rest == True:
+        file_path = base_path + "/id/test" #+ res_id
+    else:
+        file_path = base_path + "/id/"+ res_id
+
     if not file_path.endswith('.xml'):
         file_path += '.xml'
     return file_path
