@@ -80,58 +80,58 @@ def home(request):
     #        response = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
 
 
-def getOAuthHS(request):
-    hs_instance_name = "www"
-    client_id = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_KEY", None)
-    client_secret = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_SECRET", None)
-    # this line will throw out from django.core.exceptions.ObjectDoesNotExist if current user is not signed in via HydroShare OAuth
-    token = request.user.social_auth.get(provider='hydroshare').extra_data['token_dict']
-    hs_hostname = "{0}.hydroshare.org".format(hs_instance_name)
-    auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
-    hs = HydroShare(auth=auth, hostname=hs_hostname)
-    return hs
+# def getOAuthHS(request):
+#     hs_instance_name = "www"
+#     client_id = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_KEY", None)
+#     client_secret = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_SECRET", None)
+#     # this line will throw out from django.core.exceptions.ObjectDoesNotExist if current user is not signed in via HydroShare OAuth
+#     token = request.user.social_auth.get(provider='hydroshare').extra_data['token_dict']
+#     hs_hostname = "{0}.hydroshare.org".format(hs_instance_name)
+#     auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
+#     hs = HydroShare(auth=auth, hostname=hs_hostname)
+#     return hs
 
 
-def connect_wsdl_url(wsdl_url):
-    try:
-        client = Client(wsdl_url)
-    except TransportError:
-        raise Exception('Url not found')
-    except ValueError:
-        raise Exception('Invalid url')  # ought to be a 400, but no page implemented for that
-    except SAXParseException:
-        raise Exception("The correct url format ends in '.asmx?WSDL'.")
-    except:
-        raise Exception("Unexpected error")
-    return client
+# def connect_wsdl_url(wsdl_url):
+#     try:
+#         client = Client(wsdl_url)
+#     except TransportError:
+#         raise Exception('Url not found')
+#     except ValueError:
+#         raise Exception('Invalid url')  # ought to be a 400, but no page implemented for that
+#     except SAXParseException:
+#         raise Exception("The correct url format ends in '.asmx?WSDL'.")
+#     except:
+#         raise Exception("Unexpected error")
+#     return client
+
+#
+# def write_file(request):
+#     sucess = {"File uploaded": "sucess"}
+#     temp_dir = utilities.get_workspace()
+#     file_temp_name = temp_dir + '/hydroshare/rtest.r'
+#     hs = getOAuthHS(request)
+#     abstract = 'My abstract'
+#     title = 'My resource script'
+#     keywords = ('my keyword 1', 'my keyword 2')
+#     rtype = 'ScriptResource'
+#     fpath = file_temp_name
+#     resource_id = hs.createResource(rtype, title, resource_file=fpath, keywords=keywords, abstract=abstract)
+#     # os.remove(file_temp_name)
+#     return JsonResponse(sucess)
 
 
-def write_file(request):
-    sucess = {"File uploaded": "sucess"}
-    temp_dir = utilities.get_workspace()
-    file_temp_name = temp_dir + '/hydroshare/rtest.r'
-    hs = getOAuthHS(request)
-    abstract = 'My abstract'
-    title = 'My resource script'
-    keywords = ('my keyword 1', 'my keyword 2')
-    rtype = 'ScriptResource'
-    fpath = file_temp_name
-    resource_id = hs.createResource(rtype, title, resource_file=fpath, keywords=keywords, abstract=abstract)
-    # os.remove(file_temp_name)
-    return JsonResponse(sucess)
-
-
-def response(request):
-    service_url = 'http://hydroportal.cuahsi.org/nwisdv/cuahsi_1_1.asmx?WSDL'
-    site_code = '10147100'
-    variable_code = 'NWISDV:00060'
-    client = connect_wsdl_url(service_url)
-    start_date = ''
-    end_date = ''
-    auth_token = ''
-    response1 = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
-    # response1 = {"File uploaded":"sucess"}
-    return JsonResponse(response1)
+# def response(request):
+#     service_url = 'http://hydroportal.cuahsi.org/nwisdv/cuahsi_1_1.asmx?WSDL'
+#     site_code = '10147100'
+#     variable_code = 'NWISDV:00060'
+#     client = connect_wsdl_url(service_url)
+#     start_date = ''
+#     end_date = ''
+#     auth_token = ''
+#     response1 = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
+#     # response1 = {"File uploaded":"sucess"}
+#     return JsonResponse(response1)
 def view_counter(request):
     temp_dir = utilities.get_workspace()
     file_path = temp_dir + '/view_counter.txt'

@@ -434,6 +434,7 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
     print datetime.now()
     # this is where we'll unzip the waterML file to
     temp_dir = get_workspace()
+    file_data =None
     # waterml_url = ''
 
     # get the URL of the remote zipped WaterML resource
