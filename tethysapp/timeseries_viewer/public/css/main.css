@@ -96,9 +96,9 @@ tr.shown td.details-control {
 #example_info{
 	visibility: hidden;
 }
-#example_paginate{
-	visibility: hidden;
-}
+/*#example_paginate{*/
+	/*visibility: hidden;*/
+/*}*/
 
 #loading{
 	/*display: block !important;*/

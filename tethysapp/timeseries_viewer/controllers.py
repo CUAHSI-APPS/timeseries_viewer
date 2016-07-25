@@ -57,6 +57,8 @@ def chart_data(request, res_id, src):
 # home page controller
 def home(request):
     print datetime.now()
+    temp_dir = utilities.get_workspace()
+    print temp_dir
     print "hommmmmmmmmmmmmmmme"
     utilities.viewer_counter()
     # r = requests.get('http://tethys.byu.edu/apps/gaugeviewwml/waterml/?gaugeid=10254970&start=2016-06-24&end=2016-07-08', verify=False)
@@ -140,7 +142,9 @@ def view_counter(request):
     return JsonResponse({"Number of Viewers":content})
 
 def error_report(request):
+    print os.path.realpath('controllers.py')
     temp_dir = utilities.get_workspace()
+    print temp_dir
     file_path = temp_dir + '/error_report.txt'
     if not os.path.exists(temp_dir+"/error_report.txt"):
         file_temp = open(file_path, 'a')

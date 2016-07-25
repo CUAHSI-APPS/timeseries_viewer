@@ -232,8 +232,7 @@ def parse_1_0_and_1_1(root):
                 'boxplot':boxplot,
                 'xvalue':x_value,
                 'yvalue':y_value,
-                'max':max1,
-                'min':min1
+
             }
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
