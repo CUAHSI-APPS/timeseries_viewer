@@ -18,6 +18,7 @@ import dateutil.parser
 from datetime import datetime
 import pandas as pd
 from hs_restclient import HydroShare
+import controllers
 
 def get_app_base_uri(request):
     base_url = request.build_absolute_uri()
@@ -44,25 +45,25 @@ def get_version(root):
     return wml_version
 
 #drew 20150401 convert date string into datetime obj
-def time_str_to_datetime(t):
-    try:
-        t_datetime=parser.parse(t)
-        return t_datetime
-    except ValueError:
-        print "time_str_to_datetime error: "+ t
-        raise Exception("time_str_to_datetime error: "+ t)
-        return datetime.now()
-
-
-#drew 20150401 convert datetime obj into decimal second (epoch second)
-def time_to_int(t):
-    try:
-        d=parser.parse(t)
-        t_sec_str=d.strftime('%s')
-        return int(t_sec_str)
-    except ValueError:
-        print ("time_to_int error: "+ t)
-        raise Exception('time_to_int error: ' + t)
+# def time_str_to_datetime(t):
+#     try:
+#         t_datetime=parser.parse(t)
+#         return t_datetime
+#     except ValueError:
+#         print "time_str_to_datetime error: "+ t
+#         raise Exception("time_str_to_datetime error: "+ t)
+#         return datetime.now()
+#
+#
+# #drew 20150401 convert datetime obj into decimal second (epoch second)
+# def time_to_int(t):
+#     try:
+#         d=parser.parse(t)
+#         t_sec_str=d.strftime('%s')
+#         return int(t_sec_str)
+#     except ValueError:
+#         print ("time_to_int error: "+ t)
+#         raise Exception('time_to_int error: ' + t)
 
 
 def parse_1_0_and_1_1(root):
@@ -102,8 +103,8 @@ def parse_1_0_and_1_1(root):
             y = 'y'
             # iterate through xml document and read all values
 
-            print "parsing values from water ml"
-            print datetime.now()
+            # print "parsing values from water ml"
+            # print datetime.now()
             for element in root.iter():
                 bracket_lock = -1
                 if '}' in element.tag:
@@ -179,9 +180,9 @@ def parse_1_0_and_1_1(root):
                             x_value.append(n)
                             y_value.append(v)
 
-
-            print "parse custom values !!!!!!!!!!!!!!!!!!!!!"
-            print datetime.now()
+            #
+            # print "parse custom values !!!!!!!!!!!!!!!!!!!!!"
+            # print datetime.now()
 
             value_count = len(x_value)
             # largest_time = for_canvas[value_count - 1][0]
@@ -200,8 +201,8 @@ def parse_1_0_and_1_1(root):
             boxplot.append(quar3)
             boxplot.append(max1)
             sd = numpy.std(for_graph)
-            print "parse end !!!!!!!!!!!!!!!!!!!!!"
-            print datetime.now()
+            # print "parse end !!!!!!!!!!!!!!!!!!!!!"
+            # print datetime.now()
 
             return {
                 'site_name': site_name,
@@ -429,8 +430,8 @@ def read_error_file(xml_file):
 
 def unzip_waterml(request, res_id,src,res_id2,xml_id):
     # print "unzip!!!!!!!"
-    print "unzipping"
-    print datetime.now()
+    # print "unzipping"
+    # print datetime.now()
     # this is where we'll unzip the waterML file to
     temp_dir = get_workspace()
     file_data =None
@@ -444,17 +445,36 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
         # url_zip = 'http://bcc-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
         url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
     elif 'hydroshare' in src:
-        url_zip = 'https://www.hydroshare.org/hsapi/_internal/'+res_id+'/download-refts-bag/'
+        # url_zip = 'https://www.hydroshare.org/hsapi/_internal/'+res_id+'/download-refts-bag/'
         # hs = HydroShare()
         # hs.getResource(res_id)
         # z = zipfile.ZipFile(StringIO.StringIO(hs.content))
         # file_list = z.namelist()
 
-    elif 'hydroshare_generic' in src:
-        target_url =  'https://www.hydroshare.org/django_irods/download/'+res_id+'/data/contents/HIS_reference_timeseries.txt'
-        data = urllib2.urlopen(target_url) # it's a file like object and works just like a file
-        for line in data: # files are iterable
-            print line
+        hs = controllers.getOAuthHS(request)
+        file_path = get_workspace() + '/id'
+        hs.getResource(res_id, destination=file_path, unzip=True)
+        root_dir = file_path + '/' + res_id
+        data_dir = root_dir + '/' + res_id + '/data/contents/'
+        # f = open(data_dir)
+        # print f.read()
+        for subdir, dirs, files in os.walk(data_dir):
+            for file in files:
+                if  'wml_1_' in file:
+                    data_file = data_dir + file
+                    with open(data_file, 'r') as f:
+                        # print f.read()
+                        file_data = f.read()
+                        f.close()
+                        file_temp_name = temp_dir + '/id/' + res_id + '.xml'
+                        file_temp = open(file_temp_name, 'wb')
+                        file_temp.write(file_data)
+                        file_temp.close()
+    #
+    # elif 'hydroshare_generic' in src:
+    #     target_url =  'https://www.hydroshare.org/django_irods/download/'+res_id+'/data/contents/HIS_reference_timeseries.txt'
+    #     data = urllib2.urlopen(target_url) # it's a file like object and works just like a file
+
     elif "xmlrest" in src:
         url_zip = res_id2
         res = urllib.unquote(res_id2).decode()
@@ -468,24 +488,24 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
         url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
 
 
-    if src != 'hydroshare_generic' and src != 'xmlrest':
+    if src != 'hydroshare_generic' and src != 'xmlrest' and src !='hydroshare':
         waterml_url = "test"
-        print "request start"
-        print datetime.now()
+        # print "request start"
+        # print datetime.now()
         r = requests.get(url_zip, verify=False)
         # r = urllib2.urlopen(url_zip)
         # print r
         # print r.read()
         # print StringIO.StringIO(r.read()).read()
-        print "request end"
-        print datetime.now()
+        # print "request end"
+        # print datetime.now()
         # print r
         try:
             # z = zipfile.ZipFile(StringIO.StringIO(r.read()))
             z = zipfile.ZipFile(StringIO.StringIO(r.content))
             file_list = z.namelist()
-            print "finished getting file list"
-            print datetime.now()
+            # print "finished getting file list"
+            # print datetime.now()
             try:
                 for file in file_list:
                     if 'hydroshare' in src:
@@ -496,21 +516,21 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                             file_temp.write(file_data)
                             file_temp.close()
                     else:
-                        print "Reading file"
-                        print datetime.now()
+                        # print "Reading file"
+                        # print datetime.now()
                         file_data = z.read(file)
-                        print "Finished reading file"
-                        print datetime.now()
+                        # print "Finished reading file"
+                        # print datetime.now()
                         file_temp_name = temp_dir + '/id/' + res_id + '.xml'
-                        print "Writing file"
-                        print datetime.now()
+                        # print "Writing file"
+                        # print datetime.now()
                         file_temp = open(file_temp_name, 'wb')
                         file_temp.write(file_data)
                         file_temp.close()
-                        print "Finished writing file"
-                        print datetime.now()
+                        # print "Finished writing file"
+                        # print datetime.now()
             # error handling
-                print type(file_data)
+
             # checks to see if data is an xml
             except etree.XMLSyntaxError as e:
                 print "Error:Not XML"
@@ -537,8 +557,8 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                 return False
 
     # finally we return the waterml_url
-    print "File created"
-    print datetime.now()
+    # print "File created"
+    # print datetime.now()
     # return waterml_url
 
 
@@ -558,29 +578,43 @@ def waterml_file_path(res_id,xml_rest,xml_id):
     return file_list
 def error_report(text):
     temp_dir = get_workspace()
+    temp_dir = temp_dir[:-24]
     file_temp_name = temp_dir + '/error_report.txt'
     file_temp = open(file_temp_name, 'a')
     time = datetime.now()
     time2 = time.strftime('%Y-%m-%d %H:%M')
     file_temp.write(time2+": "+text+"\n")
     file_temp.close()
-def viewer_counter():
+def viewer_counter(request):
     temp_dir = get_workspace()
-    file_temp_name = temp_dir + '/view_counter.txt'
-    if not os.path.exists(temp_dir+"/view_counter.txt"):
-        file_temp = open(file_temp_name, 'a')
-        first = '1'
-        file_temp.write(first)
-        file_temp.close()
+    try:
+        hs = controllers.getOAuthHS(request)
+        user =  hs.getUserInfo()
+        user1 = user['username']
+        print user1
+    except:
+        user1 =""
+
+    if user1 != 'mbayles2':
+        temp_dir = temp_dir[:-24]
+
+        file_temp_name = temp_dir + '/view_counter.txt'
+        if not os.path.exists(temp_dir+"/view_counter.txt"):
+            file_temp = open(file_temp_name, 'a')
+            first = '1'
+            file_temp.write(first)
+            file_temp.close()
+        else:
+            file_temp = open(file_temp_name, 'r+')
+            content = file_temp.read()
+            number = int(content)
+            # time = datetime.now()
+            # time2 = time.strftime('%Y-%m-%d %H:%M')
+            number  = number +1
+            number  = str(number)
+            file_temp.seek(0)
+            file_temp.write(number)
+            file_temp.close()
     else:
-        file_temp = open(file_temp_name, 'r+')
-        content = file_temp.read()
-        number = int(content)
-        # time = datetime.now()
-        # time2 = time.strftime('%Y-%m-%d %H:%M')
-        number  = number +1
-        number  = str(number)
-        file_temp.seek(0)
-        file_temp.write(number)
-        file_temp.close()
+        user1=''
 # def xmlrest(res_id2)

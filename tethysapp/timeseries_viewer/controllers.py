@@ -32,10 +32,10 @@ def chart_data(request, res_id, src):
     xml_rest = False
     if "xmlrest" in src:
         xml_rest = True
-        test = request.POST['url_xml']
+        test = request.POST.get('url_xml')
         xml_id =  str(uuid.uuid4())
 
-    print datetime.now()
+    # print datetime.now()
     # checks if we already have an unzipped xml file
     file_path = utilities.waterml_file_path(res_id,xml_rest,xml_id)
     # if we don't have the xml file, downloads and unzips it
@@ -48,19 +48,18 @@ def chart_data(request, res_id, src):
     else:
         # parses the WaterML to a chart data object
         data_for_chart = utilities.Original_Checker(file_path)
-    print "JSON Reponse"
-    print datetime.now()
+    # print "JSON Reponse"
+    # print datetime.now()
 
     return JsonResponse(data_for_chart)
 
 
 # home page controller
 def home(request):
-    print datetime.now()
+    # print datetime.now()
     temp_dir = utilities.get_workspace()
-    print temp_dir
-    print "hommmmmmmmmmmmmmmme"
-    utilities.viewer_counter()
+
+    utilities.viewer_counter(request)
     # r = requests.get('http://tethys.byu.edu/apps/gaugeviewwml/waterml/?gaugeid=10254970&start=2016-06-24&end=2016-07-08', verify=False)
     # print r.content
     # getOAuthHS(request)
@@ -82,16 +81,16 @@ def home(request):
     #        response = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
 
 
-# def getOAuthHS(request):
-#     hs_instance_name = "www"
-#     client_id = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_KEY", None)
-#     client_secret = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_SECRET", None)
-#     # this line will throw out from django.core.exceptions.ObjectDoesNotExist if current user is not signed in via HydroShare OAuth
-#     token = request.user.social_auth.get(provider='hydroshare').extra_data['token_dict']
-#     hs_hostname = "{0}.hydroshare.org".format(hs_instance_name)
-#     auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
-#     hs = HydroShare(auth=auth, hostname=hs_hostname)
-#     return hs
+def getOAuthHS(request):
+    hs_instance_name = "www"
+    client_id = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_KEY", None)
+    client_secret = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_SECRET", None)
+    # this line will throw out from django.core.exceptions.ObjectDoesNotExist if current user is not signed in via HydroShare OAuth
+    token = request.user.social_auth.get(provider='hydroshare').extra_data['token_dict']
+    hs_hostname = "{0}.hydroshare.org".format(hs_instance_name)
+    auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
+    hs = HydroShare(auth=auth, hostname=hs_hostname)
+    return hs
 
 
 # def connect_wsdl_url(wsdl_url):
@@ -134,9 +133,11 @@ def home(request):
 #     response1 = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
 #     # response1 = {"File uploaded":"sucess"}
 #     return JsonResponse(response1)
+
 def view_counter(request):
     temp_dir = utilities.get_workspace()
-    file_path = temp_dir + '/view_counter.txt'
+
+    file_path = temp_dir[:-24] + 'view_counter.txt'
     file_temp = open(file_path, 'r')
     content = file_temp.read()
     return JsonResponse({"Number of Viewers":content})
@@ -144,7 +145,8 @@ def view_counter(request):
 def error_report(request):
     print os.path.realpath('controllers.py')
     temp_dir = utilities.get_workspace()
-    print temp_dir
+    temp_dir = temp_dir[:-24]
+
     file_path = temp_dir + '/error_report.txt'
     if not os.path.exists(temp_dir+"/error_report.txt"):
         file_temp = open(file_path, 'a')

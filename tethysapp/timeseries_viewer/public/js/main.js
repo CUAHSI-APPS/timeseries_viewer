@@ -521,7 +521,7 @@ $(document).ready(function (callback) {
     var res_id = find_query_parameter("res_id");
     var table = $('#example').DataTable({
         "createdRow": function (row, data, dataIndex) {
-            color1 = null
+
             if (number == 0) {
                 color1 = "#ec3131"
             }
@@ -552,7 +552,7 @@ $(document).ready(function (callback) {
             if (number == 9) {
                 color1 = "#dd8585"
             }
-            else{color1= "#808080"}
+
             $('td', row).eq(0).css("backgroundColor", color1)
             $('td', row).eq(1).each(function () {
                 var sTitle;
@@ -756,38 +756,6 @@ function addingseries(unit_off) {
             "#fb8915",
             "#ffb8e7",
             "#dd8585",
-            "#ec3131",
-            "#2cc52e",
-            "#fbfd07",
-            "#313eec",
-            "#dd25d5",
-            "#0d0c0d",
-            "#31cbec",
-            "#fb8915",
-            "#ffb8e7",
-            "#dd8585",
-"#ec3131",
-            "#2cc52e",
-            "#fbfd07",
-            "#313eec",
-            "#dd25d5",
-            "#0d0c0d",
-            "#31cbec",
-            "#fb8915",
-            "#ffb8e7",
-            "#dd8585",
-"#ec3131",
-            "#2cc52e",
-            "#fbfd07",
-            "#313eec",
-            "#dd25d5",
-            "#0d0c0d",
-            "#31cbec",
-            "#fb8915",
-            "#ffb8e7",
-            "#dd8585",
-
-
         ])
     $("#chartContainer").CanvasJSChart(chart_options);
     var chart = $("#chartContainer").CanvasJSChart()
