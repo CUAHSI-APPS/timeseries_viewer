@@ -136,17 +136,20 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             //data1 = json.for_canvas
 
             xval = json.xvalue
+
             yval = json.yvalue
             max1= json.max
             min1=json.min
-
+            test =[]
             for (i=0;i<xval.length; i++)
             {
                 //console.log("hello")
                 temp_date = new Date(xval[i])
+                test.push(temp_date)
                 xtime.push({x:temp_date.getTime(),y:yval[i]})
             }
-
+            console.log(temp_date.getTime())
+            console.log(temp_date)
 
             data1 = xtime
 
@@ -327,9 +330,13 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                 console.log(maxview)
                 console.log(minview)
 
-                chart.options.axisY2.viewportMaximum = maxview
+                //chart.options.axisY2.viewportMaximum = maxview
+                interval = ((maxview-minview)/10)
+                chart.options.axisY2.viewportMaximum = minview + (10*interval)
                 chart.options.axisY2.viewportMinimum =  minview
-                chart.options.axisY2.interval = ((maxview-minview)/10)
+
+                console.log(chart.options.axisY2.viewportMinimum)
+                chart.options.axisY2.interval = interval
             }
             else if (y_title == 3) {//sets the y-axis 2 title and flags that data should be plotted on this axis
                 var newSeries =
@@ -433,10 +440,15 @@ function roundUp(x){
     if(x < 0) {
         negative = true;
         x *= -1;
-    } var y = Math.pow(10, x.toString().length-1);
+    }
+    var y = Math.pow(10, x.toString().length-1);
+    console.log(x)
+    console.log(y)
     x = (x/y);
     x = Math.ceil(x);
+    console.log(x)
     x = x*y;
+    console.log(x)
     if(negative)
     {
         x *= -1;
@@ -444,12 +456,18 @@ function roundUp(x){
     return x;
 }
 function roundDown(x){
+    console.log(x)
     //console.log(x)
     var negative = false;
-    if(x<10 && x>=1){
+    if(x<10 && x>=0){
         x = 0
         //console.log("hafasfsfsdf")
         return x
+    }
+    else if(x <1 && x>=-1){
+        console.log("small")
+        x=1
+        negative = true
     }
     else if(x < 0) {
         if(x<0 &&x >= -10){
@@ -461,8 +479,6 @@ function roundDown(x){
             x *= -1
         }
     }
-
-
     var y = Math.pow(10, x.toString().length-1);
     x = (x/y);
     x = Math.floor(x);
@@ -529,28 +545,28 @@ $(document).ready(function (callback) {
                 color1 = "#2cc52e"
             }
             if (number == 2) {
-                color1 = "#fbfd07"
-            }
-            if (number == 3) {
                 color1 = "#313eec"
             }
-            if (number == 4) {
+            if (number == 3) {
                 color1 = "#dd25d5"
             }
-            if (number == 5) {
+            if (number == 4) {
                 color1 = "#0d0c0d"
             }
-            if (number == 6) {
+            if (number == 5) {
                 color1 = "#31cbec"
             }
-            if (number == 7) {
+            if (number == 6) {
                 color1 = "#fb8915"
             }
-            if (number == 8) {
+            if (number == 7) {
                 color1 = "#ffb8e7"
             }
+            if (number == 8) {
+                color1 = "#fbfd07"
+            }
             if (number == 9) {
-                color1 = "#dd8585"
+                color1 = "#660099"
             }
 
             $('td', row).eq(0).css("backgroundColor", color1)
@@ -725,7 +741,7 @@ function finishloading(callback) {
     var chart = $("#chartContainer").CanvasJSChart()
     $("#chart").toggle();
     chart.render();
-    console.log(Date())
+
 
 }
 function addingseries(unit_off) {
@@ -748,14 +764,14 @@ function addingseries(unit_off) {
         [//colorSet Array
             "#ec3131",
             "#2cc52e",
-            "#fbfd07",
             "#313eec",
             "#dd25d5",
             "#0d0c0d",
             "#31cbec",
             "#fb8915",
             "#ffb8e7",
-            "#dd8585",
+            "#fbfd07",
+            "#660099",
         ])
     $("#chartContainer").CanvasJSChart(chart_options);
     var chart = $("#chartContainer").CanvasJSChart()
