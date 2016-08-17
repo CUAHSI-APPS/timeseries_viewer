@@ -84,12 +84,12 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
     xtime.length = 0
     xval = ''
     yvalu = ''
-    console.log(xtime)
+    //console.log(xtime)
     current_url = location.href;
     index = current_url.indexOf("timeseries-viewer");
     base_url = current_url.substring(0, index);
     var src = find_query_parameter("src");
-    console.log(src)
+    //console.log(src)
 
     // in the start we show the loading...
     // the res_id can contain multiple IDs separated by comma
@@ -101,7 +101,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
     }
 
 
-    console.log(res_id1)
+    //console.log(res_id1)
     var csrf_token = getCookie('csrftoken');
     data_url = base_url + 'timeseries-viewer/chart_data/' + res_id1 + '/' + src + '/';
     $.ajax({
@@ -148,8 +148,8 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                 test.push(temp_date)
                 xtime.push({x:temp_date.getTime(),y:yval[i]})
             }
-            console.log(temp_date.getTime())
-            console.log(temp_date)
+            //console.log(temp_date.getTime())
+            //console.log(temp_date)
 
             data1 = xtime
 
@@ -259,12 +259,12 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                 if( max > ymax){
                     ymax = max
                 }
-                console.log(ymin)
-                console.log(min)
+                //console.log(ymin)
+                //console.log(min)
                 if( min < ymin){
                     ymin = min
                 }
-                console.log(ymin)
+                //console.log(ymin)
                 var newSeries =
                 {
                     type: "line",
@@ -286,8 +286,8 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                 maxview = roundUp(Math.ceil(ymax))
                 minview = roundDown(Math.floor(ymin))
                 interval = (maxview-minview)/10
-                console.log(maxview)
-                console.log(minview)
+                //console.log(maxview)
+                //console.log(minview)
 
 
                 chart.options.axisY.viewportMaximum = maxview
@@ -327,15 +327,15 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
 
                 maxview = roundUp(Math.ceil(y2max))
                 minview = roundDown(Math.floor(y2min))
-                console.log(maxview)
-                console.log(minview)
+                //console.log(maxview)
+                //console.log(minview)
 
                 //chart.options.axisY2.viewportMaximum = maxview
                 interval = ((maxview-minview)/10)
                 chart.options.axisY2.viewportMaximum = minview + (10*interval)
                 chart.options.axisY2.viewportMinimum =  minview
 
-                console.log(chart.options.axisY2.viewportMinimum)
+                //console.log(chart.options.axisY2.viewportMinimum)
                 chart.options.axisY2.interval = interval
             }
             else if (y_title == 3) {//sets the y-axis 2 title and flags that data should be plotted on this axis
@@ -352,7 +352,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                     dataPoints: data1
                 };
                 chart.options.data.push(newSeries);
-                console.log("data pushed 3 " + site_name)
+                //console.log("data pushed 3 " + site_name)
             }
             //chart.options.axisX.title = "Number of points:"+count
             chart.options.axisY.titleFontSize = 15
@@ -442,13 +442,13 @@ function roundUp(x){
         x *= -1;
     }
     var y = Math.pow(10, x.toString().length-1);
-    console.log(x)
-    console.log(y)
+    //console.log(x)
+    //console.log(y)
     x = (x/y);
     x = Math.ceil(x);
-    console.log(x)
+    //console.log(x)
     x = x*y;
-    console.log(x)
+    //console.log(x)
     if(negative)
     {
         x *= -1;
@@ -456,7 +456,7 @@ function roundUp(x){
     return x;
 }
 function roundDown(x){
-    console.log(x)
+    //console.log(x)
     //console.log(x)
     var negative = false;
     if(x<10 && x>=0){
@@ -465,7 +465,7 @@ function roundDown(x){
         return x
     }
     else if(x <1 && x>=-1){
-        console.log("small")
+        //console.log("small")
         x=1
         negative = true
     }
