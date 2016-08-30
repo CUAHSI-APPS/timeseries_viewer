@@ -2,6 +2,7 @@
 *.py~
 *.js~
 *.html~
+*.txt~
 .idea/*
 .build/*
 workspaces/
