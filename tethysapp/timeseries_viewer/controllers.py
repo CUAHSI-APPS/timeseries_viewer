@@ -26,7 +26,7 @@ def temp_waterml(request, id):
 
 # formats the time series for highcharts
 @login_required()
-
+@ensure_csrf_cookie
 def chart_data(request, res_id, src):
 
     test = ''
@@ -57,6 +57,7 @@ def chart_data(request, res_id, src):
 
 
 # home page controller
+@login_required()
 def home(request):
     # print datetime.now()
     temp_dir = utilities.get_workspace()
