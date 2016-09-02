@@ -13,7 +13,7 @@ from suds.client import Client
 from xml.sax._exceptions import SAXParseException
 from django.conf import settings
 import uuid
-
+from django.views.decorators.csrf import ensure_csrf_cookie
 # -- coding: utf-8--
 
 # helper controller for fetching the WaterML file
@@ -21,12 +21,12 @@ def temp_waterml(request, id):
     base_path = utilities.get_workspace() + "/id"
     file_path = base_path + "/" + id
     response = HttpResponse(FileWrapper(open(file_path)), content_type='application/xml')
-
     return response
 
-
 # formats the time series for highcharts
+@ensure_csrf_cookie
 def chart_data(request, res_id, src):
+
     test = ''
     xml_id = None
     xml_rest = False

@@ -235,11 +235,10 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             if(unit == null){
                 unit='N/A'
             }
-
             if (timesupport == null) {
                 timesupport = "N/A"
             }
-            if (timeunit == null) {
+            if (timeunit == null || timeunit ==' ') {
                 timeunit = "N/A"
             }
             if (sourcedescription == null) {

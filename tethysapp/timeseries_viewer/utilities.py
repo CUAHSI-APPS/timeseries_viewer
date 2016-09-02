@@ -78,10 +78,13 @@ def parse_1_0_and_1_1(root):
             # lists to store the time-series data
             for_graph = []
             boxplot = []
+            master_values={}
+            meth_qual = []
             for_highchart = []
             for_canvas = []
             my_times = []
             my_values = []
+
             x_value = []
             y_value = []
             nodata = "-9999"  # default NoData value. The actual NoData value is read from the XML noDataValue tag
@@ -108,8 +111,10 @@ def parse_1_0_and_1_1(root):
             for element in root.iter():
                 bracket_lock = -1
                 if '}' in element.tag:
+
                     bracket_lock = element.tag.index('}')  # The namespace in the tag is enclosed in {}.
                     tag = element.tag[bracket_lock+1:]     # Takes only actual tag, no namespace
+
 
                     if 'value'!= tag:
                         # in the xml there is a unit for the value, then for time. just take the first
@@ -147,7 +152,7 @@ def parse_1_0_and_1_1(root):
                             sourcedescription =element.text
 
                     elif 'value' == tag:
-
+                        # print element.attrib
                         try:
                             # my_times.append(element.attrib['dateTimeUTC'])
                             n = element.attrib['dateTimeUTC']
@@ -155,12 +160,28 @@ def parse_1_0_and_1_1(root):
                             # my_times.append(element.attrib['dateTime'])
                             n =element.attrib['dateTime']
                         try:
-                            quality= element.attrib['qualityControlLevel']
+                            quality= element.attrib['qualityControlLevelCode']
                         except:
                             quality1 =''
+                        try:
+                            method = element.attrib['methodCode']
+                        except:
+                            method=''
+                        # print quality
+                        # print method
+
+                        dic = quality +'aa'+method
+
+                        # master_values['aaa'] = {}
+                        # master_values['aaa']['value1']='hello'
+
+                        # if dic not in master_values:
+                        if dic not in meth_qual:
+                            meth_qual.append(dic)
+                            master_values.update({dic:{}})
+
 
                         v = element.text
-
                         # tii = pd.Timestamp(n).value/1000000#pandas convert string to time object
                         # tii = ti.value/1000000 #gets timestamp and convert time to milliseconds
                         # t =t*1000# This adds three extra zeros for correct formatting
@@ -180,9 +201,14 @@ def parse_1_0_and_1_1(root):
                             x_value.append(n)
                             y_value.append(v)
 
-            #
+                        master_values[dic].update({n:v})
+
             # print "parse custom values !!!!!!!!!!!!!!!!!!!!!"
             # print datetime.now()
+            # print master_values
+            # print 'aaa'
+            # print meth_qual
+            # print x_value
 
             value_count = len(x_value)
             # largest_time = for_canvas[value_count - 1][0]
