@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.http import HttpResponse
 from django.shortcuts import render
 from wsgiref.util import FileWrapper
+from django.contrib.auth.decorators import login_required
 import os
 from datetime import datetime
 import requests
@@ -24,7 +25,8 @@ def temp_waterml(request, id):
     return response
 
 # formats the time series for highcharts
-@ensure_csrf_cookie
+@login_required()
+
 def chart_data(request, res_id, src):
 
     test = ''
