@@ -19,6 +19,8 @@ from datetime import datetime
 import pandas as pd
 from hs_restclient import HydroShare
 import controllers
+import operator
+import collections
 
 def get_app_base_uri(request):
     base_url = request.build_absolute_uri()
@@ -78,15 +80,29 @@ def parse_1_0_and_1_1(root):
             # lists to store the time-series data
             for_graph = []
             boxplot = []
-            master_values={}
-            meth_qual = []
+            master_values=collections.OrderedDict()
+            master_values1=collections.OrderedDict()
+            master_times = collections.OrderedDict()
+            master_boxplot = collections.OrderedDict()
+            master_stat = collections.OrderedDict()
+            master_data_values = collections.OrderedDict()
+            # master_values = collections.namedtuple('id','time','value')
+            meth_qual = [] # List of all the quality, method, and source combinations
             for_highchart = []
             for_canvas = []
             my_times = []
             my_values = []
-
+            meta_dic ={'method':{},'quality':{},'source':{},'organization':{}}
+            m_des = []
+            u=0
+            m_code = []
+            m_org =[]
+            quality={}
+            source={}
+            counter = 0
             x_value = []
             y_value = []
+            master_counter =True
             nodata = "-9999"  # default NoData value. The actual NoData value is read from the XML noDataValue tag
             timeunit=None
             sourcedescription = None
@@ -108,6 +124,7 @@ def parse_1_0_and_1_1(root):
 
             # print "parsing values from water ml"
             # print datetime.now()
+
             for element in root.iter():
                 bracket_lock = -1
                 if '}' in element.tag:
@@ -137,6 +154,7 @@ def parse_1_0_and_1_1(root):
                         if 'definition' == tag or 'qualifierDescription'==tag:
                             quality = element.text
                         if 'methodDescription' == tag or 'MethodDescription'==tag:
+                            # print element.attrib['methodID']
                             method = element.text
                         if 'dataType' == tag :
                             datatype = element.text
@@ -150,6 +168,43 @@ def parse_1_0_and_1_1(root):
                             timeunit =element.text
                         if"sourceDescription"== tag or "SourceDescription"==tag:
                             sourcedescription =element.text
+
+                        if "method" ==tag:
+                            for subele in element:
+                                bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
+                                tag1 = element.tag[bracket_lock+1:]
+                                # Takes only actual tag, no namespace
+                                if 'methodCode' in subele.tag:
+                                    m_code = subele.text
+                                if 'methodDescription' in subele.tag:
+                                    m_des = subele.text
+                            meta_dic['method'].update({m_code:m_des})
+                        if "source" ==tag:
+                            for subele in element:
+                                bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
+                                tag1 = element.tag[bracket_lock+1:]
+                                # Takes only actual tag, no namespace
+                                if 'sourceCode' in subele.tag:
+                                    m_code = subele.text
+                                if 'sourceDescription' in subele.tag:
+                                    m_des = subele.text
+                                if 'organization' in subele.tag:
+                                    m_org = subele.text
+                            meta_dic['source'].update({m_code:m_des})
+                            meta_dic['organization'].update({m_code:m_org})
+                        if "qualityControlLevel" ==tag:
+                            for subele in element:
+                                bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
+                                tag1 = element.tag[bracket_lock+1:]
+                                # Takes only actual tag, no namespace
+                                if 'qualityControlLevelCode' in subele.tag:
+                                    m_code = subele.text
+                                if 'definition' in subele.tag:
+                                    m_des = subele.text
+                            meta_dic['quality'].update({m_code:m_des})
+
+
+
 
                     elif 'value' == tag:
                         # print element.attrib
@@ -167,19 +222,29 @@ def parse_1_0_and_1_1(root):
                             method = element.attrib['methodCode']
                         except:
                             method=''
+                        try:
+                            source = element.attrib['sourceCode']
+                        except:
+                            source=''
                         # print quality
                         # print method
 
-                        dic = quality +'aa'+method
+                        dic = quality +'aa'+method+'aa'+source
+
 
                         # master_values['aaa'] = {}
                         # master_values['aaa']['value1']='hello'
 
                         # if dic not in master_values:
+                        # if dic not in meth_qual or dic1 not in meth_qual:
                         if dic not in meth_qual:
                             meth_qual.append(dic)
-                            master_values.update({dic:{}})
-
+                            # meth_qual.append(dic1)
+                            master_values.update({dic:[]})
+                            master_times.update({dic:[]})
+                            master_boxplot.update({dic:[]})
+                            master_stat.update({dic:[]})
+                            master_data_values.update({dic:[]})
 
                         v = element.text
                         # tii = pd.Timestamp(n).value/1000000#pandas convert string to time object
@@ -192,6 +257,7 @@ def parse_1_0_and_1_1(root):
                             # for_graph.append(value)
                             x_value.append(n)
                             y_value.append(value)
+                            v =None
 
                         else:
                             # for_canvas.append({x:n,y:v})
@@ -200,32 +266,55 @@ def parse_1_0_and_1_1(root):
                             for_graph.append(v)
                             x_value.append(n)
                             y_value.append(v)
+                            master_data_values[dic].append(v) #records only none null values for running statistics
+                            # print "hello"
+                    #master_values[dic].update({n:v})
+                        master_values[dic].append(v)
+                        master_times[dic].append(n)
+                        # master_values(dic,n,v)
 
-                        master_values[dic].update({n:v})
-
-            # print "parse custom values !!!!!!!!!!!!!!!!!!!!!"
-            # print datetime.now()
-            # print master_values
-            # print 'aaa'
-            # print meth_qual
-            # print x_value
-
+            for item in master_data_values:
+                if len(master_data_values[item]) ==0:
+                    mean = None
+                    median =None
+                    quar1 = None
+                    quar3 = None
+                    min1 = None
+                    max1=None
+                else:
+                    mean = numpy.mean(master_data_values[item])
+                    mean = float(format(mean, '.2f'))
+                    median = float(format(numpy.median(master_data_values[item]), '.2f'))
+                    quar1 = float(format(numpy.percentile(master_data_values[item],25), '.2f'))
+                    quar3 = float(format(numpy.percentile(master_data_values[item],75), '.2f'))
+                    min1 = float(format(min(master_data_values[item]), '.2f'))
+                    max1 = float(format(max(master_data_values[item]), '.2f'))
+                master_stat[item].append(mean)
+                master_stat[item].append(median)
+                master_stat[item].append(max1)
+                master_stat[item].append(min1)
+                master_boxplot[item].append(1)
+                master_boxplot[item].append(min1)#adding data for the boxplot
+                master_boxplot[item].append(quar1)
+                master_boxplot[item].append(median)
+                master_boxplot[item].append(quar3)
+                master_boxplot[item].append(max1)
             value_count = len(x_value)
             # largest_time = for_canvas[value_count - 1][0]
             # End of measuring the WaterML processing time...
-            mean = numpy.mean(for_graph)
-            mean = float(format(mean, '.2f'))
-            median = float(format(numpy.median(for_graph), '.2f'))
-            quar1 = float(format(numpy.percentile(for_graph,25), '.2f'))
-            quar3 = float(format(numpy.percentile(for_graph,75), '.2f'))
-            min1 = float(format(min(for_graph), '.2f'))
-            max1 = float(format(max(for_graph), '.2f'))
-            boxplot.append(1)
-            boxplot.append(min1)#adding data for the boxplot
-            boxplot.append(quar1)
-            boxplot.append(median)
-            boxplot.append(quar3)
-            boxplot.append(max1)
+            # mean = numpy.mean(for_graph)
+            # mean = float(format(mean, '.2f'))
+            # median = float(format(numpy.median(for_graph), '.2f'))
+            # quar1 = float(format(numpy.percentile(for_graph,25), '.2f'))
+            # quar3 = float(format(numpy.percentile(for_graph,75), '.2f'))
+            # min1 = float(format(min(for_graph), '.2f'))
+            # max1 = float(format(max(for_graph), '.2f'))
+            # boxplot.append(1)
+            # boxplot.append(min1)#adding data for the boxplot
+            # boxplot.append(quar1)
+            # boxplot.append(median)
+            # boxplot.append(quar3)
+            # boxplot.append(max1)
             sd = numpy.std(for_graph)
             # print "parse end !!!!!!!!!!!!!!!!!!!!!"
             # print datetime.now()
@@ -237,6 +326,7 @@ def parse_1_0_and_1_1(root):
                 'variable_name': variable_name,
                 'units': units,
                 'wml_version': '1',
+                'meta_dic':meta_dic,
                 # 'for_highchart': for_highchart,
                 'for_canvas':for_canvas,
                 'mean': mean,
@@ -256,9 +346,14 @@ def parse_1_0_and_1_1(root):
                 'timeunit':timeunit,
                 'sourcedescription' :sourcedescription,
                 'timesupport' : timesupport,
+                'master_counter':master_counter,
                 'boxplot':boxplot,
                 'xvalue':x_value,
                 'yvalue':y_value,
+                'master_values':master_values,
+                'master_times':master_times,
+                'master_boxplot':master_boxplot,
+                'master_stat':master_stat
 
             }
         else:
