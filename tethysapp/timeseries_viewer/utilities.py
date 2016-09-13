@@ -92,7 +92,7 @@ def parse_1_0_and_1_1(root):
             for_canvas = []
             my_times = []
             my_values = []
-            meta_dic ={'method':{},'quality':{},'source':{},'organization':{}}
+            meta_dic ={'method':{},'quality':{},'source':{},'organization':{},'quality_code':{}}
             m_des = []
             u=0
             m_code = []
@@ -203,9 +203,6 @@ def parse_1_0_and_1_1(root):
                                     m_des = subele.text
                             meta_dic['quality'].update({m_code:m_des})
 
-
-
-
                     elif 'value' == tag:
                         # print element.attrib
                         try:
@@ -226,17 +223,10 @@ def parse_1_0_and_1_1(root):
                             source = element.attrib['sourceCode']
                         except:
                             source=''
-                        # print quality
-                        # print method
+
 
                         dic = quality +'aa'+method+'aa'+source
 
-
-                        # master_values['aaa'] = {}
-                        # master_values['aaa']['value1']='hello'
-
-                        # if dic not in master_values:
-                        # if dic not in meth_qual or dic1 not in meth_qual:
                         if dic not in meth_qual:
                             meth_qual.append(dic)
                             # meth_qual.append(dic1)
@@ -300,24 +290,7 @@ def parse_1_0_and_1_1(root):
                 master_boxplot[item].append(quar3)
                 master_boxplot[item].append(max1)
             value_count = len(x_value)
-            # largest_time = for_canvas[value_count - 1][0]
-            # End of measuring the WaterML processing time...
-            # mean = numpy.mean(for_graph)
-            # mean = float(format(mean, '.2f'))
-            # median = float(format(numpy.median(for_graph), '.2f'))
-            # quar1 = float(format(numpy.percentile(for_graph,25), '.2f'))
-            # quar3 = float(format(numpy.percentile(for_graph,75), '.2f'))
-            # min1 = float(format(min(for_graph), '.2f'))
-            # max1 = float(format(max(for_graph), '.2f'))
-            # boxplot.append(1)
-            # boxplot.append(min1)#adding data for the boxplot
-            # boxplot.append(quar1)
-            # boxplot.append(median)
-            # boxplot.append(quar3)
-            # boxplot.append(max1)
             sd = numpy.std(for_graph)
-            # print "parse end !!!!!!!!!!!!!!!!!!!!!"
-            # print datetime.now()
 
             return {
                 'site_name': site_name,

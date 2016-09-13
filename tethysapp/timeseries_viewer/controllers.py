@@ -25,7 +25,7 @@ def temp_waterml(request, id):
     return response
 
 # formats the time series for highcharts
-@login_required()
+
 @ensure_csrf_cookie
 def chart_data(request, res_id, src):
 
@@ -52,25 +52,26 @@ def chart_data(request, res_id, src):
         data_for_chart = utilities.Original_Checker(file_path)
     # print "JSON Reponse"
     # print datetime.now()
-
     return JsonResponse(data_for_chart)
 
 
 # home page controller
-@login_required()
+@ensure_csrf_cookie
 def home(request):
     # print datetime.now()
-    temp_dir = utilities.get_workspace()
 
     utilities.viewer_counter(request)
     # r = requests.get('http://tethys.byu.edu/apps/gaugeviewwml/waterml/?gaugeid=10254970&start=2016-06-24&end=2016-07-08', verify=False)
     # print r.content
     # getOAuthHS(request)
-
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
-
-
+@ensure_csrf_cookie
+@login_required()
+def hydroshare(request):
+    utilities.viewer_counter(request)
+    context = {}
+    return render(request, 'timeseries_viewer/home.html', context)
 
     # Code for getting waterml from hydroshare
 
@@ -82,7 +83,6 @@ def home(request):
     #        variable_code =
     #        client = connect_wsdl_url(service_url)
     #        response = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
-
 
 def getOAuthHS(request):
     hs_instance_name = "www"

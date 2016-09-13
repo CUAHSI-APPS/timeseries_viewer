@@ -87,16 +87,16 @@ td.details-control {
 tr.shown td.details-control {
 	background: url('close1.png') no-repeat center center;
 }
-#example_length{
+#data_table_length{
 	visibility: hidden;
 }
-#example_filter{
+#data_table_filter{
 	visibility: hidden;
 }
-#example_info{
+#data_table_info{
 	visibility: hidden;
 }
-#example_paginate{
+#data_table_paginate{
 	visibility: hidden;
 }
 

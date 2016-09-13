@@ -18,6 +18,7 @@ var ymax =0
 var ymin=0
 var y2max=0
 var y2min=0
+var quality_title=null
 // here we set up the configuration of the highCharts chart
 var chart_options = {
     zoomEnabled: true,
@@ -32,7 +33,6 @@ var chart_options = {
             } else {
                 e.dataSeries.visible = true;
             }
-
             e.chart.render();
         }
     },
@@ -134,7 +134,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
             //var max = json.max
             //var min = json.min
             var master_stat = json.master_stat
-            console.log(master_boxplot)
+            //console.log(master_boxplot)
             //console.log(meta_dic)
             //console.log(master_values)
             //console.log(master_counter)
@@ -149,6 +149,8 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                     //console.log(meta)
 
                     quality = meta_dic['quality'][meta[0]]
+                    quality_code = [meta[0]]
+
                     method = meta_dic['method'][meta[1]]
                     sourcedescription= meta_dic['source'][meta[2]]
                     organization = meta_dic['organization'][meta[2]]
@@ -410,11 +412,19 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                             + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
                         var chart = $("#chartContainer").CanvasJSChart()
                     }
-                    console.log(boxplot)
+                    //console.log(boxplot)
 
                     //q1Arr = (m_xval.length % 2 == 0) ? m_xval.slice(0, (m_xval.length / 2) + 1) : m_xval.slice(0, Math.floor(m_xval.length / 2) + 1);
                     //q3Arr = (values.length % 2 == 0) ? values.slice( (values.length/2) - 1, values.length) : values.slice(Math.ceil(values.length / 2) - 1,values.length);
                     //console.log(q1Arr)
+                    if (quality =="N/A"){
+                        quality_title = "N/A"
+                    }
+                    else{
+                        quality_title = quality
+                        quality = '('+quality_code+') '+quality.substring(0,quality.indexOf(' ')+1)+'...'
+                    }
+
 
                     var dataset = {
                         legend: legend,
@@ -439,7 +449,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                         boxplot: boxplot,
                         boxplot_count: boxplot_count
                     }
-                    var table = $('#example').DataTable();
+                    var table = $('#data_table').DataTable();
                     table.row.add(dataset).draw();
                     //end new table
                     chart.render();
@@ -449,330 +459,6 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                 number2 = number2+1
 
             }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            //else if(master_counter == false) {
-            //
-            //
-            //    //console.log(master_values['1aa8480aa1'])
-            //
-            //    if (units != null) {
-            //
-            //        units = units.replace(/\s+/g, '');//removes any spaces in the units
-            //    }
-            //    if (units == null) {
-            //        units = "N/A";
-            //    }
-            //    var unit_off_bool = false
-            //    unit_tracker.push(units);//tracks the units of the different time series
-            //    unit_different2 = null;
-            //    same_unit = 1//goes to 2 when more than one unit type is graphed
-            //    yaxis = 0 //tracks which dataset set goes on which axis
-            //    var y_title = null;//tracks which variable to use for the yaxis title
-            //    //data1 = json.for_canvas
-            //
-            //    xval = json.xvalue
-            //    yval = json.yvalue
-            //    max1 = json.max
-            //    min1 = json.min
-            //    test = []
-            //    //console.log(xval)
-            //    for (i = 0; i < xval.length; i++) {
-            //        //console.log("hello")
-            //        temp_date = new Date(xval[i])
-            //        test.push(temp_date)
-            //        xtime.push({x: temp_date.getTime(), y: yval[i]})
-            //    }
-            //    //console.log(temp_date.getTime())
-            //    //console.log(temp_date)
-            //
-            //    data1 = xtime
-            //
-            //    var chart = $("#chartContainer").CanvasJSChart()
-            //    //console.log(unit1)
-            //    //console.log(units)
-            //    //console.log(unit_off)
-            //    if (unit_off == '') {
-            //        unit1 = unit_tracker[0];
-            //        if (unit1 == units) {
-            //            y_title = 0
-            //        }
-            //        if (unit1 != units)//checks the first unit type agaisnt the current unit
-            //        {
-            //            same_unit = 2;//flags which axis is to be used
-            //            y_title = 1
-            //            if (unit2 == null) {
-            //                unit2 = units //this tracks the second unit type if there is one
-            //            }
-            //            if (units != unit2) {
-            //                same_unit = 3
-            //                y_title = 3
-            //            }
-            //        }
-            //    }
-            //    else {
-            //        y_title = 3
-            //        unit_off_bool = true
-            //        if (units != unit_off) {
-            //            if (units == unit1) {
-            //                y_title = 0
-            //                unit_off_bool = false
-            //            }
-            //            else if (resid_on == res_id) {
-            //                y_title = 1
-            //                unit_off_bool = false
-            //            }
-            //        }
-            //    }
-            //    //// add the time series to the chart
-            //    //series.data = json.for_highchart;
-            //    var site_name = json.site_name
-            //    var variable_name = json.variable_name
-            //    var unit = json.units
-            //    var organization = json.organization
-            //    var quality = json.quality
-            //    var method = json.method
-            //    var datatype = json.datatype
-            //    var valuetype = json.valuetype
-            //    var samplemedium = json.samplemedium
-            //    var count = json.count
-            //    var mean = json.mean
-            //    var median = json.median
-            //    var max = json.max
-            //    var min = json.min
-            //    var stdev = json.stdev
-            //    var timesupport = json.timesupport
-            //    var timeunit = json.timeunit
-            //    var sourcedescription = json.sourcedescription
-            //    var boxplot_count = number
-            //    var boxplot = json.boxplot
-            //    if (site_name == null) {
-            //        site_name = "N/A"
-            //    }
-            //    if (variable_name == null) {
-            //        variable_name = "N/A"
-            //    }
-            //    if (organization == null) {
-            //        organization = "N/A"
-            //    }
-            //    if (quality == null) {
-            //        quality = "N/A"
-            //    }
-            //    if (method == null) {
-            //        method = "N/A"
-            //    }
-            //    if (datatype == null) {
-            //        datatype = "N/A"
-            //    }
-            //    if (valuetype == null) {
-            //        valuetype = "N/A"
-            //    }
-            //    if (unit == null) {
-            //        unit = 'N/A'
-            //    }
-            //    if (timesupport == null) {
-            //        timesupport = "N/A"
-            //    }
-            //    if (timeunit == null || timeunit == ' ') {
-            //        timeunit = "N/A"
-            //    }
-            //    if (sourcedescription == null) {
-            //        sourcedescription = "N/A"
-            //    }
-            //    if (samplemedium == null) {
-            //        samplemedium = "N/A"
-            //    }
-            //    number2 = number2 + 1//keeps track of row number for stats table
-            //
-            //    number = number +1;
-            //
-            //
-            //    //max =200
-            //    //min = 60
-            //    if (y_title == 0) {//sets the y-axis title and flags that data should be plotted on this axis
-            //        //chart.yAxis[0].setTitle({ text: json.variable_name + ' (' + json.units+')' });
-            //        if (max > ymax) {
-            //            ymax = max
-            //        }
-            //        //console.log(ymin)
-            //        //console.log(min)
-            //        if (min < ymin) {
-            //            ymin = min
-            //        }
-            //        //console.log(ymin)
-            //        var newSeries =
-            //        {
-            //            type: "line",
-            //            axisYType: "primary",
-            //            //axisYType:"secondary",
-            //            xValueType: "dateTime",
-            //            xValueFormatString: "MMM DD, YYYY: HH:mm",
-            //            showInLegend: false,
-            //            indexLabelFontSize: 1,
-            //            visible: true,
-            //            name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-            //            dataPoints: data1
-            //        };
-            //        //console.log("data pushed 0 " + site_name)
-            //        chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
-            //        chart.options.axisY.titleWrap = true
-            //        chart.options.data.push(newSeries);
-            //        //maxview = Math.round(1000*(max+.1*max))/1000
-            //        maxview = roundUp(Math.ceil(ymax))
-            //        minview = roundDown(Math.floor(ymin))
-            //        interval = (maxview - minview) / 10
-            //        //console.log(maxview)
-            //        //console.log(minview)
-            //
-            //        maxview = (Math.ceil((maxview/interval)) *interval)
-            //        minview = (Math.ceil((minview/interval)) *interval)
-            //
-            //
-            //        chart.options.axisY.viewportMaximum = maxview
-            //        chart.options.axisY.maximum = maxview
-            //
-            //        chart.options.axisY.viewportMinimum = minview
-            //        chart.options.axisY.minimum = minview
-            //
-            //        chart.options.axisY.interval = interval
-            //    }
-            //    else if (y_title == 1) {//sets the y-axis 2 title and flags that data should be plotted on this axis
-            //        if (max > y2max) {
-            //            y2max = max
-            //        }
-            //        if (min < y2min) {
-            //            y2min = min
-            //        }
-            //        var newSeries =
-            //        {
-            //            type: "line",
-            //            //axisYType:"primary",
-            //            axisYType: "secondary",
-            //            xValueType: "dateTime",
-            //            xValueFormatString: "MMM DD, YYYY: HH:mm",
-            //            showInLegend: false,
-            //            indexLabelFontSize: 1,
-            //            visible: true,
-            //            name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-            //            dataPoints: data1
-            //        };
-            //        //console.log("data pushed 1 " + site_name)
-            //        chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
-            //        chart.options.axisY2.titleWrap = true
-            //        chart.options.data.push(newSeries);
-            //        //maxview = Math.round(1000*(max+.1*max))/1000
-            //
-            //
-            //        maxview = roundUp(Math.ceil(y2max))
-            //        minview = roundDown(Math.floor(y2min))
-            //        console.log(maxview)
-            //        console.log(minview)
-            //
-            //        //chart.options.axisY2.viewportMaximum = maxview
-            //        interval = ((maxview - minview) / 10)
-            //        console.log(interval)
-            //
-            //        maxview = (Math.ceil((maxview/interval)) *interval)
-            //        minview = (Math.ceil((minview/interval)) *interval)
-            //        console.log(maxview)
-            //        console.log(minview)
-            //        chart.options.axisY2.viewportMaximum = maxview
-            //        chart.options.axisY2.viewportMinimum = minview
-            //
-            //        //console.log(chart.options.axisY2.viewportMinimum)
-            //        chart.options.axisY2.interval = interval
-            //    }
-            //    else if (y_title == 3) {//sets the y-axis 2 title and flags that data should be plotted on this axis
-            //        var newSeries =
-            //        {
-            //            type: "line",
-            //            //axisYType:"primary",
-            //            axisYType: "primary",
-            //            xValueType: "dateTime",
-            //            showInLegend: false,
-            //            indexLabelFontSize: 1,
-            //            visible: false,
-            //            name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-            //            dataPoints: data1
-            //        };
-            //        chart.options.data.push(newSeries);
-            //        //console.log("data pushed 3 " + site_name)
-            //    }
-            //    //chart.options.axisX.title = "Number of points:"+count
-            //    chart.options.axisY.titleFontSize = 15
-            //    chart.options.axisY2.titleFontSize = 15
-            //    chart.options.axisX.titleFontSize = 15
-            //
-            //    //console.log(chart)
-            //    //console.log(chart.options.axisY.viewportMaximum)
-            //    //console.log(chart.options.axisY.viewportMinimum)
-            //    //
-            //    //console.log(chart.options.axisY.interval)
-            //    //console.log(chart.options.axisY2.viewportMaximum)
-            //    //console.log(chart.options.axisY2.viewportMinimum)
-            //    //chart.options.axisY.viewportMaximum= 350
-            //    //chart.options.axisY2.viewportMaximum = 330
-            //    //chart.options.axisY2.interval = 11
-            //    //console.log(chart.options.data )
-            //    xtime = []
-            //
-            //    if ((unit1 != units && unit2 != units) || unit_off_bool == true)//this triggers if more than 2 different units are used
-            //    {
-            //        var legend = "<div style='text-align:center'><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
-            //            + " type='checkbox' onClick ='myFunc(this.id,this.name);' >" + "</div"
-            //        $('#multiple_units').html("")
-            //        $('#multiple_units').append('* Only two types of units are displayed at a time.');
-            //        title = 1
-            //        var chart = $("#chartContainer").CanvasJSChart()
-            //    }
-            //    else {
-            //        //chart.setTitle({ text: "CUAHSI Data Series Viewer" });
-            //        var legend = "<div style='text-align:center' '><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
-            //            + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
-            //        var chart = $("#chartContainer").CanvasJSChart()
-            //    }
-            //    var dataset = {
-            //        legend: legend,
-            //        organization: organization,
-            //        name: site_name,
-            //        variable: variable_name,
-            //        unit: unit,
-            //        samplemedium: samplemedium,
-            //        count: count,//download:download,
-            //        quality: quality,
-            //        method: method,
-            //        datatype: datatype,
-            //        valuetype: valuetype,
-            //        timesupport: timesupport,
-            //        timeunit: timeunit,
-            //        sourcedescription: sourcedescription,
-            //        mean: mean,
-            //        median: median,
-            //        max: max,
-            //        min: min,
-            //        stdev: stdev,
-            //        boxplot: boxplot,
-            //        boxplot_count: boxplot_count
-            //    }
-            //    var table = $('#example').DataTable();
-            //    table.row.add(dataset).draw();
-            //    //end new table
-            //    chart.render()
-            //
-            //
-            //}
 
             if (number2 == number1 - 1)//checks to see if all the data is loaded before displaying
             {
@@ -851,9 +537,6 @@ function roundDown(x){
     x = Math.floor(x);
     x = x*y;
 
-    console.log(x)
-    console.log(y)
-
     if(negative){
         x *= -1;
         //console.log(x)
@@ -903,8 +586,9 @@ function myFunc(id, name) {
 var popupDiv = $('#welcome-popup');
 //end new table
 $(document).ready(function (callback) {
+    console.log("ready")
     var res_id = find_query_parameter("res_id");
-    var table = $('#example').DataTable({
+    var table = $('#data_table').DataTable({
         "createdRow": function (row, data, dataIndex) {
 
             if (number == 0) {
@@ -944,8 +628,13 @@ $(document).ready(function (callback) {
                 sTitle = "Click here to see more data"
                 this.setAttribute('title', sTitle);
             });
-
-            var table = $('#example').DataTable()
+            $('td', row).eq(6).each(function () {
+                ;
+                sTitle = {"data": "quality"},
+                this.setAttribute('title', quality_title);
+            });
+            //console.log({"data": "quality"})
+            var table = $('#data_table').DataTable()
             table.$('td').tooltip({
                 selector: '[data-toggle="tooltip"]',
                 container: 'body',
@@ -955,6 +644,7 @@ $(document).ready(function (callback) {
             });
         },
         data: data,
+
         "columns": [
             {
                 "className": "legend",
@@ -970,14 +660,14 @@ $(document).ready(function (callback) {
             {"data": "name"},
             {"data": "variable"},
             {"data": "unit"},
-            {"data": "samplemedium"},
+            {"data": "quality"},
             {"data": "count"},
             //{"data":"download"}
         ],
         "order": [[1, 'asc']]
     });
     //Add event listener for opening and closing details
-    $('#example tbody').on('click', 'td.details-control', function () {
+    $('#data_table tbody').on('click', 'td.details-control', function () {
         var tr = $(this).closest('tr');
         var row = table.row(tr);
         if (row.child.isShown()) {
@@ -1020,8 +710,8 @@ $(document).ready(function (callback) {
     $('#button').hide();
     $('#loading').show();
     $('#multiple_units').hide();
-    $('#example_length').html("")
-    $('#example_filter').html("")
+    $('#data_table_length').html("")
+    $('#data_table_filter').html("")
     $("#chart").toggle();
     // add the series to the chart
     addingseries();
@@ -1035,8 +725,8 @@ function format(d) {
     return '<div id = "container' + d.boxplot_count + '"class ="highcharts-boxplot" style = "float:right;height:300px;width:40%" ></div>' +
         '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:100px; margin-left:8.5%;font-size: 9pt">' +
         '<tr>' +
-        '<td>Quality Control:</td>' +
-        '<td>' + d.quality + '</td>' +
+        '<td>Sample Medium:</td>' +
+        '<td>' + d.samplemedium + '</td>' +
         '</tr>' +
         '<tr>' +
         '<td>Method:</td>' +
@@ -1172,7 +862,7 @@ function multipletime() {
     ymin=0
     y2max=0
     y2min=0
-    var table = $('#example').DataTable();
+    var table = $('#data_table').DataTable();
     number2 = -1
     number  = -1
     table
