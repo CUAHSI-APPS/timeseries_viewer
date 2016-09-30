@@ -15,6 +15,7 @@ from xml.sax._exceptions import SAXParseException
 from django.conf import settings
 import uuid
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.csrf import csrf_exempt
 # -- coding: utf-8--
 
 # helper controller for fetching the WaterML file
@@ -26,9 +27,9 @@ def temp_waterml(request, id):
 
 # formats the time series for highcharts
 
-@ensure_csrf_cookie
+# @ensure_csrf_cookie
+@csrf_exempt
 def chart_data(request, res_id, src):
-
     test = ''
     xml_id = None
     xml_rest = False
@@ -52,21 +53,38 @@ def chart_data(request, res_id, src):
         data_for_chart = utilities.Original_Checker(file_path)
     # print "JSON Reponse"
     # print datetime.now()
+    print "end of chart data"
     return JsonResponse(data_for_chart)
 
 
 # home page controller
-@ensure_csrf_cookie
+@csrf_exempt
 def home(request):
     # print datetime.now()
+    # print hash(['hel','test'])
+    try: #Check to see if request if from CUAHSI. For data validation
+        request_url = request.META['HTTP_REFERER']
+    except:
+        request_url ="test"
+    print request_url
+    source=None
+    source = request.POST.getlist('Source')
+    id = request.POST.getlist('WofUri')
+    quality = request.POST.getlist('QCLID')
+    method = request.POST.getlist('MethodId')
+    sourceid = request.POST.getlist('SourceId')
+    # print id, quality, method, sourceid
+    # print request.POST.getlist('MethodId')
 
+    cuahsi_ids = [source,id,quality,sourceid]
+    # cuahsi_ids = ['h','j']
     utilities.viewer_counter(request)
     # r = requests.get('http://tethys.byu.edu/apps/gaugeviewwml/waterml/?gaugeid=10254970&start=2016-06-24&end=2016-07-08', verify=False)
     # print r.content
     # getOAuthHS(request)
-    context = {}
+    context = {'cuahsi_ids':cuahsi_ids}
     return render(request, 'timeseries_viewer/home.html', context)
-@ensure_csrf_cookie
+@csrf_exempt
 @login_required()
 def hydroshare(request):
     utilities.viewer_counter(request)

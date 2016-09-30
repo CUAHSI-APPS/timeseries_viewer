@@ -14,7 +14,7 @@ CUAHSI Time Series Viewer
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Welcome to the CUAHSI time series viewer!</h4>
+                <h4 class="modal-title">Welcome to the CUAHSI Data Series Viewer!</h4>
             </div>
             <div class="modal-body">
                 <div id="welcome-info">
@@ -30,12 +30,12 @@ CUAHSI Time Series Viewer
                         <h6>3. Launch the time series viewer</h6>
                         <p>In your workspace, select the time series for visualization, choose Time series viewer, and launch tool.</p>
                         <!--<a class="btn btn-default" href='http://bcc-hiswebclient.azurewebsites.net'>Go to CUAHSI HydroClient website</a>-->
-                         <a class="btn btn-default" href='http://data.cuahsi.org/'>Go to CUAHSI HydroClient website</a>
+                        <a class="btn btn-default" href='http://data.cuahsi.org/'>Go to CUAHSI HydroClient website</a>
                     </ol>
                 </div>
             </div>
             <div class="modal-footer">
-                 <div id="byu-logo-container">
+                <div id="byu-logo-container">
                     <img src="{% static 'timeseries_viewer/images/byu-medallion.png' %}"/><span><i>Developed at the BYU Hydroinformatics Lab</i></span>
                 </div>
                 <button type="button" class="btn btn-default" id="close-popup" data-dismiss="modal">Close</button>
@@ -64,13 +64,14 @@ CUAHSI Time Series Viewer
     </div>
 </div>
 {{block.super}}
+
 {% endblock %}
 
 {% block app_content %}
 
-
+<!--
 <!--<div id = chart_cont>-->
-    <!--<div id ='chartDiv'></div>-->
+<!--<div id ='chartDiv'></div>-->
 <!--</div>-->
 <div id="error-message"></div>
 <!--<div id="ts-chart" class="highcharts-plot"></div>-->
@@ -81,21 +82,21 @@ CUAHSI Time Series Viewer
 
 <div id = "stat_div" >
     <table id="data_table" class="display" cellspacing="0" width="100%">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <th>Organization</th>
-                    <th>Site Name</th>
-                    <th>Variable</th>
-                    <th>Variable Unit</th>
-                    <th>Quality Control</th>
-                    <th>Value Count</th>
+        <thead>
+        <tr>
+            <th></th>
+            <th></th>
+            <th>Organization</th>
+            <th>Site Name</th>
+            <th>Variable</th>
+            <th>Variable Unit</th>
+            <th>Quality Control</th>
+            <th>Value Count</th>
 
-                    <!--<th>Download Data</th>-->
-                </tr>
-            </thead>
-        </table>
+            <!--<th>Download Data</th>-->
+        </tr>
+        </thead>
+    </table>
 </div>
 <div id = 'multiple_units'></div>
 
@@ -103,15 +104,16 @@ CUAHSI Time Series Viewer
 <div id = loading>
     <!--http://cssload.net/-->
     <!--<img src="/static/timeseries_viewer/images/main-loading-anim.gif" />-->
-   <div class="cssload-loader">
-	<div class="cssload-dot"></div>
-	<div class="cssload-dot"></div>
-	<div class="cssload-dot"></div>
-	<div class="cssload-dot"></div>
-	<div class="cssload-dot"></div>
+    <div class="cssload-loader">
+        <div class="cssload-dot"></div>
+        <div class="cssload-dot"></div>
+        <div class="cssload-dot"></div>
+        <div class="cssload-dot"></div>
+        <div class="cssload-dot"></div>
+    </div>
 </div>
-
-</div>
+<!--<button type="button" class="btn btn-default" id="btn_submit_cuahsi"onClick ="launchByuHydroshareApp()" >submit</button>-->
+<!--<div id ="cuahsi_data" visibility ='hidden'>{{cuahsi_ids}}</div>-->
 
 {% endblock %}
 {% block app_actions %}

@@ -6,7 +6,6 @@ function find_query_parameter(name) {
     var results = regex.exec(url);
     return results == null ? null : results[1];
 }
-// here we set up the configuration of the CanvasJS chart
 var data = [];
 var unit_tracker = [];
 var counter = 0;
@@ -189,13 +188,13 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                     same_unit = 1//goes to 2 when more than one unit type is graphed
                     yaxis = 0 //tracks which dataset set goes on which axis
                     var y_title = null;//tracks which variable to use for the yaxis title
-                    //data1 = json.for_canvas
+
 
                     max1= json.max
                     min1=json.min
                     test =[]
 
-                    for (i=0;i <m_xval.length; i++)
+                    for (i=0;i <m_xval.length; i++)//formats values and times for the graph
                     {
 
                         temp_date = new Date(m_yval[i])
@@ -238,26 +237,15 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                             }
                         }
                     }
-                    //// add the time series to the chart
-                    //series.data = json.for_highchart;
                     var site_name = json.site_name
                     var variable_name = json.variable_name
                     var unit = json.units
-                    //var organization = json.organization
-                    //var quality = json.quality
-                    //var method = json.method
                     var datatype = json.datatype
                     var valuetype = json.valuetype
                     var samplemedium = json.samplemedium
-                    //var count = json.count
-                    //var mean = json.mean
-                    //var median = json.median
-                    //var max = json.max
-                    //var min = json.min
-                    var stdev = json.stdev
+                    //var stdev = json.stdev
                     var timesupport = json.timesupport
                     var timeunit = json.timeunit
-                    //var sourcedescription = json.sourcedescription
                     var boxplot_count = number
 
                     if (site_name == null) {
@@ -298,8 +286,8 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                     }
                     number = number +1;
 
-                    if (y_title == 0) {//sets the y-axis title and flags that data should be plotted on this axis
-                        //chart.yAxis[0].setTitle({ text: json.variable_name + ' (' + json.units+')' });
+                    if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
+
                         if( max > ymax){
                             ymax = max
                         }
@@ -326,7 +314,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                         chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
                         chart.options.axisY.titleWrap = true
                         chart.options.data.push(newSeries);
-
+                        //setting the view of the graph
                         maxview = roundUp(Math.ceil(ymax))
                         minview = roundDown(Math.floor(ymin))
                         interval = (maxview-minview)/10
@@ -339,7 +327,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                         chart.options.axisY.interval = interval
                         //console.log("chart graphed")
                     }
-                    else if (y_title == 1) {//sets the y-axis 2 title and flags that data should be plotted on this axis
+                    else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
                         if( max > y2max){
                             y2max = max
                         }
@@ -363,20 +351,21 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                         chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
                         chart.options.axisY2.titleWrap = true
                         chart.options.data.push(newSeries);
+                        maxview2 = roundUp(Math.ceil(y2max))
+                        minview2 = roundDown(Math.floor(y2min))
+                        interval2 = ((maxview2-minview2)/10)
 
-                        maxview = roundUp(Math.ceil(y2max))
-                        minview = roundDown(Math.floor(y2min))
-                        console.log(maxview)
-                        console.log(minview)
-                        maxview = (Math.ceil((maxview/interval)) *interval)
-                        minview = (Math.ceil((minview/interval)) *interval)
+                        maxview2 = (Math.ceil((maxview2/interval2)) *interval2)
+                        minview2 = (Math.ceil((minview2/interval2)) *interval2)
 
-                        interval = ((maxview-minview)/10)
-                        chart.options.axisY2.viewportMaximum = maxview
-                        chart.options.axisY2.viewportMinimum =  minview
-                        chart.options.axisY2.interval = interval
+
+                        chart.options.axisY2.viewportMaximum = maxview2
+                        chart.options.axisY2.viewportMinimum =  minview2
+                        chart.options.axisY2.interval = interval2
+
+
                     }
-                    else if (y_title == 3) {//sets the y-axis 2 title and flags that data should be plotted on this axis
+                    else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
                     var newSeries =
                     {
                         type: "line",
@@ -407,24 +396,21 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                         var chart = $("#chartContainer").CanvasJSChart()
                     }
                     else {
-                        //chart.setTitle({ text: "CUAHSI Data Series Viewer" });
                         var legend = "<div style='text-align:center' '><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
                             + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
                         var chart = $("#chartContainer").CanvasJSChart()
                     }
-                    //console.log(boxplot)
 
-                    //q1Arr = (m_xval.length % 2 == 0) ? m_xval.slice(0, (m_xval.length / 2) + 1) : m_xval.slice(0, Math.floor(m_xval.length / 2) + 1);
-                    //q3Arr = (values.length % 2 == 0) ? values.slice( (values.length/2) - 1, values.length) : values.slice(Math.ceil(values.length / 2) - 1,values.length);
-                    //console.log(q1Arr)
                     if (quality =="N/A"){
                         quality_title = "N/A"
                     }
                     else{
-                        quality_title = quality
-                        quality = '('+quality_code+') '+quality.substring(0,quality.indexOf(' ')+1)+'...'
-                    }
+                        quality_title = quality //string representing the contents of the tooltip
+                        if (quality.length>20){
+                            quality = '('+quality_code+') '+quality.substring(0,quality.indexOf(' ')+1)+'...'
+                        }
 
+                    }
 
                     var dataset = {
                         legend: legend,
@@ -433,7 +419,8 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                         variable: variable_name,
                         unit: unit,
                         samplemedium: samplemedium,
-                        count: count,//download:download,
+                        count: count,
+                        //download:download,
                         quality: quality,
                         method: method,
                         datatype: datatype,
@@ -445,7 +432,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                         median: median,
                         max: max,
                         min: min,
-                        stdev: stdev,
+                        //stdev: stdev,
                         boxplot: boxplot,
                         boxplot_count: boxplot_count
                     }
@@ -588,40 +575,48 @@ var popupDiv = $('#welcome-popup');
 $(document).ready(function (callback) {
     console.log("ready")
     var res_id = find_query_parameter("res_id");
+    //var cuahsi_ids = $('#cuahsi_data').text()
+    //cuahsi_ids = JSON.parse(cuahsi_ids)
+
+    //cuahsi_ids = cuahsi_ids.replace('[','')
+    //cuahsi_ids = cuahsi_ids.replace(']','')
+    //console.log(cuahsi_ids.split(','))
+    //for (id in cuahsi_ids){
+    //    console.log(cuahsi_ids[id])
+    //}
+
     var table = $('#data_table').DataTable({
         "createdRow": function (row, data, dataIndex) {
-
-            if (number == 0) {
+            if (number == 0 || number-10 ==0) {
                 color1 = "#ec3131"
             }
-            if (number == 1) {
+            if (number == 1|| number%10 ==1) {
                 color1 = "#2cc52e"
             }
-            if (number == 2) {
+            if (number == 2|| number%10 ==2) {
                 color1 = "#313eec"
             }
-            if (number == 3) {
+            if (number == 3|| number%10 ==3) {
                 color1 = "#dd25d5"
             }
-            if (number == 4) {
+            if (number == 4|| number%10 ==4) {
                 color1 = "#0d0c0d"
             }
-            if (number == 5) {
+            if (number == 5|| number%10 ==5) {
                 color1 = "#31cbec"
             }
-            if (number == 6) {
+            if (number == 6|| number%10 ==6) {
                 color1 = "#fb8915"
             }
-            if (number == 7) {
+            if (number == 7|| number%10 ==7) {
                 color1 = "#ffb8e7"
             }
-            if (number == 8) {
+            if (number == 8|| number%10 ==8) {
                 color1 = "#fbfd07"
             }
-            if (number == 9) {
+            if (number == 9|| number%10 ==9) {
                 color1 = "#660099"
             }
-
             $('td', row).eq(0).css("backgroundColor", color1)
             $('td', row).eq(1).each(function () {
                 var sTitle;
@@ -643,6 +638,7 @@ $(document).ready(function (callback) {
                 "fade": 100
             });
         },
+
         data: data,
 
         "columns": [
@@ -891,3 +887,102 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+//function launchByuHydroshareApp() {
+//    console.log("BYU Hydroshare")
+//    //var tableId = '#' + event.data.tableId;
+//    //var table = $(tableId).DataTable();
+//    //var apps = event.data.getApps().apps;
+//
+//    //Currently selected BYU app
+//    //var valueSelected = $('#' + event.data.divId).text().trim();
+//    //var byuUrl= null;
+//    var byuUrl= '/apps/timeseries-viewer/';
+//    var csrf_token = getCookie('csrftoken');
+//    console.log('{% csrf_token %}')
+//
+//    //New selection - find the associated app URL...
+//    //var length = apps.length;
+//
+//    //for (var i = 0; i < length; ++i) {
+//    //    if (valueSelected === apps[i].name) {
+//    //        byuUrl = apps[i].url;
+//    //        break;
+//    //    }
+//    //}
+//
+//    if (null !== byuUrl) {
+//        //URL found - find selected water one flow archives...
+//        //var selectedRows = table.rows('.selected').data();
+//        var selectedRows =[{WofUri:"cuahsi_id",QCLID:'1',MethodId:'1',SourceId: '2'},{WofUri:"cuahsi_id1",QCLID:'11',MethodId:'11',SourceId: '21'}]
+//
+//        var rowsLength = selectedRows.length;
+//
+//        var wofParams = [];
+//        var extension = '.zip';
+//
+//        for (var ii = 0; ii < rowsLength; ++ii) {
+//            //if (timeSeriesRequestStatus.Completed == selectedRows[ii].TimeSeriesRequestStatus) {
+//                var row = selectedRows[ii];
+//                var item = { 'WofUri': (row.WofUri.split(extension))[0],
+//                             'QCLID': row.QCLID,
+//                             //'MethodId': 'hello',
+//                             'MethodId': row.MethodId,
+//                             'SourceId': row.SourceId
+//                            };
+//                wofParams.push(item);
+//            //}
+//        }
+//
+//        //Create a dynamic form and submit to BYU URL...
+//        // Sources: http://htmldog.com/guides/javascript/advanced/creatingelements/
+//        //          http://stackoverflow.com/questions/30835990/how-to-submit-form-to-new-window
+//        //          http://jsfiddle.net/qqzxtk67/
+//        //          http://stackoverflow.com/questions/17431760/create-a-form-dynamically-with-jquery-and-submit
+//        //          http://jsfiddle.net/MVXXX/1/
+//        if ( 0 < wofParams.length) {
+//            //Remove/create form...
+//            //$('form#dataViewerForm').remove();
+//            var csrf_token = getCookie('csrftoken');
+//            var csrf = "<input type='hidden' name='csrfmiddlewaretoken' value='" + csrf_token +"' />"
+//            var jqForm = $('<form id="dataViewerForm"></form>').appendTo(document.body);
+//
+//            //Add method, action and target...
+//            var targetWindow = 'dataViewerWindow';
+//
+//            jqForm.attr('method', 'post');
+//            jqForm.attr('action', byuUrl);
+//            //jqForm.attr('headers',{'X-CSRFToken':csrf_token});
+//            //headers:{'X-CSRFToken':csrf_token},
+//            jqForm.attr('target', targetWindow);
+//
+//            //Append source...
+//            jqForm.append('<input type="hidden" name="Source" value="cuahsi">');
+//
+//            //Append child list...
+//            jqForm.append('<ul id="wofParams"></ul>');
+//
+//            //For each wofParams item...
+//            var itemsLength = wofParams.length;
+//            var jqList = $('#wofParams');
+//
+//
+//            for (var iii = 0; iii < itemsLength; ++iii) {
+//                //Append to child list...
+//                var item = wofParams[iii];
+//                jqList.append('<li>' +
+//                              '<input type="hidden" name="WofUri" value="' + item.WofUri + '">' +
+//                              '<input type="hidden" name="QCLID" value="' + item.QCLID + '">' +
+//                              '<input type="hidden" name="MethodId" value="' + item.MethodId + '">' +
+//                              //'<input type="hidden" name="MethodId" value="' + 'hello' + '">' +
+//                              '<input type="hidden" name="SourceId" value="' + item.SourceId + '">' +
+//                              '</li>'
+//                             );
+//            }
+//
+//            //Open Data Viewer window, submit form...
+//            window.open('', targetWindow, '', false);
+//            jqForm.submit();
+//        }
+//    }
+//}

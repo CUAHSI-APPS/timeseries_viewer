@@ -99,7 +99,14 @@ tr.shown td.details-control {
 #data_table_paginate{
 	visibility: hidden;
 }
-
+.modal-dialog {
+    position: fixed;
+    top: 10%;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    z-index:101;
+}
 #loading{
 	/*display: block !important;*/
     width: 300px;

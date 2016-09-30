@@ -44,6 +44,7 @@ def get_version(root):
         or '{http://www.cuahsi.org/waterML/1.0/}timeSeriesResponse' in element.tag:
             wml_version = '1'
             break
+    print "end of get version"
     return wml_version
 
 #drew 20150401 convert date string into datetime obj
@@ -71,71 +72,49 @@ def get_version(root):
 def parse_1_0_and_1_1(root):
 
     root_tag = root.tag.lower()
-
+    dic= None
+    boxplot = []
+    master_values=collections.OrderedDict()
+    master_times = collections.OrderedDict()
+    master_boxplot = collections.OrderedDict()
+    master_stat = collections.OrderedDict()
+    master_data_values = collections.OrderedDict()
+    meth_qual = [] # List of all the quality, method, and source combinations
+    for_canvas = []
+    meta_dic ={'method':{},'quality':{},'source':{},'organization':{},'quality_code':{}}
+    m_des = None
+    m_code = None
+    m_org =None
+    x_value = []
+    y_value = []
+    master_counter =True
+    nodata = "-9999"  # default NoData value. The actual NoData value is read from the XML noDataValue tag
+    timeunit=None
+    sourcedescription = None
+    timesupport =None
+    # metadata items
+    units, site_name, variable_name,quality,method, organization = None, None, None, None, None, None
+    unit_is_set = False
+    datatype = None
+    valuetype = None
+    samplemedium = None
     # we only display the first 50000 values
     threshold = 50000000
     try:
         if 'timeseriesresponse' in root_tag or 'timeseries' in root_tag or "envelope" in root_tag or 'timeSeriesResponse' in root_tag:
 
             # lists to store the time-series data
-            for_graph = []
-            boxplot = []
-            master_values=collections.OrderedDict()
-            master_values1=collections.OrderedDict()
-            master_times = collections.OrderedDict()
-            master_boxplot = collections.OrderedDict()
-            master_stat = collections.OrderedDict()
-            master_data_values = collections.OrderedDict()
-            # master_values = collections.namedtuple('id','time','value')
-            meth_qual = [] # List of all the quality, method, and source combinations
-            for_highchart = []
-            for_canvas = []
-            my_times = []
-            my_values = []
-            meta_dic ={'method':{},'quality':{},'source':{},'organization':{},'quality_code':{}}
-            m_des = []
-            u=0
-            m_code = []
-            m_org =[]
-            quality={}
-            source={}
-            counter = 0
-            x_value = []
-            y_value = []
-            master_counter =True
-            nodata = "-9999"  # default NoData value. The actual NoData value is read from the XML noDataValue tag
-            timeunit=None
-            sourcedescription = None
-            timesupport =None
-            # metadata items
-            units, site_name, variable_name,quality,method, organization = None, None, None, None, None, None
-            unit_is_set = False
-            datatype = None
-            valuetype = None
-            samplemedium = None
-            smallest_value = 0
-            n = None
-            v = None
-            t= 0
-            times =[]
-            x = 'x'
-            y = 'y'
+
             # iterate through xml document and read all values
-
-            # print "parsing values from water ml"
-            # print datetime.now()
-
             for element in root.iter():
                 bracket_lock = -1
                 if '}' in element.tag:
-
+                    # print element.tag
                     bracket_lock = element.tag.index('}')  # The namespace in the tag is enclosed in {}.
                     tag = element.tag[bracket_lock+1:]     # Takes only actual tag, no namespace
 
-
                     if 'value'!= tag:
                         # in the xml there is a unit for the value, then for time. just take the first
-
                         if 'unitName' == tag or 'units' ==tag or 'UnitName'==tag or 'unitCode'==tag:
                             if not unit_is_set:
                                 units = element.text
@@ -178,6 +157,7 @@ def parse_1_0_and_1_1(root):
                                     m_code = subele.text
                                 if 'methodDescription' in subele.tag:
                                     m_des = subele.text
+
                             meta_dic['method'].update({m_code:m_des})
                         if "source" ==tag:
                             for subele in element:
@@ -190,6 +170,7 @@ def parse_1_0_and_1_1(root):
                                     m_des = subele.text
                                 if 'organization' in subele.tag:
                                     m_org = subele.text
+                            hash(m_code)
                             meta_dic['source'].update({m_code:m_des})
                             meta_dic['organization'].update({m_code:m_org})
                         if "qualityControlLevel" ==tag:
@@ -204,17 +185,15 @@ def parse_1_0_and_1_1(root):
                             meta_dic['quality'].update({m_code:m_des})
 
                     elif 'value' == tag:
-                        # print element.attrib
+
                         try:
-                            # my_times.append(element.attrib['dateTimeUTC'])
                             n = element.attrib['dateTimeUTC']
                         except:
-                            # my_times.append(element.attrib['dateTime'])
                             n =element.attrib['dateTime']
                         try:
                             quality= element.attrib['qualityControlLevelCode']
                         except:
-                            quality1 =''
+                            quality =''
                         try:
                             method = element.attrib['methodCode']
                         except:
@@ -229,7 +208,6 @@ def parse_1_0_and_1_1(root):
 
                         if dic not in meth_qual:
                             meth_qual.append(dic)
-                            # meth_qual.append(dic1)
                             master_values.update({dic:[]})
                             master_times.update({dic:[]})
                             master_boxplot.update({dic:[]})
@@ -237,32 +215,19 @@ def parse_1_0_and_1_1(root):
                             master_data_values.update({dic:[]})
 
                         v = element.text
-                        # tii = pd.Timestamp(n).value/1000000#pandas convert string to time object
-                        # tii = ti.value/1000000 #gets timestamp and convert time to milliseconds
-                        # t =t*1000# This adds three extra zeros for correct formatting
-
                         if v == nodata:
                             value = None
-                            # for_canvas.append({x:n,y:value})
-                            # for_graph.append(value)
                             x_value.append(n)
                             y_value.append(value)
                             v =None
 
                         else:
-                            # for_canvas.append({x:n,y:v})
-
                             v = float(element.text)
-                            for_graph.append(v)
                             x_value.append(n)
                             y_value.append(v)
                             master_data_values[dic].append(v) #records only none null values for running statistics
-                            # print "hello"
-                    #master_values[dic].update({n:v})
                         master_values[dic].append(v)
                         master_times[dic].append(n)
-                        # master_values(dic,n,v)
-
             for item in master_data_values:
                 if len(master_data_values[item]) ==0:
                     mean = None
@@ -289,25 +254,12 @@ def parse_1_0_and_1_1(root):
                 master_boxplot[item].append(median)
                 master_boxplot[item].append(quar3)
                 master_boxplot[item].append(max1)
-            value_count = len(x_value)
-            sd = numpy.std(for_graph)
-
             return {
                 'site_name': site_name,
-                # 'start_date': str(smallest_time),
-                # 'end_date': str(largest_time),
                 'variable_name': variable_name,
                 'units': units,
-                'wml_version': '1',
                 'meta_dic':meta_dic,
-                # 'for_highchart': for_highchart,
                 'for_canvas':for_canvas,
-                'mean': mean,
-                'median': median,
-                'max':max1,
-                'min':min1,
-                'stdev': sd,
-                'count': value_count,
                 'organization': organization,
                 'quality': quality,
                 'method': method,
@@ -315,19 +267,15 @@ def parse_1_0_and_1_1(root):
                 'datatype' :datatype,
                 'valuetype' :valuetype,
                 'samplemedium':samplemedium,
-                'smallest_value':smallest_value,
                 'timeunit':timeunit,
                 'sourcedescription' :sourcedescription,
                 'timesupport' : timesupport,
                 'master_counter':master_counter,
                 'boxplot':boxplot,
-                'xvalue':x_value,
-                'yvalue':y_value,
                 'master_values':master_values,
                 'master_times':master_times,
                 'master_boxplot':master_boxplot,
                 'master_stat':master_stat
-
             }
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
@@ -362,33 +310,103 @@ def findZippedUrl(page_request, res_id):
 
 def parse_2_0(root):
     print "running parse_2"
+    root_tag = root.tag.lower()
+    boxplot = []
+    master_values=collections.OrderedDict()
+    master_times = collections.OrderedDict()
+    master_boxplot = collections.OrderedDict()
+    master_stat = collections.OrderedDict()
+    master_data_values = collections.OrderedDict()
+    meth_qual = [] # List of all the quality, method, and source combinations
+    for_canvas = []
+    meta_dic ={'method':{},'quality':{},'source':{},'organization':{},'quality_code':{}}
+    m_des = None
+    m_code = None
+    m_org =None
+    x_value = []
+    y_value = []
+    master_counter =True
+    nodata = "-9999"  # default NoData value. The actual NoData value is read from the XML noDataValue tag
+    timeunit=None
+    sourcedescription = None
+    timesupport =None
+    # metadata items
+    units, site_name, variable_name,quality,method, organization = None, None, None, None, None, None
+    unit_is_set = False
+    datatype = None
+    valuetype = None
+    samplemedium = None
+    # we only display the first 50000 values
+    threshold = 50000000
+
     try:
         if 'Collection' in root.tag:
-            ts = etree.tostring(root)
-            keys = []
-            vals = []
-            for_graph = []
-            for_highchart=[]
-            units, site_name, variable_name, latitude, longitude, method = None, None, None, None, None, None
-            name_is_set = False
-            variable_name = root[1].text
-            organization = None
-            quality = None
-            method =None
-            datatype = None
-            valuetype = None
-            samplemedium = None
-            timeunit=None
-            sourcedescription = None
-            timesupport =None
-            smallest_value = 0
+            # ts = etree.tostring(root)
+            # keys = []
+            # vals = []
+            # for_graph = []
+            # for_highchart=[]
+            # units, site_name, variable_name, latitude, longitude, method = None, None, None, None, None, None
+            # name_is_set = False
+            # variable_name = root[1].text
+            # organization = None
+            # quality = None
+            # method =None
+            # datatype = None
+            # valuetype = None
+            # samplemedium = None
+            # timeunit=None
+            # sourcedescription = None
+            # timesupport =None
+            # smallest_value = 0
             for element in root.iter():
                 if 'MeasurementTVP' in element.tag:
                         for e in element:
-                            if 'time' in e.tag:
-                                keys.append(e.text)
-                            if 'value' in e.tag:
-                                vals.append(e.text)
+                            try:
+                                n = element.attrib['dateTimeUTC']
+                            except:
+                                n =element.attrib['dateTime']
+                            try:
+                                quality= element.attrib['qualityControlLevelCode']
+                            except:
+                                quality1 =''
+                            try:
+                                method = element.attrib['methodCode']
+                            except:
+                                method=''
+                            try:
+                                source = element.attrib['sourceCode']
+                            except:
+                                source=''
+                            dic = quality +'aa'+method+'aa'+source
+                            if dic not in meth_qual:
+                                meth_qual.append(dic)
+                                master_values.update({dic:[]})
+                                master_times.update({dic:[]})
+                                master_boxplot.update({dic:[]})
+                                master_stat.update({dic:[]})
+                                master_data_values.update({dic:[]})
+
+                            v = element.text
+                            if v == nodata:
+                                value = None
+                                x_value.append(n)
+                                y_value.append(value)
+                                v =None
+
+                            else:
+                                v = float(element.text)
+                                x_value.append(n)
+                                y_value.append(v)
+                                master_data_values[dic].append(v) #records only none null values for running statistics
+                            master_values[dic].append(v)
+                            master_times[dic].append(n)
+
+
+                                # if 'time' in e.tag:
+                                #     keys.append(e.text)
+                                # if 'value' in e.tag:
+                                #     vals.append(e.text)
                 if 'uom' in element.tag:
                     units = element.text
                 if 'MonitoringPoint' in element.tag:
@@ -503,8 +521,11 @@ def Original_Checker(xml_file):
         tree = etree.parse(xml_file)
         root = tree.getroot()
         wml_version = get_version(root)
+        print wml_version
         if wml_version == '1':
+            print "original checker"
             return parse_1_0_and_1_1(root)
+
         elif wml_version == '2.0':
             return parse_2_0(root)
     except ValueError, e:
