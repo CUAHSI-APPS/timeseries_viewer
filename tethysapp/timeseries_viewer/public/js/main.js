@@ -80,7 +80,7 @@ var number = -1
 var unit_list = [];
 var title = 0
 xtime = []
-function add_series_to_chart(chart, res_id, number1, unit_off) {
+function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
     xtime.length = 0
     xval = ''
     yvalu = ''
@@ -92,6 +92,9 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
     index = current_url.indexOf("timeseries-viewer");
     base_url = current_url.substring(0, index);
     var src = find_query_parameter("src");
+    if (src==null){
+        src='cuahsi'
+    }
     //console.log(src)
 
     // in the start we show the loading...
@@ -104,9 +107,9 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
     }
 
 
-    //console.log(res_id1)
+    console.log(res_id1)
     var csrf_token = getCookie('csrftoken');
-    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id1 + '/' + src + '/';
+    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id1 + '/'+id_qms+'/' + src + '/';
     $.ajax({
         type:"POST",
         headers:{'X-CSRFToken':csrf_token},
@@ -143,9 +146,10 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
                     //console.log(master_values)
                     //console.log(val)
                     master_id.push(val)
-                    //console.log(master_values[val])
+                    console.log(master_values[val])
                     meta = val.split("aa");
-                    //console.log(meta)
+                    console.log(meta)
+                    console.log(meta_dic)
 
                     quality = meta_dic['quality'][meta[0]]
                     quality_code = [meta[0]]
@@ -366,21 +370,21 @@ function add_series_to_chart(chart, res_id, number1, unit_off) {
 
                     }
                     else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
-                    var newSeries =
-                    {
-                        type: "line",
-                        //axisYType:"primary",
-                        axisYType: "primary",
-                        xValueType: "dateTime",
-                        showInLegend: false,
-                        indexLabelFontSize: 1,
-                        visible: false,
-                        name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-                        dataPoints: data1
-                    };
-                    chart.options.data.push(newSeries);
+                        var newSeries =
+                        {
+                            type: "line",
+                            //axisYType:"primary",
+                            axisYType: "primary",
+                            xValueType: "dateTime",
+                            showInLegend: false,
+                            indexLabelFontSize: 1,
+                            visible: false,
+                            name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+                            dataPoints: data1
+                        };
+                        chart.options.data.push(newSeries);
 
-                }
+                    }
                     chart.options.axisY.titleFontSize = 15
                     chart.options.axisY2.titleFontSize = 15
                     chart.options.axisX.titleFontSize = 15
@@ -574,20 +578,30 @@ var popupDiv = $('#welcome-popup');
 //end new table
 $(document).ready(function (callback) {
     console.log("ready")
-    var res_id = find_query_parameter("res_id");
-    //var cuahsi_ids = $('#cuahsi_data').text()
-    //cuahsi_ids = JSON.parse(cuahsi_ids)
 
-    //cuahsi_ids = cuahsi_ids.replace('[','')
-    //cuahsi_ids = cuahsi_ids.replace(']','')
-    //console.log(cuahsi_ids.split(','))
+    var src = find_query_parameter("src");
+    var source = $('#source').text()
+    console.log(source)
+    if (source == "['cuahsi']"){
+        src='cuahsi'
+    }
+    else if (src =='hydroshare'){
+        src ='hydroshare'
+    }
+    else{
+        src =null
+    }
+    console.log(source)
+    console.log(src)
+
+    //cuahsi_ids = JSON.parse(cuahsi_ids)
     //for (id in cuahsi_ids){
     //    console.log(cuahsi_ids[id])
     //}
 
     var table = $('#data_table').DataTable({
         "createdRow": function (row, data, dataIndex) {
-            if (number == 0 || number-10 ==0) {
+            if (number == 0 || number%10 ==0) {
                 color1 = "#ec3131"
             }
             if (number == 1|| number%10 ==1) {
@@ -626,7 +640,7 @@ $(document).ready(function (callback) {
             $('td', row).eq(6).each(function () {
                 ;
                 sTitle = {"data": "quality"},
-                this.setAttribute('title', quality_title);
+                    this.setAttribute('title', quality_title);
             });
             //console.log({"data": "quality"})
             var table = $('#data_table').DataTable()
@@ -696,21 +710,26 @@ $(document).ready(function (callback) {
             tr.addClass('shown');
         }
     });
-    if (res_id == null) {
+    if (src == null) {
         if (document.referrer == "https://apps.hydroshare.org/apps/") {
             $('#extra-buttons').append('<a class="btn btn-default btn" href="https://apps.hydroshare.org/apps/">Return to HydroShare Apps</a>');
         }
         popupDiv.modal('show');
-    }http://r-fiddle.org/#/query/embed?code=
-        $('#stat_div').hide();
+        $('#loading').hide();
+    }
+    else{
+        $('#loading').show();
+        addingseries();
+    }
+    $('#stat_div').hide();
     $('#button').hide();
-    $('#loading').show();
+
     $('#multiple_units').hide();
     $('#data_table_length').html("")
     $('#data_table_filter').html("")
     $("#chart").toggle();
     // add the series to the chart
-    addingseries();
+
     // change the app title
     document.title = 'Data Series Viewer';
 })
@@ -801,19 +820,50 @@ function finishloading(callback) {
 }
 var series_counter =0
 function addingseries(unit_off) {
-    var res_id = find_query_parameter("res_id");
+    var src = find_query_parameter("src");
+    var source = $('#source').text()
+    if (source == "['cuahsi']"){
+        src='cuahsi'
+    }
+    else if (source != "['cuahsi']"){
+        src ='hydroshare'
+
+    }
+    if (src =='cuahsi'){
+        var res_id=$('#cuahsi_ids').text()
+        var quality=$('#quality').text()
+        var method=$('#method').text()
+        var sourceid=$('#sourceid').text()
+        console.log(sourceid)
+        console.log(quality)
+        res_id =trim_input(res_id)
+        quality =trim_input(quality)
+        method =trim_input(method)
+        sourceid =trim_input(sourceid)
+        console.log(sourceid)
+        console.log(quality)
+    }
+    else if(src=='hydroshare'){
+        var res_id = find_query_parameter("res_id");
+        console.log(res_id)
+        if (res_id != null) {
+            res_ids = res_id.split(",");
+            res_id = trim_input(res_id)
+        }
+
+        else {
+            res_ids = ''
+            $('#loading').hide();
+        }
+        console.log(res_id)
+    }
+    console.log(res_id)
     var series_counter = 0
     if (unit_off == null) {
         unit_off = ''
     }
-    if (res_id != null) {
-        res_ids = res_id.split(",");
-    }
-    else {
-        res_ids = ''
-        $('#loading').hide();
-    }
-    for (var r in res_ids) {
+
+    for (var r in res_id) {
         series_counter = series_counter + 1
     }
     CanvasJS.addColorSet("greenShades",
@@ -832,13 +882,34 @@ function addingseries(unit_off) {
     $("#chartContainer").CanvasJSChart(chart_options);
     var chart = $("#chartContainer").CanvasJSChart()
     counter2 = 0
-    for (var res_id in res_ids) {
+
+    for (var id in res_id){
+        console.log(res_id[id])
         xtime = []
         counter1.push(counter);
         //console.log(series_counter)
-        add_series_to_chart(chart, res_ids[res_id], series_counter, unit_off);
+
+
+       console.log(src)
+
+        if( src =='cuahsi'){
+            id_qms =  quality[id] +'aa'+method[id]+'aa'+sourceid[id]
+        }
+         else{
+            id_qms="meta"
+        }
+        console.log(id_qms)
+        add_series_to_chart(chart, res_id[id], series_counter, unit_off,id_qms);
         counter2 = counter2 + 1
+
     }
+    //for (var res_id in res_ids) {
+    //    xtime = []
+    //    counter1.push(counter);
+    //    //console.log(series_counter)
+    //    add_series_to_chart(chart, res_ids[res_id], series_counter, unit_off);
+    //    counter2 = counter2 + 1
+    //}
 }
 function multipletime() {
     var popupDiv = $('#hello');
@@ -888,101 +959,112 @@ function getCookie(name) {
     return cookieValue;
 }
 
-//function launchByuHydroshareApp() {
-//    console.log("BYU Hydroshare")
-//    //var tableId = '#' + event.data.tableId;
-//    //var table = $(tableId).DataTable();
-//    //var apps = event.data.getApps().apps;
-//
-//    //Currently selected BYU app
-//    //var valueSelected = $('#' + event.data.divId).text().trim();
-//    //var byuUrl= null;
-//    var byuUrl= '/apps/timeseries-viewer/';
-//    var csrf_token = getCookie('csrftoken');
-//    console.log('{% csrf_token %}')
-//
-//    //New selection - find the associated app URL...
-//    //var length = apps.length;
-//
-//    //for (var i = 0; i < length; ++i) {
-//    //    if (valueSelected === apps[i].name) {
-//    //        byuUrl = apps[i].url;
-//    //        break;
-//    //    }
-//    //}
-//
-//    if (null !== byuUrl) {
-//        //URL found - find selected water one flow archives...
-//        //var selectedRows = table.rows('.selected').data();
-//        var selectedRows =[{WofUri:"cuahsi_id",QCLID:'1',MethodId:'1',SourceId: '2'},{WofUri:"cuahsi_id1",QCLID:'11',MethodId:'11',SourceId: '21'}]
-//
-//        var rowsLength = selectedRows.length;
-//
-//        var wofParams = [];
-//        var extension = '.zip';
-//
-//        for (var ii = 0; ii < rowsLength; ++ii) {
-//            //if (timeSeriesRequestStatus.Completed == selectedRows[ii].TimeSeriesRequestStatus) {
-//                var row = selectedRows[ii];
-//                var item = { 'WofUri': (row.WofUri.split(extension))[0],
-//                             'QCLID': row.QCLID,
-//                             //'MethodId': 'hello',
-//                             'MethodId': row.MethodId,
-//                             'SourceId': row.SourceId
-//                            };
-//                wofParams.push(item);
-//            //}
-//        }
-//
-//        //Create a dynamic form and submit to BYU URL...
-//        // Sources: http://htmldog.com/guides/javascript/advanced/creatingelements/
-//        //          http://stackoverflow.com/questions/30835990/how-to-submit-form-to-new-window
-//        //          http://jsfiddle.net/qqzxtk67/
-//        //          http://stackoverflow.com/questions/17431760/create-a-form-dynamically-with-jquery-and-submit
-//        //          http://jsfiddle.net/MVXXX/1/
-//        if ( 0 < wofParams.length) {
-//            //Remove/create form...
-//            //$('form#dataViewerForm').remove();
-//            var csrf_token = getCookie('csrftoken');
-//            var csrf = "<input type='hidden' name='csrfmiddlewaretoken' value='" + csrf_token +"' />"
-//            var jqForm = $('<form id="dataViewerForm"></form>').appendTo(document.body);
-//
-//            //Add method, action and target...
-//            var targetWindow = 'dataViewerWindow';
-//
-//            jqForm.attr('method', 'post');
-//            jqForm.attr('action', byuUrl);
-//            //jqForm.attr('headers',{'X-CSRFToken':csrf_token});
-//            //headers:{'X-CSRFToken':csrf_token},
-//            jqForm.attr('target', targetWindow);
-//
-//            //Append source...
-//            jqForm.append('<input type="hidden" name="Source" value="cuahsi">');
-//
-//            //Append child list...
-//            jqForm.append('<ul id="wofParams"></ul>');
-//
-//            //For each wofParams item...
-//            var itemsLength = wofParams.length;
-//            var jqList = $('#wofParams');
-//
-//
-//            for (var iii = 0; iii < itemsLength; ++iii) {
-//                //Append to child list...
-//                var item = wofParams[iii];
-//                jqList.append('<li>' +
-//                              '<input type="hidden" name="WofUri" value="' + item.WofUri + '">' +
-//                              '<input type="hidden" name="QCLID" value="' + item.QCLID + '">' +
-//                              '<input type="hidden" name="MethodId" value="' + item.MethodId + '">' +
-//                              //'<input type="hidden" name="MethodId" value="' + 'hello' + '">' +
-//                              '<input type="hidden" name="SourceId" value="' + item.SourceId + '">' +
-//                              '</li>'
-//                             );
-//            }
-//
-//            //Open Data Viewer window, submit form...
-//            window.open('', targetWindow, '', false);
-//            jqForm.submit();
-//        }
-//    }
-//}
+function launchByuHydroshareApp() {
+    console.log("BYU Hydroshare")
+    //var tableId = '#' + event.data.tableId;
+    //var table = $(tableId).DataTable();
+    //var apps = event.data.getApps().apps;
+
+    //Currently selected BYU app
+    //var valueSelected = $('#' + event.data.divId).text().trim();
+    //var byuUrl= null;
+    var byuUrl= '/apps/timeseries-viewer/';
+    var csrf_token = getCookie('csrftoken');
+    console.log('{% csrf_token %}')
+
+    //New selection - find the associated app URL...
+    //var length = apps.length;
+
+    //for (var i = 0; i < length; ++i) {
+    //    if (valueSelected === apps[i].name) {
+    //        byuUrl = apps[i].url;
+    //        break;
+    //    }
+    //}
+
+    if (null !== byuUrl) {
+        //URL found - find selected water one flow archives...
+        //var selectedRows = table.rows('.selected').data();
+        var selectedRows =[{WofUri:"cuahsi-wdc-2016-09-13-57929645",QCLID:'1',MethodId:'5',SourceId: '1'},{WofUri:"cuahsi-wdc-2016-09-13-57929645",QCLID:'1',MethodId:'5',SourceId: '1'}]
+
+        var rowsLength = selectedRows.length;
+
+        var wofParams = [];
+        var extension = '.zip';
+
+        for (var ii = 0; ii < rowsLength; ++ii) {
+            //if (timeSeriesRequestStatus.Completed == selectedRows[ii].TimeSeriesRequestStatus) {
+            var row = selectedRows[ii];
+            var item = { 'WofUri': (row.WofUri.split(extension))[0],
+                'QCLID': row.QCLID,
+                //'MethodId': 'hello',
+                'MethodId': row.MethodId,
+                'SourceId': row.SourceId
+            };
+            wofParams.push(item);
+            //}
+        }
+
+        //Create a dynamic form and submit to BYU URL...
+        // Sources: http://htmldog.com/guides/javascript/advanced/creatingelements/
+        //          http://stackoverflow.com/questions/30835990/how-to-submit-form-to-new-window
+        //          http://jsfiddle.net/qqzxtk67/
+        //          http://stackoverflow.com/questions/17431760/create-a-form-dynamically-with-jquery-and-submit
+        //          http://jsfiddle.net/MVXXX/1/
+        if ( 0 < wofParams.length) {
+            //Remove/create form...
+            //$('form#dataViewerForm').remove();
+            var csrf_token = getCookie('csrftoken');
+            var csrf = "<input type='hidden' name='csrfmiddlewaretoken' value='" + csrf_token +"' />"
+            var jqForm = $('<form id="dataViewerForm"></form>').appendTo(document.body);
+
+            //Add method, action and target...
+            var targetWindow = 'dataViewerWindow';
+
+            jqForm.attr('method', 'post');
+            jqForm.attr('action', byuUrl);
+            //jqForm.attr('headers',{'X-CSRFToken':csrf_token});
+            //headers:{'X-CSRFToken':csrf_token},
+            jqForm.attr('target', targetWindow);
+
+            //Append source...
+            jqForm.append('<input type="hidden" name="Source" value="cuahsi">');
+
+            //Append child list...
+            jqForm.append('<ul id="wofParams"></ul>');
+
+            //For each wofParams item...
+            var itemsLength = wofParams.length;
+            var jqList = $('#wofParams');
+
+
+            for (var iii = 0; iii < itemsLength; ++iii) {
+                //Append to child list...
+                var item = wofParams[iii];
+                jqList.append('<li>' +
+                    '<input type="hidden" name="WofUri" value="' + item.WofUri + '">' +
+                    '<input type="hidden" name="QCLID" value="' + item.QCLID + '">' +
+                    '<input type="hidden" name="MethodId" value="' + item.MethodId + '">' +
+                        //'<input type="hidden" name="MethodId" value="' + 'hello' + '">' +
+                    '<input type="hidden" name="SourceId" value="' + item.SourceId + '">' +
+                    '</li>'
+                );
+            }
+
+            //Open Data Viewer window, submit form...
+            window.open('', targetWindow, '', false);
+            jqForm.submit();
+        }
+    }
+}
+function trim_input(string){
+    string = string.replace(']','')
+    string = string.replace('[','')
+    string = string.replace(/'/g,'')
+    string = string.replace(/"/g,'')
+    string = string.replace(/ /g,'')
+    //string = string.replace('[','')
+    string =string.split(',')
+    return string
+}
+//http://127.0.0.1:8000/apps/timeseries-viewer/chart_data/c05c66a77b2348639a122ade5e9e9870/meta/hydroshare/

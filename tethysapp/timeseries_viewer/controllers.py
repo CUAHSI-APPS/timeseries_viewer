@@ -16,6 +16,7 @@ from django.conf import settings
 import uuid
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import never_cache
 # -- coding: utf-8--
 
 # helper controller for fetching the WaterML file
@@ -29,7 +30,8 @@ def temp_waterml(request, id):
 
 # @ensure_csrf_cookie
 @csrf_exempt
-def chart_data(request, res_id, src):
+@never_cache
+def chart_data(request, res_id, src,id_qms):
     test = ''
     xml_id = None
     xml_rest = False
@@ -59,7 +61,9 @@ def chart_data(request, res_id, src):
 
 # home page controller
 @csrf_exempt
+@never_cache
 def home(request):
+    ids=[]
     # print datetime.now()
     # print hash(['hel','test'])
     try: #Check to see if request if from CUAHSI. For data validation
@@ -70,19 +74,37 @@ def home(request):
     source=None
     source = request.POST.getlist('Source')
     id = request.POST.getlist('WofUri')
+
+
+
+    # for i in id:
+    #     i=i.encode('utf8')
+    #     ids.append(i)
     quality = request.POST.getlist('QCLID')
     method = request.POST.getlist('MethodId')
     sourceid = request.POST.getlist('SourceId')
     # print id, quality, method, sourceid
     # print request.POST.getlist('MethodId')
+    source= [i.encode('UTF8')for i in source]
+    ids= [i.encode('UTF8')for i in id]
+    quality= [i.encode('UTF8')for i in quality]
+    method= [i.encode('UTF8')for i in method]
+    sourceid= [i.encode('UTF8')for i in sourceid]
+    # for i in id:
+    #     i=i.encode('UTF8')
+    #     ids.append(i)
 
-    cuahsi_ids = [source,id,quality,sourceid]
     # cuahsi_ids = ['h','j']
     utilities.viewer_counter(request)
     # r = requests.get('http://tethys.byu.edu/apps/gaugeviewwml/waterml/?gaugeid=10254970&start=2016-06-24&end=2016-07-08', verify=False)
     # print r.content
     # getOAuthHS(request)
-    context = {'cuahsi_ids':cuahsi_ids}
+    context = {'source':source,
+               'cuahsi_ids':ids,
+               'quality':quality,
+               'method':method,
+               'sourceid':sourceid
+               }
     return render(request, 'timeseries_viewer/home.html', context)
 @csrf_exempt
 @login_required()

@@ -112,8 +112,16 @@ CUAHSI Time Series Viewer
         <div class="cssload-dot"></div>
     </div>
 </div>
-<!--<button type="button" class="btn btn-default" id="btn_submit_cuahsi"onClick ="launchByuHydroshareApp()" >submit</button>-->
-<!--<div id ="cuahsi_data" visibility ='hidden'>{{cuahsi_ids}}</div>-->
+<div id ="cuahsi_data"  style="display:none">
+    <button type="button" class="btn btn-default" id="btn_submit_cuahsi"onClick ="launchByuHydroshareApp()" >submit</button>
+
+    <div id="source">{{source}}</div>
+    <div id="cuahsi_ids">{{cuahsi_ids}}</div>
+    <div id ="quality">{{quality}}</div>
+    <div id="method">{{method}}</div>
+    <div id="sourceid">{{sourceid}}</div>
+
+</div>
 
 {% endblock %}
 {% block app_actions %}

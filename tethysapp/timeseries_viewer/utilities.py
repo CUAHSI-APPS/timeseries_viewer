@@ -81,10 +81,16 @@ def parse_1_0_and_1_1(root):
     master_data_values = collections.OrderedDict()
     meth_qual = [] # List of all the quality, method, and source combinations
     for_canvas = []
-    meta_dic ={'method':{},'quality':{},'source':{},'organization':{},'quality_code':{}}
+    meta_dic ={'method':{},'quality':{},'source':{},'organization':{}}
     m_des = None
     m_code = None
     m_org =None
+    quality = None
+    quality1=None
+    source=None
+    source1=None
+    method =None
+    method1=None
     x_value = []
     y_value = []
     master_counter =True
@@ -148,39 +154,49 @@ def parse_1_0_and_1_1(root):
                         if"sourceDescription"== tag or "SourceDescription"==tag:
                             sourcedescription =element.text
 
-                        if "method" ==tag:
+                        if "method" ==tag.lower():
                             for subele in element:
                                 bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
                                 tag1 = element.tag[bracket_lock+1:]
                                 # Takes only actual tag, no namespace
-                                if 'methodCode' in subele.tag:
+                                if 'methodcode' in subele.tag.lower() :
                                     m_code = subele.text
-                                if 'methodDescription' in subele.tag:
+                                if 'methodid' in subele.tag.lower():
+                                    m_code = subele.text
+                                if 'methoddescription' in subele.tag.lower():
                                     m_des = subele.text
 
                             meta_dic['method'].update({m_code:m_des})
-                        if "source" ==tag:
+                        if "source" ==tag.lower():
                             for subele in element:
                                 bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
                                 tag1 = element.tag[bracket_lock+1:]
+                                print subele.tag
                                 # Takes only actual tag, no namespace
-                                if 'sourceCode' in subele.tag:
+                                if 'sourcecode' in subele.tag.lower():
                                     m_code = subele.text
-                                if 'sourceDescription' in subele.tag:
+                                if 'sourceid' in subele.tag.lower():
+                                    m_code = subele.text
+                                if 'sourcedescription' in subele.tag.lower():
                                     m_des = subele.text
-                                if 'organization' in subele.tag:
+                                if 'organization' in subele.tag.lower():
                                     m_org = subele.text
-                            hash(m_code)
                             meta_dic['source'].update({m_code:m_des})
                             meta_dic['organization'].update({m_code:m_org})
-                        if "qualityControlLevel" ==tag:
+
+                        print tag.lower()
+                        if "qualitycontrollevel" ==tag.lower():
                             for subele in element:
                                 bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
                                 tag1 = element.tag[bracket_lock+1:]
                                 # Takes only actual tag, no namespace
-                                if 'qualityControlLevelCode' in subele.tag:
+                                print subele.tag.lower()
+                                print subele.text
+                                if 'qualitycontrollevelcode' in subele.tag.lower():
+                                    m_code =subele.text
+                                if 'qualitycontrollevelid' in subele.tag.lower():
                                     m_code = subele.text
-                                if 'definition' in subele.tag:
+                                if 'definition' in subele.tag.lower():
                                     m_des = subele.text
                             meta_dic['quality'].update({m_code:m_des})
 
@@ -190,23 +206,44 @@ def parse_1_0_and_1_1(root):
                             n = element.attrib['dateTimeUTC']
                         except:
                             n =element.attrib['dateTime']
+
                         try:
                             quality= element.attrib['qualityControlLevelCode']
                         except:
                             quality =''
                         try:
+                            quality1 = element.attrib['qualityControlLevel']
+                        except:
+                            quality1 =''
+                        if quality =='' and quality1 != '':
+                            quality = quality1
+
+                        try:
                             method = element.attrib['methodCode']
                         except:
                             method=''
                         try:
+                            method1 = element.attrib['methodID']
+                        except:
+                            method1=''
+                        if method =='' and method1 != '':
+                                method = method1
+
+                        try:
                             source = element.attrib['sourceCode']
                         except:
                             source=''
-
-
+                        try:
+                            source1 = element.attrib['sourceID']
+                        except:
+                            source1=''
+                        if source =='' and source1 != '':
+                            source = source1
                         dic = quality +'aa'+method+'aa'+source
 
+
                         if dic not in meth_qual:
+                            print dic
                             meth_qual.append(dic)
                             master_values.update({dic:[]})
                             master_times.update({dic:[]})

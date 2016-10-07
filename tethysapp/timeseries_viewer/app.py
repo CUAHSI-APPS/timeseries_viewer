@@ -29,7 +29,7 @@ class TimeSeriesViewer(TethysAppBase):
                            controller='timeseries_viewer.controllers.temp_waterml'),
 
                     UrlMap(name='chart_data',
-                           url='chart_data/{res_id}/{src}',
+                           url='chart_data/{res_id}/{id_qms}/{src}',
                            controller='timeseries_viewer.controllers.chart_data'),
 
                     UrlMap(name='api',
