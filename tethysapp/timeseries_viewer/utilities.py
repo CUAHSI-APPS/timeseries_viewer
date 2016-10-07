@@ -69,7 +69,7 @@ def get_version(root):
 #         raise Exception('time_to_int error: ' + t)
 
 
-def parse_1_0_and_1_1(root):
+def parse_1_0_and_1_1(root,id_qms):
 
     root_tag = root.tag.lower()
     dic= None
@@ -161,6 +161,7 @@ def parse_1_0_and_1_1(root):
                                 # Takes only actual tag, no namespace
                                 if 'methodcode' in subele.tag.lower() :
                                     m_code = subele.text
+                                    m_code = m_code.replace(" ","")
                                 if 'methodid' in subele.tag.lower():
                                     m_code = subele.text
                                 if 'methoddescription' in subele.tag.lower():
@@ -175,6 +176,7 @@ def parse_1_0_and_1_1(root):
                                 # Takes only actual tag, no namespace
                                 if 'sourcecode' in subele.tag.lower():
                                     m_code = subele.text
+                                    m_code = m_code.replace(" ","")
                                 if 'sourceid' in subele.tag.lower():
                                     m_code = subele.text
                                 if 'sourcedescription' in subele.tag.lower():
@@ -194,6 +196,7 @@ def parse_1_0_and_1_1(root):
                                 print subele.text
                                 if 'qualitycontrollevelcode' in subele.tag.lower():
                                     m_code =subele.text
+                                    m_code = m_code.replace(" ","")
                                 if 'qualitycontrollevelid' in subele.tag.lower():
                                     m_code = subele.text
                                 if 'definition' in subele.tag.lower():
@@ -240,7 +243,7 @@ def parse_1_0_and_1_1(root):
                         if source =='' and source1 != '':
                             source = source1
                         dic = quality +'aa'+method+'aa'+source
-
+                        dic = dic.replace(" ","")
 
                         if dic not in meth_qual:
                             print dic
@@ -553,7 +556,7 @@ def parse_2_0(root):
 
 
 
-def Original_Checker(xml_file):
+def Original_Checker(xml_file,id_qms):
     try:
         tree = etree.parse(xml_file)
         root = tree.getroot()
@@ -561,7 +564,7 @@ def Original_Checker(xml_file):
         print wml_version
         if wml_version == '1':
             print "original checker"
-            return parse_1_0_and_1_1(root)
+            return parse_1_0_and_1_1(root,id_qms)
 
         elif wml_version == '2.0':
             return parse_2_0(root)

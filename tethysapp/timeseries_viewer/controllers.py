@@ -52,7 +52,7 @@ def chart_data(request, res_id, src,id_qms):
         data_for_chart = {'status': 'Resource file not found'}
     else:
         # parses the WaterML to a chart data object
-        data_for_chart = utilities.Original_Checker(file_path)
+        data_for_chart = utilities.Original_Checker(file_path,id_qms)
     # print "JSON Reponse"
     # print datetime.now()
     print "end of chart data"
@@ -72,19 +72,15 @@ def home(request):
         request_url ="test"
     print request_url
     source=None
+
+
     source = request.POST.getlist('Source')
     id = request.POST.getlist('WofUri')
-
-
-
-    # for i in id:
-    #     i=i.encode('utf8')
-    #     ids.append(i)
     quality = request.POST.getlist('QCLID')
     method = request.POST.getlist('MethodId')
     sourceid = request.POST.getlist('SourceId')
-    # print id, quality, method, sourceid
-    # print request.POST.getlist('MethodId')
+
+
     source= [i.encode('UTF8')for i in source]
     ids= [i.encode('UTF8')for i in id]
     quality= [i.encode('UTF8')for i in quality]
@@ -199,3 +195,40 @@ def error_report(request):
         file_temp = open(file_path, 'r')
         content = file_temp.read()
     return JsonResponse({"Error Reports":content})
+
+@csrf_exempt
+@never_cache
+def test(request):
+    import json
+
+    # not ajax
+    # curl -X POST -d 'name1=value1&name2=value2&name1=value11' "http://127.0.0.1:8000/apps/timeseries-viewer/test/"
+
+    # curl -X POST -H "Content-Type: application/json" -d '{"mylist": ["item1", "item2", "item3"], "list_type": "array"}' "http://127.0.0.1:8000/apps/timeseries-viewer/test/"
+
+    # curl -X POST -F 'name1=value1' -F 'name2=value2' -F 'name1=value11' "http://127.0.0.1:8000/apps/timeseries-viewer/test/"
+
+    # ajax
+    # curl -X POST -H "X-Requested-With: XMLHttpRequest" -d 'name1=value1&name2=value2&name1=value11' "http://127.0.0.1:8000/apps/timeseries-viewer/test/"
+
+    # curl -X POST -H "X-Requested-With: XMLHttpRequest" -H "Content-Type: application/json" -d '{"mylist": ["item1", "item2", "item3"], "list_type": "array"}' "http://127.0.0.1:8000/apps/timeseries-viewer/test/"
+
+
+    result = {}
+
+    result["is_ajax"] = request.is_ajax()
+
+    result["request.GET"] = request.GET
+    result["request.POST"] = request.POST
+
+    try:
+        result["request.body"] = request.body
+        result["request.body -> json"] = json.loads(request.body)
+    except:
+        pass
+
+    print result
+
+    context ={"result": json.dumps(result)
+               }
+    return render(request, 'timeseries_viewer/test.html', context)
