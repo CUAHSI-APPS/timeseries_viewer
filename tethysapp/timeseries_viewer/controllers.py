@@ -64,28 +64,57 @@ def chart_data(request, res_id, src,id_qms):
 @never_cache
 def home(request):
     ids=[]
+    meta =[]
+    source=[]
+
+    quality=[]
+    method=[]
+    sourceid=[]
+
     # print datetime.now()
     # print hash(['hel','test'])
     try: #Check to see if request if from CUAHSI. For data validation
         request_url = request.META['HTTP_REFERER']
+
     except:
         request_url ="test"
     print request_url
-    source=None
 
 
-    source = request.POST.getlist('Source')
-    id = request.POST.getlist('WofUri')
-    quality = request.POST.getlist('QCLID')
-    method = request.POST.getlist('MethodId')
-    sourceid = request.POST.getlist('SourceId')
+    data = request.META['QUERY_STRING']
+    data = data.encode(encoding ='UTF-8')
+    print data
+    data  =data.split('&')
+    for e in data:
+        s= e.split('=')
+        meta.append(s)
+    print data
+    print meta
+    for e in meta:
+        print e[0]
+        if e[0] == 'Source':
+            source.append(e[1])
+        if e[0] == 'WofUri':
+            ids.append(e[1])
+        if e[0] == 'QCLID':
+            quality.append(e[1])
+        if e[0] == 'MethodId':
+            method.append(e[1])
+        if e[0] == 'SourceId':
+            sourceid.append(e[1])
 
-
-    source= [i.encode('UTF8')for i in source]
-    ids= [i.encode('UTF8')for i in id]
-    quality= [i.encode('UTF8')for i in quality]
-    method= [i.encode('UTF8')for i in method]
-    sourceid= [i.encode('UTF8')for i in sourceid]
+    # source = request.POST.getlist('Source')
+    # id = request.POST.getlist('WofUri')
+    # quality = request.POST.getlist('QCLID')
+    # method = request.POST.getlist('MethodId')
+    # sourceid = request.POST.getlist('SourceId')
+    #
+    #
+    # source= [i.encode('UTF8')for i in source]
+    # ids= [i.encode('UTF8')for i in id]
+    # quality= [i.encode('UTF8')for i in quality]
+    # method= [i.encode('UTF8')for i in method]
+    # sourceid= [i.encode('UTF8')for i in sourceid]
     # for i in id:
     #     i=i.encode('UTF8')
     #     ids.append(i)
@@ -200,6 +229,8 @@ def error_report(request):
 @never_cache
 def test(request):
     import json
+    request_url = request.META['QUERY_STRING']
+
 
     # not ajax
     # curl -X POST -d 'name1=value1&name2=value2&name1=value11' "http://127.0.0.1:8000/apps/timeseries-viewer/test/"
@@ -215,7 +246,7 @@ def test(request):
 
 
     result = {}
-
+    result['query_string'] =request_url
     result["is_ajax"] = request.is_ajax()
 
     result["request.GET"] = request.GET
@@ -223,6 +254,10 @@ def test(request):
 
     try:
         result["request.body"] = request.body
+    except:
+        pass
+
+    try:
         result["request.body -> json"] = json.loads(request.body)
     except:
         pass

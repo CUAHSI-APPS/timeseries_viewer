@@ -44,7 +44,7 @@ def get_version(root):
         or '{http://www.cuahsi.org/waterML/1.0/}timeSeriesResponse' in element.tag:
             wml_version = '1'
             break
-    print "end of get version"
+
     return wml_version
 
 #drew 20150401 convert date string into datetime obj
@@ -81,7 +81,7 @@ def parse_1_0_and_1_1(root,id_qms):
     master_data_values = collections.OrderedDict()
     meth_qual = [] # List of all the quality, method, and source combinations
     for_canvas = []
-    meta_dic ={'method':{},'quality':{},'source':{},'organization':{}}
+    meta_dic ={'method':{},'quality':{},'source':{},'organization':{},'quality_code':{}}
     m_des = None
     m_code = None
     m_org =None
@@ -155,54 +155,82 @@ def parse_1_0_and_1_1(root,id_qms):
                             sourcedescription =element.text
 
                         if "method" ==tag.lower():
+                            try:
+                                mid = element.attrib['methodID']
+                            except:
+                                mid =None
+                                m_code =''
                             for subele in element:
                                 bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
                                 tag1 = element.tag[bracket_lock+1:]
                                 # Takes only actual tag, no namespace
-                                if 'methodcode' in subele.tag.lower() :
+                                if 'methodcode' in subele.tag.lower() and m_code=='':
                                     m_code = subele.text
                                     m_code = m_code.replace(" ","")
-                                if 'methodid' in subele.tag.lower():
-                                    m_code = subele.text
+
+                                if mid != None:
+                                    m_code = element.attrib['methodID']
+                                    m_code = m_code.replace(" ","")
                                 if 'methoddescription' in subele.tag.lower():
                                     m_des = subele.text
 
                             meta_dic['method'].update({m_code:m_des})
                         if "source" ==tag.lower():
+
+                            try:
+                                sid = element.attrib['sourceID']
+                            except:
+                                sid = None
+                                m_code =''
+
                             for subele in element:
                                 bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
                                 tag1 = element.tag[bracket_lock+1:]
-                                print subele.tag
+
                                 # Takes only actual tag, no namespace
-                                if 'sourcecode' in subele.tag.lower():
+                                if 'sourcecode' in subele.tag.lower() and m_code =='':
                                     m_code = subele.text
                                     m_code = m_code.replace(" ","")
-                                if 'sourceid' in subele.tag.lower():
-                                    m_code = subele.text
+
+
+                                if sid!= None:
+                                    m_code = element.attrib['sourceID']
+                                    m_code = m_code.replace(" ","")
                                 if 'sourcedescription' in subele.tag.lower():
                                     m_des = subele.text
                                 if 'organization' in subele.tag.lower():
                                     m_org = subele.text
+
                             meta_dic['source'].update({m_code:m_des})
                             meta_dic['organization'].update({m_code:m_org})
 
-                        print tag.lower()
+
                         if "qualitycontrollevel" ==tag.lower():
+                            try:
+                                qlc= element.attrib['qualityControlLevelID']
+                            except:
+                                qlc =None
+                                m_code =''
+
                             for subele in element:
                                 bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
                                 tag1 = element.tag[bracket_lock+1:]
                                 # Takes only actual tag, no namespace
-                                print subele.tag.lower()
-                                print subele.text
-                                if 'qualitycontrollevelcode' in subele.tag.lower():
-                                    m_code =subele.text
+
+                                if  qlc !=None:
+                                    m_code =element.attrib['qualityControlLevelID']
                                     m_code = m_code.replace(" ","")
-                                if 'qualitycontrollevelid' in subele.tag.lower():
+                                if 'qualitycontrollevelcode' in subele.tag.lower():
+                                    m_code1 = subele.text
+                                    m_code1 = m_code1.replace(" ","")
+                                if 'qualitycontrollevelcode' in subele.tag.lower() and m_code =='':
                                     m_code = subele.text
+                                    m_code = m_code1.replace(" ","")
                                 if 'definition' in subele.tag.lower():
                                     m_des = subele.text
                             meta_dic['quality'].update({m_code:m_des})
-
+                            meta_dic['quality_code'].update({m_code1:m_code})
+                        # print meta_dic
                     elif 'value' == tag:
 
                         try:
@@ -245,8 +273,9 @@ def parse_1_0_and_1_1(root,id_qms):
                         dic = quality +'aa'+method+'aa'+source
                         dic = dic.replace(" ","")
 
+
                         if dic not in meth_qual:
-                            print dic
+
                             meth_qual.append(dic)
                             master_values.update({dic:[]})
                             master_times.update({dic:[]})
@@ -561,9 +590,9 @@ def Original_Checker(xml_file,id_qms):
         tree = etree.parse(xml_file)
         root = tree.getroot()
         wml_version = get_version(root)
-        print wml_version
+
         if wml_version == '1':
-            print "original checker"
+
             return parse_1_0_and_1_1(root,id_qms)
 
         elif wml_version == '2.0':
@@ -746,7 +775,7 @@ def viewer_counter(request):
         hs = controllers.getOAuthHS(request)
         user =  hs.getUserInfo()
         user1 = user['username']
-        print user1
+
     except:
         user1 =""
 

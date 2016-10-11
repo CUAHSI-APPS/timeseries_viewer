@@ -1,2 +1,46 @@
 
+<html>
+
+<head>
+    <script>
+function run()
+{
+    alert("I am running");
+    document.getElementById("dataViewerForm").submit();
+}
+
+</script>
+</head>>
+
+<body >
 {{result}}
+<form id="dataViewerForm" method="get" action="/apps/timeseries-viewer/test/" target="dataViewerWindow">
+    <input type="hidden" name="Source" value="cuahsi">
+    <ul id="wofParams">
+        <li>
+            <input type="hidden" name="WofUri" value="cuahsi-wdc-1111">
+            <input type="hidden" name="QCLID" value="111">
+            <input type="hidden" name="MethodId" value="1111">
+            <input type="hidden" name="SourceId" value="111">
+        </li>
+        <li>
+            <input type="hidden" name="WofUri" value="cuahsi-wdc-222">
+            <input type="hidden" name="QCLID" value="222">
+            <input type="hidden" name="MethodId" value="222">
+            <input type="hidden" name="SourceId" value="222">
+        </li>
+         <li>
+            <input type="hidden" name="WofUri" value="cuahsi-wdc-3333">
+            <input type="hidden" name="QCLID" value="333">
+            <input type="hidden" name="MethodId" value="333">
+            <input type="hidden" name="SourceId" value="333">
+        </li>
+    </ul>
+
+     <button type="button" class="btn btn-default" id="btn_submit_cuahsi"onClick ="run()" >submit</button>
+</form>
+</body>
+
+
+
+</html>

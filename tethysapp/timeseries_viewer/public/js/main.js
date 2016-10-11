@@ -140,21 +140,57 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
             var master_stat = json.master_stat
             //console.log(master_boxplot)
             //console.log(meta_dic)
-            console.log(master_values)
+            //console.log(master_values)
             //console.log(master_counter)
+            //console.log(id_qms)
+            //console.log(id_qms_a)
+
+            id_qms_a = id_qms.split('aa')
             if (master_counter == true){
                 for (val in master_values) {
-                    if (id_qms == val || id_qms == 'meta') {
+                    meta1 = val.split("aa");
+                    //console.log(val)
+                    //console.log(meta1)
+                    //console.log(meta_dic['quality_code'][meta1[0]])
+                    //quality- data validation
+
+                    if(meta_dic['quality_code'][meta1[0]]==undefined){
+                        meta1[0] = ''
+                        id_qms_a[0]=''
+                    }
+                    else{
+                        meta1[0]= meta_dic['quality_code'][meta1[0]]
+                    }
+
+                    if(id_qms !='meta'){
+                        if(id_qms_a[0]==''){meta1[0]=''}
+                        if(id_qms_a[1]==''){meta1[1]=''}
+                        if(id_qms_a[2]==''){meta1[2]=''}
+                        id_qms = id_qms_a[0]+'aa'+id_qms_a[1]+'aa'+id_qms_a[2]
+                    }
+
+
+
+                    //meta[0]= meta_dic['method_code'][meta[0]]
+                    //meta[0]= meta_dic['source_id'][meta[0]]
+                    val1 = meta1[0]+'aa'+meta1[1]+'aa'+meta1[2]
+                    //val1 = meta1[0]+'aa'+'1'+'aa'+meta1[2]//test value
+                    //console.log(meta1)
+                    //console.log(val)
+                    //console.log(val1)
+                    //console.log(id_qms)
+
+                    if (id_qms == val1 || id_qms == 'meta') {
                         length_master = length_master + 1
                         //console.log(master_values)
                         //console.log(val)
                         master_id.push(val)
 
                         meta = val.split("aa");
-                        console.log(meta)
-                        console.log(meta_dic)
 
-                        quality = meta_dic['quality'][meta[0]]
+
+                        quality = meta_dic['quality'][meta1[0]]
+
                         quality_code = [meta[0]]
 
                         method = meta_dic['method'][meta[1]]
@@ -525,7 +561,7 @@ function roundDown(x){
         x = (x/y);
         x = Math.ceil(x);
         x = x*y*-1;
-        console.log("negative")
+
         return x
     }
     var y = Math.pow(10, x.toString().length-1);
@@ -551,7 +587,7 @@ function myFunc(id, name) {
     var selected_box = document.getElementById(id)
     var check_unit = []
     var chk_unit = document.getElementById(id).name;
-    console.log(chart1)
+
     var series = chart1.options.data[id].visible
     res = selected_box.getAttribute("data-resid")
     if (series == true) {
@@ -584,9 +620,11 @@ var popupDiv = $('#welcome-popup');
 $(document).ready(function (callback) {
     console.log("ready")
 
+    var src = find_query_parameter("SourceId");
+    var wu = find_query_parameter("WofUri");
     var src = find_query_parameter("src");
     var source = $('#source').text()
-    console.log(source)
+
     if (source == "['cuahsi']"){
         src='cuahsi'
     }
@@ -596,8 +634,7 @@ $(document).ready(function (callback) {
     else{
         src =null
     }
-    console.log(source)
-    console.log(src)
+
 
     //cuahsi_ids = JSON.parse(cuahsi_ids)
     //for (id in cuahsi_ids){
@@ -839,18 +876,16 @@ function addingseries(unit_off) {
         var quality=$('#quality').text()
         var method=$('#method').text()
         var sourceid=$('#sourceid').text()
-        console.log(sourceid)
-        console.log(quality)
+
         res_id =trim_input(res_id)
         quality =trim_input(quality)
         method =trim_input(method)
         sourceid =trim_input(sourceid)
-        console.log(sourceid)
-        console.log(quality)
+
     }
     else if(src=='hydroshare'){
         var res_id = find_query_parameter("res_id");
-        console.log(res_id)
+
         if (res_id != null) {
             res_ids = res_id.split(",");
             res_id = trim_input(res_id)
@@ -860,9 +895,9 @@ function addingseries(unit_off) {
             res_ids = ''
             $('#loading').hide();
         }
-        console.log(res_id)
+
     }
-    console.log(res_id)
+
     var series_counter = 0
     if (unit_off == null) {
         unit_off = ''
@@ -898,9 +933,23 @@ function addingseries(unit_off) {
 
 
         if( src =='cuahsi'){
-            id_qms =  quality[id] +'aa'+method[id]+'aa'+sourceid[id]
+
+            if(quality[id]=='null' || quality[id]=='None')
+            {quality1=''}
+            else{quality1 = quality[id]}
+            if(method[id]=='null' || method[id]=='None')
+            {method1=''}
+            else{method1 = method[id]}
+
+            if(sourceid[id]=='null' ||sourceid[id]=='None')
+            {sourceid1=''}
+            else{sourceid1 = sourceid[id]}
+
+
+
+            id_qms =  quality1 +'aa'+method1+'aa'+sourceid1
         }
-         else{
+        else{
             id_qms="meta"
         }
 
@@ -965,7 +1014,7 @@ function getCookie(name) {
 }
 
 function launchByuHydroshareApp() {
-    console.log("BYU Hydroshare")
+
     //var tableId = '#' + event.data.tableId;
     //var table = $(tableId).DataTable();
     //var apps = event.data.getApps().apps;
@@ -975,7 +1024,7 @@ function launchByuHydroshareApp() {
     //var byuUrl= null;
     var byuUrl= '/apps/timeseries-viewer/';
     var csrf_token = getCookie('csrftoken');
-    console.log('{% csrf_token %}')
+
 
     //New selection - find the associated app URL...
     //var length = apps.length;
