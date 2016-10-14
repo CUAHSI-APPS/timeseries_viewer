@@ -107,7 +107,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
     }
 
 
-    console.log(res_id1)
+    //console.log(res_id1)
     var csrf_token = getCookie('csrftoken');
     data_url = base_url + 'timeseries-viewer/chart_data/' + res_id1 + '/'+id_qms+'/' + src + '/';
     $.ajax({
@@ -143,9 +143,12 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
             //console.log(master_values)
             //console.log(master_counter)
             //console.log(id_qms)
-            //console.log(id_qms_a)
 
-            id_qms_a = id_qms.split('aa')
+
+            id_qms_a_split = id_qms.split('aa')
+            //console.log(id_qms_a)
+            //console.log(master_values)
+
             if (master_counter == true){
                 for (val in master_values) {
                     meta1 = val.split("aa");
@@ -153,34 +156,49 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                     //console.log(meta1)
                     //console.log(meta_dic['quality_code'][meta1[0]])
                     //quality- data validation
+                    //console.log(meta_dic)
+                    //console.log(meta1)
+                    if(id_qms !='meta'){
 
+                        if(id_qms_a_split[0]==''){meta1[0]=''}
+                        if(id_qms_a_split[1]==''){meta1[1]=''}
+                        if(id_qms_a_split[2]==''){meta1[2]=''}
+
+                    }
+
+                    //console.log(meta1)
                     if(meta_dic['quality_code'][meta1[0]]==undefined){
                         meta1[0] = ''
-                        id_qms_a[0]=''
+                        id_qms_a_split[0]=''
                     }
                     else{
                         meta1[0]= meta_dic['quality_code'][meta1[0]]
                     }
 
-                    if(id_qms !='meta'){
-                        if(id_qms_a[0]==''){meta1[0]=''}
-                        if(id_qms_a[1]==''){meta1[1]=''}
-                        if(id_qms_a[2]==''){meta1[2]=''}
-                        id_qms = id_qms_a[0]+'aa'+id_qms_a[1]+'aa'+id_qms_a[2]
+                    if(meta_dic['method'][meta1[1]]==undefined){
+                        meta1[1] = ''
+                        id_qms_a_split[1]=''
+                    }
+                    else{
+                        meta1[1]= [meta1[1]]
+                    }
+                    if(meta_dic['quality'][meta1[2]]==undefined){
+                        meta1[2] = ''
+                        id_qms_a_split[2]=''
+                    }
+                    else{
+                        meta1[2]= [meta1[2]]
                     }
 
 
-
-                    //meta[0]= meta_dic['method_code'][meta[0]]
-                    //meta[0]= meta_dic['source_id'][meta[0]]
+                    id_qms_a = id_qms_a_split[0]+'aa'+id_qms_a_split[1]+'aa'+id_qms_a_split[2]
                     val1 = meta1[0]+'aa'+meta1[1]+'aa'+meta1[2]
-                    //val1 = meta1[0]+'aa'+'1'+'aa'+meta1[2]//test value
                     //console.log(meta1)
                     //console.log(val)
                     //console.log(val1)
-                    //console.log(id_qms)
+                    //console.log(id_qms_a)
 
-                    if (id_qms == val1 || id_qms == 'meta') {
+                    if (id_qms_a == val1 || id_qms_a == 'meta') {
                         length_master = length_master + 1
                         //console.log(master_values)
                         //console.log(val)
@@ -357,16 +375,67 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                             chart.options.axisY.titleWrap = true
                             chart.options.data.push(newSeries);
                             //setting the view of the graph
+                            //console.log(ymin)
+                            //console.log(ymax)
+
+
                             maxview = roundUp(Math.ceil(ymax))
+                            maxview = maxview+0.1*maxview
                             minview = roundDown(Math.floor(ymin))
+                            minview = minview+minview*.1
+                            //minview=ymin
+
+
+                            //console.log(minview)
+                            //console.log(maxview)
+                            //console.log(interval)
+
+                            //maxview = (Math.ceil((maxview / interval)) * interval)
                             interval = (maxview - minview) / 10
-                            maxview = (Math.ceil((maxview / interval)) * interval)
-                            minview = (Math.ceil((minview / interval)) * interval)
+                            if(minview<0){
+                                //minview = (Math.floor((minview / interval)) * interval)
+                                //console.log(minview)
+                                //interval = (maxview-minview) /10
+                                ////minview = (Math.floor((minview / interval)) * interval)
+                                //console.log(interval)
+                                //console.log(minview)
+                                maxview = 10*interval+minview
+                                //console.log(maxview)
+                                rem = minview/interval
+                                rem1 = Math.floor(rem)
+                                rem2 = rem1-rem
+                                minview = (rem2*interval+minview).toFixed(2)
+                                //minview=minview+(minview%interval)
+                                //console.log(minview)
+                                //
+                                //console.log(maxview)
+                                rema = maxview/interval
+                                rem1a = Math.ceil(rema)
+                                rem2a = rem1a-rema
+                                maxview = (rem2a*interval+maxview).toFixed(2)
+                                //console.log(maxview)
+                            }
+                            else{
+                                interval = (maxview - minview) / 11
+                                minview = (Math.ceil((minview / interval)) * interval)}
+
+                            //
+                            //console.log(interval)
+                            //console.log(minview)
+
+                           // maxview = minview+10*interval
+
+
+
+
+                            //console.log(maxview)
+
                             chart.options.axisY.viewportMaximum = maxview
                             chart.options.axisY.maximum = maxview
                             chart.options.axisY.viewportMinimum = minview
                             chart.options.axisY.minimum = minview
                             chart.options.axisY.interval = interval
+                            //console.log(chart)
                             //console.log("chart graphed")
                         }
                         else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
@@ -393,12 +462,40 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                             chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
                             chart.options.axisY2.titleWrap = true
                             chart.options.data.push(newSeries);
+
+
                             maxview2 = roundUp(Math.ceil(y2max))
                             minview2 = roundDown(Math.floor(y2min))
+                            //maxview2 = y2max
+                            //minview2 =y2min
                             interval2 = ((maxview2 - minview2) / 10)
+                            //minview2 = minview2-interval2
+                             if(minview2<0){
+                                //minview = (Math.floor((minview / interval)) * interval)
+                                console.log(minview2)
+                                //interval = (maxview-minview) /10
+                                //minview = (Math.floor((minview / interval)) * interval)
+                                console.log(interval2)
+                                console.log(minview2)
+                                maxview = 10*interva2l+minview2
+                                //console.log(maxview)
+                                rem = minview2/interval2
+                                rem1 = Math.floor(rem)
+                                rem2 = rem1-rem
+                                minview = (rem2*interval2+minview2).toFixed(2)
+                                //minview=minview+(minview%interval)
+                                console.log(minview2)
 
-                            maxview2 = (Math.ceil((maxview2 / interval2)) * interval2)
-                            minview2 = (Math.ceil((minview2 / interval2)) * interval2)
+                                console.log(maxview2)
+                                rema = maxview2/interval2
+                                rem1a = Math.ceil(rema)
+                                rem2a = rem1a-rema
+                                maxview2 = (rem2a*interval2+maxview2).toFixed(2)
+                                console.log(maxview)
+                            }
+                            else{
+                                 interval2 = ((maxview2 - minview2) / 11)
+                                 minview2 = (Math.ceil((minview2 / interval2)) * interval2)}
 
 
                             chart.options.axisY2.viewportMaximum = maxview2
@@ -540,7 +637,7 @@ function roundDown(x){
     var negative = false;
     if(x<10 && x>=0){
         x = 0
-        //console.log("hafasfsfsdf")
+
         return x
     }
     else if(x <1 && x>=-1){
