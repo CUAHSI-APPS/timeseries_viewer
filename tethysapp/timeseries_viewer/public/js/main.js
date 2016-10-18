@@ -138,65 +138,109 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
             //var max = json.max
             //var min = json.min
             var master_stat = json.master_stat
+            var bad_meta=false
+            var bad_meta_counter = 0
             //console.log(master_boxplot)
             //console.log(meta_dic)
             //console.log(master_values)
             //console.log(master_counter)
             //console.log(id_qms)
-
-
             id_qms_a_split = id_qms.split('aa')
-            //console.log(id_qms_a)
+            for (val in master_values){
+                meta1 = val.split("aa");
+                if(id_qms !='meta'){
+                    if(id_qms_a_split[0]==''){meta1[0]=''}
+                    if(id_qms_a_split[1]==''){meta1[1]=''}
+                    if(id_qms_a_split[2]==''){meta1[2]=''}
+                }
+                if(meta_dic['quality_code'][meta1[0]]==undefined){
+                    meta1[0] = ''
+                    //id_qms_a_split[0]=''
+                }
+                else{
+                    meta1[0]= meta_dic['quality_code'][meta1[0]]
+                }
+                id_qms_a = id_qms_a_split[0]+'aa'+id_qms_a_split[1]+'aa'+id_qms_a_split[2]
+                val1 = meta1[0]+'aa'+meta1[1]+'aa'+meta1[2]
+                console.log(val1)
+                console.log(id_qms_a)
+
+                if(val1 !=id_qms_a){
+                    bad_meta_counter +=1
+                }
+            }
+            if(bad_meta_counter == Object.keys(master_values).length){
+                bad_meta = true
+            }
+            id_qms_a_split = id_qms.split('aa')
+            console.log(id_qms_a_split)
             //console.log(master_values)
 
             if (master_counter == true){
+
                 for (val in master_values) {
-                    meta1 = val.split("aa");
-                    //console.log(val)
-                    //console.log(meta1)
-                    //console.log(meta_dic['quality_code'][meta1[0]])
-                    //quality- data validation
-                    //console.log(meta_dic)
-                    //console.log(meta1)
-                    if(id_qms !='meta'){
+                    console.log(bad_meta)
+                    if(bad_meta == true){
+                        val1 =''
+                        id_qms_a=''
+                    }
+                    else {
+                        meta1 = val.split("aa");
+                        //console.log(val)
+                        //console.log(meta1)
+                        //console.log(meta_dic['quality_code'][meta1[0]])
+                        //quality- data validation
+                        console.log(meta_dic)
+                        //console.log(meta1)
+                        if (id_qms != 'meta') {
 
-                        if(id_qms_a_split[0]==''){meta1[0]=''}
-                        if(id_qms_a_split[1]==''){meta1[1]=''}
-                        if(id_qms_a_split[2]==''){meta1[2]=''}
+                            if (id_qms_a_split[0] == '') {
+                                meta1[0] = ''
+                            }
+                            if (id_qms_a_split[1] == '') {
+                                meta1[1] = ''
+                            }
+                            if (id_qms_a_split[2] == '') {
+                                meta1[2] = ''
+                            }
 
-                    }
+                        }
 
-                    //console.log(meta1)
-                    if(meta_dic['quality_code'][meta1[0]]==undefined){
-                        meta1[0] = ''
-                        id_qms_a_split[0]=''
-                    }
-                    else{
-                        meta1[0]= meta_dic['quality_code'][meta1[0]]
-                    }
+                        //console.log(meta1)
+                        if (meta_dic['quality_code'][meta1[0]] == undefined) {
+                            meta1[0] = ''
+                            //id_qms_a_split[0]=''
+                        }
+                        else {
+                            meta1[0] = meta_dic['quality_code'][meta1[0]]
+                        }
 
-                    if(meta_dic['method'][meta1[1]]==undefined){
-                        meta1[1] = ''
-                        id_qms_a_split[1]=''
-                    }
-                    else{
-                        meta1[1]= [meta1[1]]
-                    }
-                    if(meta_dic['quality'][meta1[2]]==undefined){
-                        meta1[2] = ''
-                        id_qms_a_split[2]=''
-                    }
-                    else{
-                        meta1[2]= [meta1[2]]
-                    }
+                        //if(meta_dic['method'][meta1[1]]==undefined){
+                        //    meta1[1] = ''
+                        //    id_qms_a_split[1]=''
+                        //}
+                        //else{
+                        //    meta1[1]= [meta1[1]]
+                        //}
+                        //
+                        //if(meta_dic['source'][meta1[2]]==undefined){
+                        //    meta1[2] = ''
+                        //    id_qms_a_split[2]=''
+                        //}
+                        //else{
+                        //    meta1[2]= meta1[2]
+                        //}
 
 
-                    id_qms_a = id_qms_a_split[0]+'aa'+id_qms_a_split[1]+'aa'+id_qms_a_split[2]
-                    val1 = meta1[0]+'aa'+meta1[1]+'aa'+meta1[2]
-                    //console.log(meta1)
-                    //console.log(val)
-                    //console.log(val1)
-                    //console.log(id_qms_a)
+                        id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
+                        val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
+                        //console.log(meta1)
+                        //console.log(val)
+                        console.log(val1)
+                        console.log(id_qms_a)
+
+                        id_qms_a_split = id_qms.split('aa')
+                    }
 
                     if (id_qms_a == val1 || id_qms_a == 'meta') {
                         length_master = length_master + 1
@@ -423,7 +467,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                             //console.log(interval)
                             //console.log(minview)
 
-                           // maxview = minview+10*interval
+                            // maxview = minview+10*interval
 
 
 
@@ -470,7 +514,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                             //minview2 =y2min
                             interval2 = ((maxview2 - minview2) / 10)
                             //minview2 = minview2-interval2
-                             if(minview2<0){
+                            if(minview2<0){
                                 //minview = (Math.floor((minview / interval)) * interval)
                                 console.log(minview2)
                                 //interval = (maxview-minview) /10
@@ -494,8 +538,8 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                                 console.log(maxview)
                             }
                             else{
-                                 interval2 = ((maxview2 - minview2) / 11)
-                                 minview2 = (Math.ceil((minview2 / interval2)) * interval2)}
+                                interval2 = ((maxview2 - minview2) / 11)
+                                minview2 = (Math.ceil((minview2 / interval2)) * interval2)}
 
 
                             chart.options.axisY2.viewportMaximum = maxview2
@@ -583,7 +627,6 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
 
 
                     }
-
 
                 }
                 number2 = number2 + 1
