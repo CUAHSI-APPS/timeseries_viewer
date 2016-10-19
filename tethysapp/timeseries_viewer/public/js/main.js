@@ -249,10 +249,10 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                         master_id.push(val)
 
                         meta = val.split("aa");
-
-
-                        quality = meta_dic['quality'][meta1[0]]
-
+                        console.log(meta)
+                        code = meta_dic['quality_code'][meta[0]]
+                        quality = meta_dic['quality'][code]
+                        console.log( quality)
                         quality_code = [meta[0]]
 
                         method = meta_dic['method'][meta[1]]
@@ -456,7 +456,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                                 rema = maxview/interval
                                 rem1a = Math.ceil(rema)
                                 rem2a = rem1a-rema
-                                maxview = (rem2a*interval+maxview).toFixed(2)
+                                maxview = (rem2a*interval+maxview+maxview *.01).toFixed(2)
                                 //console.log(maxview)
                             }
                             else{
@@ -479,7 +479,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                             chart.options.axisY.viewportMinimum = minview
                             chart.options.axisY.minimum = minview
                             chart.options.axisY.interval = interval
-                            //console.log(chart)
+                            console.log(chart)
                             //console.log("chart graphed")
                         }
                         else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
