@@ -1,11 +1,3 @@
-function find_query_parameter(name) {
-    url = location.href;
-    //name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-    var regexS = "[\\?&]" + name + "=([^&#]*)";
-    var regex = new RegExp(regexS);
-    var results = regex.exec(url);
-    return results == null ? null : results[1];
-}
 var data = [];
 var unit_tracker = [];
 var counter = 0;
@@ -13,20 +5,24 @@ var unit1 = null
 var unit2 = null;
 var resid_on = null;
 counter1 = [];
+//ymax and ymin store the maximum y value for each axis.
 var ymax =0
 var ymin=0
 var y2max=0
 var y2min=0
+//tool tip for the quality control column
 var quality_title=null
-// here we set up the configuration of the highCharts chart
+var number = 0
+var unit_list = [];
+var title = 0
+xtime = []
+// here we set up the configuration of the CanvasJS chart
 var chart_options = {
     zoomEnabled: true,
     height: 600,
     legend: {
         cursor: "pointer",
         itemclick: function (e) {
-            //console.log("legend click: " + e.dataPointIndex);
-            //console.log(e);
             if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
                 e.dataSeries.visible = false;
             } else {
@@ -59,13 +55,12 @@ var chart_options = {
         //interval: 50
     },
     axisY2: {
-        title: "test2",
+        title: "",
         fontSize: 15,
         labelFontSize: 10,
         titleWrap: true,
         gridThickness:2,
         includeZero: false,
-        //interval: 50
     }
 };
 
@@ -75,17 +70,15 @@ function show_error(chart, error_message) {
     console.log(error_message);
     $('#error-message').text(error_message);
 }
-var number2 = -1
-var number = -1
-var unit_list = [];
-var title = 0
-xtime = []
-function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
+
+function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
+
     xtime.length = 0
     xval = ''
     yvalu = ''
     master_id =[]
-    length_master= -1
+    length_master= 0
+
 
     //console.log(xtime)
     current_url = location.href;
@@ -106,7 +99,6 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
         res_id1 = res_id
     }
 
-
     //console.log(res_id1)
     var csrf_token = getCookie('csrftoken');
     data_url = base_url + 'timeseries-viewer/chart_data/' + res_id1 + '/'+id_qms+'/' + src + '/';
@@ -121,30 +113,21 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
 
             // first of all check for the status
             var status = json.status;
-            if (status !== 'success') {
+            if (status !== 'success') //displays error
+            {
                 show_error(chart, "Error loading time series from " + res_id1 + ": " + status)
                 $('#loading').hide();
                 return;
             }
-            // set the y axis title and units
             var units = json.units;
             var master_values= json.master_values;
             var master_counter = json.master_counter;
             var master_times = json.master_times;
             var meta_dic = json.meta_dic;
             var master_boxplot = json.master_boxplot
-            //var mean = json.mean
-            //var median = json.median
-            //var max = json.max
-            //var min = json.min
             var master_stat = json.master_stat
             var bad_meta=false
             var bad_meta_counter = 0
-            //console.log(master_boxplot)
-            //console.log(meta_dic)
-            //console.log(master_values)
-            //console.log(master_counter)
-            //console.log(id_qms)
             id_qms_a_split = id_qms.split('aa')
             for (val in master_values){
                 meta1 = val.split("aa");
@@ -155,7 +138,6 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                 }
                 if(meta_dic['quality_code'][meta1[0]]==undefined){
                     meta1[0] = ''
-                    //id_qms_a_split[0]=''
                 }
                 else{
                     meta1[0]= meta_dic['quality_code'][meta1[0]]
@@ -186,12 +168,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                     }
                     else {
                         meta1 = val.split("aa");
-                        //console.log(val)
-                        //console.log(meta1)
-                        //console.log(meta_dic['quality_code'][meta1[0]])
-                        //quality- data validation
                         console.log(meta_dic)
-                        //console.log(meta1)
                         if (id_qms != 'meta') {
 
                             if (id_qms_a_split[0] == '') {
@@ -203,10 +180,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                             if (id_qms_a_split[2] == '') {
                                 meta1[2] = ''
                             }
-
                         }
-
-                        //console.log(meta1)
                         if (meta_dic['quality_code'][meta1[0]] == undefined) {
                             meta1[0] = ''
                             //id_qms_a_split[0]=''
@@ -214,73 +188,77 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                         else {
                             meta1[0] = meta_dic['quality_code'][meta1[0]]
                         }
-
-                        //if(meta_dic['method'][meta1[1]]==undefined){
-                        //    meta1[1] = ''
-                        //    id_qms_a_split[1]=''
-                        //}
-                        //else{
-                        //    meta1[1]= [meta1[1]]
-                        //}
-                        //
-                        //if(meta_dic['source'][meta1[2]]==undefined){
-                        //    meta1[2] = ''
-                        //    id_qms_a_split[2]=''
-                        //}
-                        //else{
-                        //    meta1[2]= meta1[2]
-                        //}
-
-
                         id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
                         val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
-                        //console.log(meta1)
-                        //console.log(val)
-                        console.log(val1)
-                        console.log(id_qms_a)
-
                         id_qms_a_split = id_qms.split('aa')
                     }
 
                     if (id_qms_a == val1 || id_qms_a == 'meta') {
+                        m_xval = []
+                        m_yval = []
                         length_master = length_master + 1
-                        //console.log(master_values)
-                        //console.log(val)
+                        console.log(length_master)
                         master_id.push(val)
-
                         meta = val.split("aa");
-                        console.log(meta)
                         code = meta_dic['quality_code'][meta[0]]
                         quality = meta_dic['quality'][code]
-                        console.log( quality)
                         quality_code = [meta[0]]
-
                         method = meta_dic['method'][meta[1]]
                         sourcedescription = meta_dic['source'][meta[2]]
                         organization = meta_dic['organization'][meta[2]]
-                        //console.log(method)
-
-                        m_xval = []
-                        m_yval = []
-                        //for (test in master_values[val]) {
-                        //    console.log(test)
-                        //    m_xval.push(master_values[val][test])
-                        //    m_yval.push(test)
-                        //}
                         m_yval = master_times[val]
-                        m_xval = master_values[val]
                         boxplot = master_boxplot[val]
                         mean = master_stat[val][0]
                         median = master_stat[val][1]
                         max = master_stat[val][2]
                         min = master_stat[val][3]
-                        //console.log(m_yval)
-                        //console.log(m_xval)
-                        //console.log(m_yval)
+                        m_xval = master_values[val]
                         count = m_xval.length
-
-                        //console.log(master_values['1aa8480aa1'])
-
+                        var site_name = json.site_name
+                        var variable_name = json.variable_name
+                        var unit = json.units
+                        var datatype = json.datatype
+                        var valuetype = json.valuetype
+                        var samplemedium = json.samplemedium
+                        var timesupport = json.timesupport
+                        var timeunit = json.timeunit
+                        var boxplot_count = number
+                        if (site_name == null) {
+                            site_name = "N/A"
+                        }
+                        if (variable_name == null) {
+                            variable_name = "N/A"
+                        }
+                        if (organization == null) {
+                            organization = "N/A"
+                        }
+                        if (quality == null) {
+                            quality = "N/A"
+                        }
+                        if (method == null) {
+                            method = "N/A"
+                        }
+                        if (datatype == null) {
+                            datatype = "N/A"
+                        }
+                        if (valuetype == null) {
+                            valuetype = "N/A"
+                        }
+                        if (unit == null) {
+                            unit = 'N/A'
+                        }
+                        if (timesupport == null) {
+                            timesupport = "N/A"
+                        }
+                        if (timeunit == null || timeunit == ' ') {
+                            timeunit = "N/A"
+                        }
+                        if (sourcedescription == null) {
+                            sourcedescription = "N/A"
+                        }
+                        if (samplemedium == null) {
+                            samplemedium = "N/A"
+                        }
                         if (units != null) {
                             units = units.replace(/\s+/g, '');//removes any spaces in the units
                         }
@@ -293,12 +271,9 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                         same_unit = 1//goes to 2 when more than one unit type is graphed
                         yaxis = 0 //tracks which dataset set goes on which axis
                         var y_title = null;//tracks which variable to use for the yaxis title
-
-
                         max1 = json.max
                         min1 = json.min
                         test = []
-
                         for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
                         {
 
@@ -341,68 +316,20 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                                 }
                             }
                         }
-                        var site_name = json.site_name
-                        var variable_name = json.variable_name
-                        var unit = json.units
-                        var datatype = json.datatype
-                        var valuetype = json.valuetype
-                        var samplemedium = json.samplemedium
-                        //var stdev = json.stdev
-                        var timesupport = json.timesupport
-                        var timeunit = json.timeunit
-                        var boxplot_count = number
 
-                        if (site_name == null) {
-                            site_name = "N/A"
-                        }
-                        if (variable_name == null) {
-                            variable_name = "N/A"
-                        }
-                        if (organization == null) {
-                            organization = "N/A"
-                        }
-                        if (quality == null) {
-                            quality = "N/A"
-                        }
-                        if (method == null) {
-                            method = "N/A"
-                        }
-                        if (datatype == null) {
-                            datatype = "N/A"
-                        }
-                        if (valuetype == null) {
-                            valuetype = "N/A"
-                        }
-                        if (unit == null) {
-                            unit = 'N/A'
-                        }
-                        if (timesupport == null) {
-                            timesupport = "N/A"
-                        }
-                        if (timeunit == null || timeunit == ' ') {
-                            timeunit = "N/A"
-                        }
-                        if (sourcedescription == null) {
-                            sourcedescription = "N/A"
-                        }
-                        if (samplemedium == null) {
-                            samplemedium = "N/A"
-                        }
-                        number = number + 1;
+
 
                         if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
 
                             if (max > ymax) {
                                 ymax = max
                             }
-                            //console.log(ymin)
-                            //console.log(min)
                             if (min < ymin) {
                                 ymin = min
                             }
-                            //console.log(ymin)
                             var newSeries =
                             {
+                                //type: "scatter",
                                 type: "line",
                                 axisYType: "primary",
                                 //axisYType:"secondary",
@@ -414,73 +341,34 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                                 name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
                                 dataPoints: data1
                             };
-                            //console.log("data pushed 0 " + site_name)
                             chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
                             chart.options.axisY.titleWrap = true
                             chart.options.data.push(newSeries);
-                            //setting the view of the graph
-                            //console.log(ymin)
-                            //console.log(ymax)
-
-
                             maxview = roundUp(Math.ceil(ymax))
                             maxview = maxview+0.1*maxview
                             minview = roundDown(Math.floor(ymin))
                             minview = minview+minview*.1
-                            //minview=ymin
-
-
-                            //console.log(minview)
-                            //console.log(maxview)
-                            //console.log(interval)
-
-                            //maxview = (Math.ceil((maxview / interval)) * interval)
                             interval = (maxview - minview) / 10
                             if(minview<0){
-                                //minview = (Math.floor((minview / interval)) * interval)
-                                //console.log(minview)
-                                //interval = (maxview-minview) /10
-                                ////minview = (Math.floor((minview / interval)) * interval)
-                                //console.log(interval)
-                                //console.log(minview)
                                 maxview = 10*interval+minview
-                                //console.log(maxview)
                                 rem = minview/interval
                                 rem1 = Math.floor(rem)
                                 rem2 = rem1-rem
                                 minview = (rem2*interval+minview).toFixed(2)
-                                //minview=minview+(minview%interval)
-                                //console.log(minview)
-                                //
-                                //console.log(maxview)
                                 rema = maxview/interval
                                 rem1a = Math.ceil(rema)
                                 rem2a = rem1a-rema
                                 maxview = (rem2a*interval+maxview+maxview *.01).toFixed(2)
-                                //console.log(maxview)
                             }
                             else{
                                 interval = (maxview - minview) / 11
                                 minview = (Math.ceil((minview / interval)) * interval)}
-
-                            //
-                            //console.log(interval)
-                            //console.log(minview)
-
-                            // maxview = minview+10*interval
-
-
-
-
-                            //console.log(maxview)
-
                             chart.options.axisY.viewportMaximum = maxview
                             chart.options.axisY.maximum = maxview
                             chart.options.axisY.viewportMinimum = minview
                             chart.options.axisY.minimum = minview
                             chart.options.axisY.interval = interval
                             console.log(chart)
-                            //console.log("chart graphed")
                         }
                         else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
                             if (max > y2max) {
@@ -506,47 +394,29 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                             chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
                             chart.options.axisY2.titleWrap = true
                             chart.options.data.push(newSeries);
-
-
                             maxview2 = roundUp(Math.ceil(y2max))
                             minview2 = roundDown(Math.floor(y2min))
-                            //maxview2 = y2max
-                            //minview2 =y2min
                             interval2 = ((maxview2 - minview2) / 10)
-                            //minview2 = minview2-interval2
                             if(minview2<0){
-                                //minview = (Math.floor((minview / interval)) * interval)
                                 console.log(minview2)
-                                //interval = (maxview-minview) /10
-                                //minview = (Math.floor((minview / interval)) * interval)
                                 console.log(interval2)
                                 console.log(minview2)
                                 maxview = 10*interva2l+minview2
-                                //console.log(maxview)
                                 rem = minview2/interval2
                                 rem1 = Math.floor(rem)
                                 rem2 = rem1-rem
                                 minview = (rem2*interval2+minview2).toFixed(2)
-                                //minview=minview+(minview%interval)
-                                console.log(minview2)
-
-                                console.log(maxview2)
                                 rema = maxview2/interval2
                                 rem1a = Math.ceil(rema)
                                 rem2a = rem1a-rema
                                 maxview2 = (rem2a*interval2+maxview2).toFixed(2)
-                                console.log(maxview)
                             }
                             else{
                                 interval2 = ((maxview2 - minview2) / 11)
                                 minview2 = (Math.ceil((minview2 / interval2)) * interval2)}
-
-
                             chart.options.axisY2.viewportMaximum = maxview2
                             chart.options.axisY2.viewportMinimum = minview2
                             chart.options.axisY2.interval = interval2
-
-
                         }
                         else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
                             var newSeries =
@@ -592,9 +462,7 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                             if (quality.length > 20) {
                                 quality = '(' + quality_code + ') ' + quality.substring(0, quality.indexOf(' ') + 1) + '...'
                             }
-
                         }
-
                         var dataset = {
                             legend: legend,
                             organization: organization,
@@ -615,24 +483,22 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                             median: median,
                             max: max,
                             min: min,
-                            //stdev: stdev,
                             boxplot: boxplot,
                             boxplot_count: boxplot_count
                         }
-                        var table = $('#data_table').DataTable();
-                        table.row.add(dataset).draw();
-                        //end new table
-                        chart.render();
-                        series_counter = length_master + series_counter - 1
+                        var table = $('#data_table').DataTable();//defines the primary table
+                        table.row.add(dataset).draw();//adds data from the time series to the primary table
+                        chart.render();//updated chart with new values
+                        console.log(length_master)
 
-
+                        number = number + 1;
                     }
-
                 }
-                number2 = number2 + 1
-            }
+            //    end of looping through timeseries
 
-            if (number2 == number1 - 1)//checks to see if all the data is loaded before displaying
+            }
+            console.log(end_of_resources)
+            if (end_of_resources == true )//checks to see if all the data is loaded before displaying
             {
                 if (title == 1) {
                     //chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
@@ -646,6 +512,8 @@ function add_series_to_chart(chart, res_id, number1, unit_off,id_qms) {
                 }
                 finishloading();
             }
+
+
 
         },
         error: function () {
@@ -661,13 +529,9 @@ function roundUp(x){
         x *= -1;
     }
     var y = Math.pow(10, x.toString().length-1);
-    //console.log(x)
-    //console.log(y)
     x = (x/y);
     x = Math.ceil(x);
-    //console.log(x)
     x = x*y;
-    //console.log(x)
     if(negative)
     {
         x *= -1;
@@ -675,8 +539,6 @@ function roundUp(x){
     return x;
 }
 function roundDown(x){
-    //console.log(x)
-    //console.log(x)
     var negative = false;
     if(x<10 && x>=0){
         x = 0
@@ -684,7 +546,6 @@ function roundDown(x){
         return x
     }
     else if(x <1 && x>=-1){
-        //console.log("small")
         x=1
         negative = true
     }
@@ -711,7 +572,6 @@ function roundDown(x){
 
     if(negative){
         x *= -1;
-        //console.log(x)
         return x;
     }
     else{
@@ -741,10 +601,10 @@ function myFunc(id, name) {
                 '<input type="radio" id ="r2" name ="units" value=' + unit2 + '>' + unit2 + '<br>' +
                 '<button class="btn btn-danger" id="change_unit" onclick ="multipletime()" >submit</button>'
             $('#' + id).attr('checked', false);
-            $('#hello2').html("")
-            $('#hello2').append(test1)
+            $('#unit_selector_info').html("")
+            $('#unit_selector_info').append(test1)
             unit3 = chk_unit
-            var popupDiv = $('#hello');
+            var popupDiv = $('#unit_selector');
             popupDiv.modal('show');
             check_unit.length = 0;
         }
@@ -756,7 +616,6 @@ function myFunc(id, name) {
 }
 
 var popupDiv = $('#welcome-popup');
-//end new table
 $(document).ready(function (callback) {
     console.log("ready")
 
@@ -764,7 +623,6 @@ $(document).ready(function (callback) {
     var wu = find_query_parameter("WofUri");
     var src = find_query_parameter("src");
     var source = $('#source').text()
-
     if (source == "['cuahsi']"){
         src='cuahsi'
     }
@@ -774,13 +632,6 @@ $(document).ready(function (callback) {
     else{
         src =null
     }
-
-
-    //cuahsi_ids = JSON.parse(cuahsi_ids)
-    //for (id in cuahsi_ids){
-    //    console.log(cuahsi_ids[id])
-    //}
-
     var table = $('#data_table').DataTable({
         "createdRow": function (row, data, dataIndex) {
             if (number == 0 || number%10 ==0) {
@@ -1000,37 +851,34 @@ function finishloading(callback) {
 
 
 }
-var series_counter =0
+
 function addingseries(unit_off) {
     var src = find_query_parameter("src");
+    var series_counter =0
     var source = $('#source').text()
+    var end_of_resources = false
     if (source == "['cuahsi']"){
         src='cuahsi'
     }
     else if (source != "['cuahsi']"){
         src ='hydroshare'
-
     }
     if (src =='cuahsi'){
         var res_id=$('#cuahsi_ids').text()
         var quality=$('#quality').text()
         var method=$('#method').text()
         var sourceid=$('#sourceid').text()
-
         res_id =trim_input(res_id)
         quality =trim_input(quality)
         method =trim_input(method)
         sourceid =trim_input(sourceid)
-
     }
     else if(src=='hydroshare'){
         var res_id = find_query_parameter("res_id");
-
         if (res_id != null) {
             res_ids = res_id.split(",");
             res_id = trim_input(res_id)
         }
-
         else {
             res_ids = ''
             $('#loading').hide();
@@ -1038,7 +886,7 @@ function addingseries(unit_off) {
 
     }
 
-    var series_counter = 0
+    //var series_counter = 0
     if (unit_off == null) {
         unit_off = ''
     }
@@ -1046,6 +894,7 @@ function addingseries(unit_off) {
     for (var r in res_id) {
         series_counter = series_counter + 1
     }
+    console.log(series_counter)
     CanvasJS.addColorSet("greenShades",
         [//colorSet Array
             "#ec3131",
@@ -1064,49 +913,33 @@ function addingseries(unit_off) {
     counter2 = 0
 
     for (var id in res_id){
-
         xtime = []
         counter1.push(counter);
-        //console.log(series_counter)
-
-
-
-
         if( src =='cuahsi'){
-
             if(quality[id]=='null' || quality[id]=='None')
             {quality1=''}
             else{quality1 = quality[id]}
             if(method[id]=='null' || method[id]=='None')
             {method1=''}
             else{method1 = method[id]}
-
             if(sourceid[id]=='null' ||sourceid[id]=='None')
             {sourceid1=''}
             else{sourceid1 = sourceid[id]}
-
-
-
             id_qms =  quality1 +'aa'+method1+'aa'+sourceid1
         }
         else{
             id_qms="meta"
         }
-
-        add_series_to_chart(chart, res_id[id], series_counter, unit_off,id_qms);
         counter2 = counter2 + 1
+        if (counter2 ==series_counter){end_of_resources =true}
+
+        add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms);
+
 
     }
-    //for (var res_id in res_ids) {
-    //    xtime = []
-    //    counter1.push(counter);
-    //    //console.log(series_counter)
-    //    add_series_to_chart(chart, res_ids[res_id], series_counter, unit_off);
-    //    counter2 = counter2 + 1
-    //}
 }
 function multipletime() {
-    var popupDiv = $('#hello');
+    var popupDiv = $('#unit_selector');
     var chart = $("#chartContainer").CanvasJSChart()
     popupDiv.modal('hide');
     $('#stat_div').hide();
@@ -1124,7 +957,6 @@ function multipletime() {
     y2max=0
     y2min=0
     var table = $('#data_table').DataTable();
-    number2 = -1
     number  = -1
     table
         .clear()
@@ -1191,7 +1023,7 @@ function launchByuHydroshareApp() {
             var row = selectedRows[ii];
             var item = { 'WofUri': (row.WofUri.split(extension))[0],
                 'QCLID': row.QCLID,
-                //'MethodId': 'hello',
+
                 'MethodId': row.MethodId,
                 'SourceId': row.SourceId
             };
@@ -1238,7 +1070,6 @@ function launchByuHydroshareApp() {
                     '<input type="hidden" name="WofUri" value="' + item.WofUri + '">' +
                     '<input type="hidden" name="QCLID" value="' + item.QCLID + '">' +
                     '<input type="hidden" name="MethodId" value="' + item.MethodId + '">' +
-                        //'<input type="hidden" name="MethodId" value="' + 'hello' + '">' +
                     '<input type="hidden" name="SourceId" value="' + item.SourceId + '">' +
                     '</li>'
                 );
@@ -1260,4 +1091,11 @@ function trim_input(string){
     string =string.split(',')
     return string
 }
-//http://127.0.0.1:8000/apps/timeseries-viewer/chart_data/c05c66a77b2348639a122ade5e9e9870/meta/hydroshare/
+function find_query_parameter(name) {
+    url = location.href;
+    //name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+    var regexS = "[\\?&]" + name + "=([^&#]*)";
+    var regex = new RegExp(regexS);
+    var results = regex.exec(url);
+    return results == null ? null : results[1];
+}
