@@ -144,8 +144,6 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                 }
                 id_qms_a = id_qms_a_split[0]+'aa'+id_qms_a_split[1]+'aa'+id_qms_a_split[2]
                 val1 = meta1[0]+'aa'+meta1[1]+'aa'+meta1[2]
-                console.log(val1)
-                console.log(id_qms_a)
 
                 if(val1 !=id_qms_a){
                     bad_meta_counter +=1
@@ -155,20 +153,20 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                 bad_meta = true
             }
             id_qms_a_split = id_qms.split('aa')
-            console.log(id_qms_a_split)
+
             //console.log(master_values)
 
             if (master_counter == true){
 
                 for (val in master_values) {
-                    console.log(bad_meta)
+
                     if(bad_meta == true){
                         val1 =''
                         id_qms_a=''
                     }
                     else {
                         meta1 = val.split("aa");
-                        console.log(meta_dic)
+
                         if (id_qms != 'meta') {
 
                             if (id_qms_a_split[0] == '') {
@@ -197,7 +195,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                         m_xval = []
                         m_yval = []
                         length_master = length_master + 1
-                        console.log(length_master)
+
                         master_id.push(val)
                         meta = val.split("aa");
                         code = meta_dic['quality_code'][meta[0]]
@@ -368,7 +366,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                             chart.options.axisY.viewportMinimum = minview
                             chart.options.axisY.minimum = minview
                             chart.options.axisY.interval = interval
-                            console.log(chart)
+
                         }
                         else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
                             if (max > y2max) {
@@ -398,9 +396,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                             minview2 = roundDown(Math.floor(y2min))
                             interval2 = ((maxview2 - minview2) / 10)
                             if(minview2<0){
-                                console.log(minview2)
-                                console.log(interval2)
-                                console.log(minview2)
+
                                 maxview = 10*interva2l+minview2
                                 rem = minview2/interval2
                                 rem1 = Math.floor(rem)
@@ -489,7 +485,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                         var table = $('#data_table').DataTable();//defines the primary table
                         table.row.add(dataset).draw();//adds data from the time series to the primary table
                         chart.render();//updated chart with new values
-                        console.log(length_master)
+
 
                         number = number + 1;
                     }
@@ -497,7 +493,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
             //    end of looping through timeseries
 
             }
-            console.log(end_of_resources)
+
             if (end_of_resources == true )//checks to see if all the data is loaded before displaying
             {
                 if (title == 1) {
@@ -621,7 +617,7 @@ $(document).ready(function (callback) {
 
     var src = find_query_parameter("SourceId");
     var wu = find_query_parameter("WofUri");
-    var src = find_query_parameter("src");
+
     var source = $('#source').text()
     if (source == "['cuahsi']"){
         src='cuahsi'
@@ -894,7 +890,7 @@ function addingseries(unit_off) {
     for (var r in res_id) {
         series_counter = series_counter + 1
     }
-    console.log(series_counter)
+
     CanvasJS.addColorSet("greenShades",
         [//colorSet Array
             "#ec3131",
