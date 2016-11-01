@@ -23,8 +23,8 @@ def list_apps(request):
     Controller for the list_apps page.
     """
     app1 = {'name': 'Data Series Viewer',
-            # 'url': 'http://appsdev.hydroshare.org/apps/timeseries-viewer',
-            'url': 'http://apps.hydroshare.org/apps/timeseries-viewer',
+            'url': 'http://appsdev.hydroshare.org/apps/timeseries-viewer',
+            # 'url': 'http://apps.hydroshare.org/apps/timeseries-viewer',
             'description': 'View graph and descriptive statistics for selected time series',
             'min_series': 1,
             'max_series': 5,
@@ -44,6 +44,13 @@ def list_apps(request):
             'max_series': 1,
             'icon': 'http://appsdev.hydroshare.org/static/gap_filler_tool/images/icon.gif',
             }
+    app4 = {'name': 'HydroShare Resource Creator',
+            'url': 'http://appsdev.hydroshare.org/apps/hydroshare-resource-creator',
+            'description': 'Creates a HydroShare resource from selected time series',
+            'min_series': 1,
+            'max_series': 10,
+            'icon': 'http://appsdev.hydroshare.org/static/hydroshare_resource_creator/images/icon.gif',
+            }
 
-    # return JsonResponse({"apps":[app1, app2, app3]})
-    return JsonResponse({"apps":[app1]})
+    return JsonResponse({"apps":[app1, app2, app3, app4]})
+    # return JsonResponse({"apps":[app1]})

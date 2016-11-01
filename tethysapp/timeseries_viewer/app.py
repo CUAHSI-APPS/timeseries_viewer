@@ -58,5 +58,6 @@ class TimeSeriesViewer(TethysAppBase):
                            url='test',
                            controller='timeseries_viewer.controllers.test')
 
+
         )
         return url_maps

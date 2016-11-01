@@ -45,9 +45,7 @@ def get_version(root):
     return wml_version
 
 def parse_1_0_and_1_1(root,id_qms):
-
     root_tag = root.tag.lower()
-    dic= None
     boxplot = []
     master_values=collections.OrderedDict()
     master_times = collections.OrderedDict()
@@ -60,12 +58,6 @@ def parse_1_0_and_1_1(root,id_qms):
     m_des = None
     m_code = None
     m_org =None
-    quality = None
-    quality1=None
-    source=None
-    source1=None
-    method =None
-    method1=None
     x_value = []
     y_value = []
     master_counter =True
@@ -73,14 +65,11 @@ def parse_1_0_and_1_1(root,id_qms):
     timeunit=None
     sourcedescription = None
     timesupport =None
-    # metadata items
-    units, site_name, variable_name,quality,method, organization = None, None, None, None, None, None
+    units, site_name, variable_name,quality,method,organization = None, None, None, None, None, None
     unit_is_set = False
     datatype = None
     valuetype = None
     samplemedium = None
-    # we only display the first 50000 values
-    threshold = 50000000
     try:
         if 'timeseriesresponse' in root_tag or 'timeseries' in root_tag or "envelope" in root_tag or 'timeSeriesResponse' in root_tag:
 
@@ -128,7 +117,6 @@ def parse_1_0_and_1_1(root,id_qms):
                             timeunit =element.text
                         if"sourceDescription"== tag or "SourceDescription"==tag:
                             sourcedescription =element.text
-
                         if "method" ==tag.lower():
                             try:
                                 mid = element.attrib['methodID']
@@ -136,9 +124,6 @@ def parse_1_0_and_1_1(root,id_qms):
                                 mid =None
                                 m_code =''
                             for subele in element:
-                                bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
-                                tag1 = element.tag[bracket_lock+1:]
-                                # Takes only actual tag, no namespace
                                 if 'methodcode' in subele.tag.lower() and m_code=='':
                                     m_code = subele.text
                                     m_code = m_code.replace(" ","")
@@ -159,15 +144,9 @@ def parse_1_0_and_1_1(root,id_qms):
                                 m_code =''
 
                             for subele in element:
-                                bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
-                                tag1 = element.tag[bracket_lock+1:]
-
-                                # Takes only actual tag, no namespace
                                 if 'sourcecode' in subele.tag.lower() and m_code =='':
                                     m_code = subele.text
                                     m_code = m_code.replace(" ","")
-
-
                                 if sid!= None:
                                     m_code = element.attrib['sourceID']
                                     m_code = m_code.replace(" ","")
@@ -175,23 +154,15 @@ def parse_1_0_and_1_1(root,id_qms):
                                     m_des = subele.text
                                 if 'organization' in subele.tag.lower():
                                     m_org = subele.text
-
                             meta_dic['source'].update({m_code:m_des})
                             meta_dic['organization'].update({m_code:m_org})
-
-
                         if "qualitycontrollevel" ==tag.lower():
                             try:
                                 qlc= element.attrib['qualityControlLevelID']
                             except:
                                 qlc =None
                                 m_code =''
-
                             for subele in element:
-                                bracket_lock = subele.tag.index('}')  # The namespace in the tag is enclosed in {}.
-                                tag1 = element.tag[bracket_lock+1:]
-                                # Takes only actual tag, no namespace
-
                                 if  qlc !=None:
                                     m_code =element.attrib['qualityControlLevelID']
                                     m_code = m_code.replace(" ","")
@@ -207,12 +178,10 @@ def parse_1_0_and_1_1(root,id_qms):
                             meta_dic['quality_code'].update({m_code1:m_code})
                         # print meta_dic
                     elif 'value' == tag:
-
                         try:
                             n = element.attrib['dateTimeUTC']
                         except:
                             n =element.attrib['dateTime']
-
                         try:
                             quality= element.attrib['qualityControlLevelCode']
                         except:
@@ -223,7 +192,6 @@ def parse_1_0_and_1_1(root,id_qms):
                             quality1 =''
                         if quality =='' and quality1 != '':
                             quality = quality1
-
                         try:
                             method = element.attrib['methodCode']
                         except:
@@ -234,7 +202,6 @@ def parse_1_0_and_1_1(root,id_qms):
                             method1=''
                         if method =='' and method1 != '':
                                 method = method1
-
                         try:
                             source = element.attrib['sourceCode']
                         except:
@@ -573,93 +540,94 @@ def read_error_file(xml_file):
         return {'status': 'invalid WaterML file'}
 
 def unzip_waterml(request, res_id,src,res_id2,xml_id):
-    temp_dir = get_workspace()
-    file_data =None
-    # get the URL of the remote zipped WaterML resource
-    if not os.path.exists(temp_dir+"/id"):
-        os.makedirs(temp_dir+"/id")
 
-    if 'cuahsi'in src :
-        url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
-    elif 'hydroshare' in src:
-        hs = controllers.getOAuthHS(request)
-        file_path = get_workspace() + '/id'
-        hs.getResource(res_id, destination=file_path, unzip=True)
-        root_dir = file_path + '/' + res_id
-        data_dir = root_dir + '/' + res_id + '/data/contents/'
-        # f = open(data_dir)
-        # print f.read()
-        for subdir, dirs, files in os.walk(data_dir):
-            for file in files:
-                if  'wml_1_' in file:
-                    data_file = data_dir + file
-                    with open(data_file, 'r') as f:
-                        # print f.read()
-                        file_data = f.read()
-                        f.close()
-                        file_temp_name = temp_dir + '/id/' + res_id + '.xml'
-                        file_temp = open(file_temp_name, 'wb')
-                        file_temp.write(file_data)
-                        file_temp.close()
-    elif "xmlrest" in src:
-        url_zip = res_id2
-        res = urllib.unquote(res_id2).decode()
-        r = requests.get(res, verify=False)
-        file_data = r.content
-        file_temp_name = temp_dir + '/id/'+xml_id+'.xml'
-        file_temp = open(file_temp_name, 'wb')
-        file_temp.write(file_data)
-        file_temp.close()
-    else:
-        url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
+        temp_dir = get_workspace()
+        file_data =None
+        # get the URL of the remote zipped WaterML resource
+        if not os.path.exists(temp_dir+"/id"):
+            os.makedirs(temp_dir+"/id")
+
+        if 'cuahsi'in src :
+            url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
+        elif 'hydroshare' in src:
+            hs = controllers.getOAuthHS(request)
+            file_path = get_workspace() + '/id'
+            hs.getResource(res_id, destination=file_path, unzip=True)
+            root_dir = file_path + '/' + res_id
+            data_dir = root_dir + '/' + res_id + '/data/contents/'
+            # f = open(data_dir)
+            # print f.read()
+            for subdir, dirs, files in os.walk(data_dir):
+                for file in files:
+                    if  'wml_1_' in file:
+                        data_file = data_dir + file
+                        with open(data_file, 'r') as f:
+                            # print f.read()
+                            file_data = f.read()
+                            f.close()
+                            file_temp_name = temp_dir + '/id/' + res_id + '.xml'
+                            file_temp = open(file_temp_name, 'wb')
+                            file_temp.write(file_data)
+                            file_temp.close()
+        elif "xmlrest" in src:
+            url_zip = res_id2
+            res = urllib.unquote(res_id2).decode()
+            r = requests.get(res, verify=False)
+            file_data = r.content
+            file_temp_name = temp_dir + '/id/'+xml_id+'.xml'
+            file_temp = open(file_temp_name, 'wb')
+            file_temp.write(file_data)
+            file_temp.close()
+        else:
+            url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
 
 
-    if src != 'hydroshare_generic' and src != 'xmlrest' and src !='hydroshare':
-        try:
-            r = requests.get(url_zip, verify=False)
-            z = zipfile.ZipFile(StringIO.StringIO(r.content))
-            file_list = z.namelist()
+        if src != 'hydroshare_generic' and src != 'xmlrest' and src !='hydroshare':
             try:
-                for file in file_list:
-                    if 'hydroshare' in src:
-                        if 'wml_1_' in file:
+                r = requests.get(url_zip, verify=False)
+                z = zipfile.ZipFile(StringIO.StringIO(r.content))
+                file_list = z.namelist()
+                try:
+                    for file in file_list:
+                        if 'hydroshare' in src:
+                            if 'wml_1_' in file:
+                                file_data = z.read(file)
+                                file_temp_name = temp_dir + '/id/' + res_id + '.xml'
+                                file_temp = open(file_temp_name, 'wb')
+                                file_temp.write(file_data)
+                                file_temp.close()
+                        else:
                             file_data = z.read(file)
                             file_temp_name = temp_dir + '/id/' + res_id + '.xml'
                             file_temp = open(file_temp_name, 'wb')
                             file_temp.write(file_data)
                             file_temp.close()
-                    else:
-                        file_data = z.read(file)
-                        file_temp_name = temp_dir + '/id/' + res_id + '.xml'
-                        file_temp = open(file_temp_name, 'wb')
-                        file_temp.write(file_data)
-                        file_temp.close()
-            # error handling
+                # error handling
 
-            # checks to see if data is an xml
-            except etree.XMLSyntaxError as e:
-                print "Error:Not XML"
-                error_report("Error:Not XML")
-                return False
+                # checks to see if data is an xml
+                except etree.XMLSyntaxError as e:
+                    print "Error:Not XML"
+                    error_report("Error:Not XML")
+                    return False
 
-            # checks to see if Url is valid
-            except ValueError, e:
-                error_report("Error:invalid Url")
-                print "Error:invalid Url"
-                return False
+                # checks to see if Url is valid
+                except ValueError, e:
+                    error_report("Error:invalid Url")
+                    print "Error:invalid Url"
+                    return False
 
-            # checks to see if xml is formatted correctly
-            except TypeError, e:
-                error_report("Error:string indices must be integers not str")
-                print "Error:string indices must be integers not str"
-                return False
+                # checks to see if xml is formatted correctly
+                except TypeError, e:
+                    error_report("Error:string indices must be integers not str")
+                    print "Error:string indices must be integers not str"
+                    return False
 
-        # check if the zip file is valid
-        except zipfile.BadZipfile as e:
-                error_message = "Bad Zip File"
-                error_report(error_message)
-                print "Bad Zip file"
-                return False
+            # check if the zip file is valid
+            except zipfile.BadZipfile as e:
+                    error_message = "Bad Zip File"
+                    error_report(error_message)
+                    print "Bad Zip file"
+
 # finds the waterML file path in the workspace folder
 def waterml_file_path(res_id,xml_rest,xml_id):
     base_path = get_workspace()

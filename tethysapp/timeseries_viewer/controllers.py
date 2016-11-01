@@ -17,6 +17,7 @@ import uuid
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
+import urllib
 # -- coding: utf-8--
 
 # helper controller for fetching the WaterML file
@@ -66,32 +67,23 @@ def home(request):
     ids=[]
     meta =[]
     source=[]
-
     quality=[]
     method=[]
     sourceid=[]
 
-    # print datetime.now()
-    # print hash(['hel','test'])
     try: #Check to see if request if from CUAHSI. For data validation
         request_url = request.META['HTTP_REFERER']
 
     except:
         request_url ="test"
-    print request_url
-
-
-    data = request.META['QUERY_STRING']
-    data = data.encode(encoding ='UTF-8')
-    print data
+    data = request.META['QUERY_STRING']#stores all values in the query string
+    data = data.encode(encoding ='UTF-8')#encodes the data string to avoid having unicode character in string
     data  =data.split('&')
     for e in data:
         s= e.split('=')
         meta.append(s)
-    print data
-    print meta
     for e in meta:
-        print e[0]
+        print e
         if e[0] == 'Source':
             source.append(e[1])
         if e[0] == 'WofUri':
@@ -103,51 +95,23 @@ def home(request):
         if e[0] == 'SourceId':
             sourceid.append(e[1])
 
-    # source = request.POST.getlist('Source')
-    # id = request.POST.getlist('WofUri')
-    # quality = request.POST.getlist('QCLID')
-    # method = request.POST.getlist('MethodId')
-    # sourceid = request.POST.getlist('SourceId')
-    #
-    #
-    # source= [i.encode('UTF8')for i in source]
-    # ids= [i.encode('UTF8')for i in id]
-    # quality= [i.encode('UTF8')for i in quality]
-    # method= [i.encode('UTF8')for i in method]
-    # sourceid= [i.encode('UTF8')for i in sourceid]
-    # for i in id:
-    #     i=i.encode('UTF8')
-    #     ids.append(i)
-
-    # cuahsi_ids = ['h','j']
     utilities.viewer_counter(request)
-    # r = requests.get('http://tethys.byu.edu/apps/gaugeviewwml/waterml/?gaugeid=10254970&start=2016-06-24&end=2016-07-08', verify=False)
-    # print r.content
-    # getOAuthHS(request)
+    #the parametes passed from CUAHSI are stored in a hidden div on the home page so that the js file is able to read them
     context = {'source':source,
                'cuahsi_ids':ids,
                'quality':quality,
                'method':method,
-               'sourceid':sourceid
+               'sourceid':sourceid,
+
                }
     return render(request, 'timeseries_viewer/home.html', context)
 @csrf_exempt
 @login_required()
+#seperate handler for request originating from hydroshare.org
 def hydroshare(request):
     utilities.viewer_counter(request)
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
-
-    # Code for getting waterml from hydroshare
-
-    # modify utilites method to get generic resource .txt file with parameters for accessing waterml from the hydroserver
-
-    # these parameters come from the generic txt file from hydroshare
-    # service_url = 'http://worldwater.byu.edu/interactive/snotel/services/index.php/cuahsi_1_1.asmx?WSDL'
-    #        site_code =
-    #        variable_code =
-    #        client = connect_wsdl_url(service_url)
-    #        response = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
 
 def getOAuthHS(request):
     hs_instance_name = "www"
@@ -159,52 +123,8 @@ def getOAuthHS(request):
     auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
     hs = HydroShare(auth=auth, hostname=hs_hostname)
     return hs
-
-
-# def connect_wsdl_url(wsdl_url):
-#     try:
-#         client = Client(wsdl_url)
-#     except TransportError:
-#         raise Exception('Url not found')
-#     except ValueError:
-#         raise Exception('Invalid url')  # ought to be a 400, but no page implemented for that
-#     except SAXParseException:
-#         raise Exception("The correct url format ends in '.asmx?WSDL'.")
-#     except:
-#         raise Exception("Unexpected error")
-#     return client
-
-#
-# def write_file(request):
-#     sucess = {"File uploaded": "sucess"}
-#     temp_dir = utilities.get_workspace()
-#     file_temp_name = temp_dir + '/hydroshare/rtest.r'
-#     hs = getOAuthHS(request)
-#     abstract = 'My abstract'
-#     title = 'My resource script'
-#     keywords = ('my keyword 1', 'my keyword 2')
-#     rtype = 'ScriptResource'
-#     fpath = file_temp_name
-#     resource_id = hs.createResource(rtype, title, resource_file=fpath, keywords=keywords, abstract=abstract)
-#     # os.remove(file_temp_name)
-#     return JsonResponse(sucess)
-
-
-# def response(request):
-#     service_url = 'http://hydroportal.cuahsi.org/nwisdv/cuahsi_1_1.asmx?WSDL'
-#     site_code = '10147100'
-#     variable_code = 'NWISDV:00060'
-#     client = connect_wsdl_url(service_url)
-#     start_date = ''
-#     end_date = ''
-#     auth_token = ''
-#     response1 = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
-#     # response1 = {"File uploaded":"sucess"}
-#     return JsonResponse(response1)
-
 def view_counter(request):
     temp_dir = utilities.get_workspace()
-
     file_path = temp_dir[:-24] + 'view_counter.txt'
     file_temp = open(file_path, 'r')
     content = file_temp.read()
@@ -214,7 +134,6 @@ def error_report(request):
     print os.path.realpath('controllers.py')
     temp_dir = utilities.get_workspace()
     temp_dir = temp_dir[:-24]
-
     file_path = temp_dir + '/error_report.txt'
     if not os.path.exists(temp_dir+"/error_report.txt"):
         file_temp = open(file_path, 'a')
@@ -224,7 +143,6 @@ def error_report(request):
         file_temp = open(file_path, 'r')
         content = file_temp.read()
     return JsonResponse({"Error Reports":content})
-
 @csrf_exempt
 @never_cache
 def test(request):
@@ -251,7 +169,7 @@ def test(request):
 
     result["request.GET"] = request.GET
     result["request.POST"] = request.POST
-
+    r = requests.post('http://httpbin.org/post', files={'report.xls': open('report.xls', 'rb')})
     try:
         result["request.body"] = request.body
     except:
