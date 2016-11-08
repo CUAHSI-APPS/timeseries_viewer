@@ -263,14 +263,14 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                         if (units == null) {
                             units = "N/A";
                         }
+                        console.log(max)
+                        console.log(min)
                         var unit_off_bool = false
                         unit_tracker.push(units);//tracks the units of the different time series
                         unit_different2 = null;
                         same_unit = 1//goes to 2 when more than one unit type is graphed
                         yaxis = 0 //tracks which dataset set goes on which axis
                         var y_title = null;//tracks which variable to use for the yaxis title
-                        max1 = json.max
-                        min1 = json.min
                         test = []
                         for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
                         {
@@ -325,6 +325,8 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                             if (min < ymin) {
                                 ymin = min
                             }
+                            console.log(ymax)
+                            console.log(ymin)
                             var newSeries =
                             {
                                 //type: "scatter",
@@ -342,11 +344,14 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                             chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
                             chart.options.axisY.titleWrap = true
                             chart.options.data.push(newSeries);
+                            if(ymax==0 &&ymin==0){ymax=4.5,ymin=0}
                             maxview = roundUp(Math.ceil(ymax))
                             maxview = maxview+0.1*maxview
                             minview = roundDown(Math.floor(ymin))
                             minview = minview+minview*.1
                             interval = (maxview - minview) / 10
+                            console.log(minview)
+
                             if(minview<0){
                                 maxview = 10*interval+minview
                                 rem = minview/interval
@@ -357,10 +362,17 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                                 rem1a = Math.ceil(rema)
                                 rem2a = rem1a-rema
                                 maxview = (rem2a*interval+maxview+maxview *.01).toFixed(2)
+                                console.log(minview)
                             }
                             else{
                                 interval = (maxview - minview) / 11
-                                minview = (Math.ceil((minview / interval)) * interval)}
+                                console.log(interval)
+                                console.log(minview)
+                                minview = (Math.ceil((minview / interval)) * interval)
+                                console.log(minview)
+                            }
+                            console.log(maxview)
+                            console.log(minview)
                             chart.options.axisY.viewportMaximum = maxview
                             chart.options.axisY.maximum = maxview
                             chart.options.axisY.viewportMinimum = minview
@@ -392,6 +404,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                             chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
                             chart.options.axisY2.titleWrap = true
                             chart.options.data.push(newSeries);
+                            if(ymax2==0 &&ymin2==0){ymax2=4.5,ymin2=0}
                             maxview2 = roundUp(Math.ceil(y2max))
                             minview2 = roundDown(Math.floor(y2min))
                             interval2 = ((maxview2 - minview2) / 10)
@@ -509,7 +522,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                 finishloading();
             }
 
-
+            console.log(chart)
 
         },
         error: function () {
