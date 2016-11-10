@@ -263,8 +263,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                         if (units == null) {
                             units = "N/A";
                         }
-                        console.log(max)
-                        console.log(min)
+
                         var unit_off_bool = false
                         unit_tracker.push(units);//tracks the units of the different time series
                         unit_different2 = null;
@@ -325,8 +324,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                             if (min < ymin) {
                                 ymin = min
                             }
-                            console.log(ymax)
-                            console.log(ymin)
+
                             var newSeries =
                             {
                                 //type: "scatter",
@@ -350,7 +348,6 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                             minview = roundDown(Math.floor(ymin))
                             minview = minview+minview*.1
                             interval = (maxview - minview) / 10
-                            console.log(minview)
 
                             if(minview<0){
                                 maxview = 10*interval+minview
@@ -362,17 +359,15 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                                 rem1a = Math.ceil(rema)
                                 rem2a = rem1a-rema
                                 maxview = (rem2a*interval+maxview+maxview *.01).toFixed(2)
-                                console.log(minview)
+
                             }
                             else{
                                 interval = (maxview - minview) / 11
-                                console.log(interval)
-                                console.log(minview)
+
                                 minview = (Math.ceil((minview / interval)) * interval)
-                                console.log(minview)
+
                             }
-                            console.log(maxview)
-                            console.log(minview)
+
                             chart.options.axisY.viewportMaximum = maxview
                             chart.options.axisY.maximum = maxview
                             chart.options.axisY.viewportMinimum = minview
@@ -404,7 +399,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                             chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
                             chart.options.axisY2.titleWrap = true
                             chart.options.data.push(newSeries);
-                            if(ymax2==0 &&ymin2==0){ymax2=4.5,ymin2=0}
+                            if(y2max==0 &&y2min==0){y2max=4.5,y2min=0}
                             maxview2 = roundUp(Math.ceil(y2max))
                             minview2 = roundDown(Math.floor(y2min))
                             interval2 = ((maxview2 - minview2) / 10)
@@ -441,7 +436,6 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                                 dataPoints: data1
                             };
                             chart.options.data.push(newSeries);
-
                         }
                         chart.options.axisY.titleFontSize = 15
                         chart.options.axisY2.titleFontSize = 15
@@ -474,6 +468,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                         }
                         var dataset = {
                             legend: legend,
+                            number:number,
                             organization: organization,
                             name: site_name,
                             variable: variable_name,
@@ -497,13 +492,16 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                         }
                         var table = $('#data_table').DataTable();//defines the primary table
                         table.row.add(dataset).draw();//adds data from the time series to the primary table
+
                         chart.render();//updated chart with new values
 
+                        $('#data_table tbody tr:eq('+number+') td:eq(1)').click()
+                        $('#data_table tbody tr:eq('+number+') td:eq(1)').click()
 
                         number = number + 1;
                     }
                 }
-            //    end of looping through timeseries
+                //    end of looping through timeseries
 
             }
 
@@ -519,10 +517,18 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                     chart.options.title.text = "CUAHSI Data Series Viewer"
                     chart.render();
                 }
+                $('#data_table tbody tr:eq(0) td:eq(1)').click()
+                $('#data_table tbody tr:eq(0) td:eq(1)').click()
+                for (i = 0; i < number; i++) {
+                    $('#data_table tbody tr:eq('+i+') td:eq(1)').click()
+                    $('#data_table tbody tr:eq('+i+') td:eq(1)').click()
+
+                }
+
                 finishloading();
             }
 
-            console.log(chart)
+
 
         },
         error: function () {
@@ -722,6 +728,8 @@ $(document).ready(function (callback) {
     $('#data_table tbody').on('click', 'td.details-control', function () {
         var tr = $(this).closest('tr');
         var row = table.row(tr);
+
+        row_num = row[0][0]
         if (row.child.isShown()) {
             // This row is already open - close it
             row.child.hide();
@@ -780,6 +788,8 @@ function format(d) {
     // `d` is the original data object for the row
     name = 'container' + d.boxplot_count
     return '<div id = "container' + d.boxplot_count + '"class ="highcharts-boxplot" style = "float:right;height:300px;width:40%" ></div>' +
+        '<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">'+
+        '<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>'+
         '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:100px; margin-left:8.5%;font-size: 9pt">' +
         '<tr>' +
         '<td>Sample Medium:</td>' +
@@ -809,7 +819,15 @@ function format(d) {
         '<td>Source Description:</td>' +
         '<td>' + d.sourcedescription + '</td>' +
         '</tr>' +
+        '<tr>' +
+        '<td><label class="switch"> <input id= "'+d.number+'"type="checkbox"onClick ="scatter_line(this.id);"> <div class="slider round"></div> </label></td>' +
+        '<td>' +
+            '<div id="scatter'+ d.number+'">Click for Scatter Plot</div>' +
+            '<div id="line'+ d.number+'" style="display:none">Click for Line Plot</div>' +
+        '</td>' +
+        '</tr>' +
         '</table>';
+            //'<input type="checkbox" checked data-toggle="toggle">
 }
 
 function box(number) {
@@ -973,11 +991,44 @@ function multipletime() {
     addingseries(unit_off);
 }
 
-$('#reset').on('click', function () {
-    var chart = $("#chartContainer").CanvasJSChart()
-    chart.options.data = []
-    chart.render()
-})
+function toggleOn() {
+    //var chart = $("#chartContainer").CanvasJSChart()
+    //chart.options.data = []
+    //chart.render()
+    u =7
+    //for(i = 0; i < u; i++) {
+    //    for(p=0;p<u;p++){
+    //        $('#data_table tbody tr:eq('+p+') td:eq(1)').click()
+    //        x="$('#data_table tbody tr:eq('+p+') td:eq(1)').click()"
+    //        console.log(x)
+    //    }
+    //    console.log(i)
+    //
+    //    //$('#data_table tbody tr:eq('+i+') td:eq(1)').click()
+    //
+    //}
+    //$('#data_table tbody tr:eq(0) td:eq(1)').click()
+    //$('#data_table tbody tr:eq(0) td:eq(1)').click()
+
+    $('#data_table tbody tr:eq(3) td:eq(1)').click()
+    var table = $('#data_table').DataTable()
+    for(i = 0; i < u; i++) {
+        tr = i
+        var row = table.row(tr);
+        row.child(format(row.data())).show();
+        //row.child(format(row.data())).hide();
+
+    }
+    var tr = 3
+    for(i = 0; i < u; i++) {
+        tr = i
+        var row = table.row(tr);
+        row.child(format(row.data())).hide();
+        //row.child(format(row.data())).hide();
+
+    }
+
+}
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
@@ -1107,4 +1158,27 @@ function find_query_parameter(name) {
     var regex = new RegExp(regexS);
     var results = regex.exec(url);
     return results == null ? null : results[1];
+}
+function scatter_line(id){
+
+    var chart1 = $("#chartContainer").CanvasJSChart()
+    var selected_box = document.getElementById(id)
+    var check_unit = []
+    var chk_unit = document.getElementById(id).name;
+
+    var type = chart1.options.data[id].type
+    if(type =='line'){chart1.options.data[id].type = 'scatter'
+    $("#line"+ id ).show()
+    $('#scatter'+ id).hide()
+    }
+    else{chart1.options.data[id].type='line'
+    $('#scatter'+ id).show()
+    $('#line'+ id).hide()
+    }
+    chart1.render()
+    //res = selected_box.getAttribute("data-resid")
+    //if (series == true) {
+    //    chart1.options.data[id].visible = false
+    //    chart1.render();
+    //}
 }
