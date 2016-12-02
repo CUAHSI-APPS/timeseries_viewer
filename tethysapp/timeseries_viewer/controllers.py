@@ -105,9 +105,9 @@ def home(request):
 
                }
     return render(request, 'timeseries_viewer/home.html', context)
+#seperate handler for request originating from hydroshare.org
 @csrf_exempt
 @login_required()
-#seperate handler for request originating from hydroshare.org
 def hydroshare(request):
     utilities.viewer_counter(request)
     context = {}

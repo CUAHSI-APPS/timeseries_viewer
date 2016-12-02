@@ -280,6 +280,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                         }
 
                         data1 = xtime
+                        //console.log(data1)
                         if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
                         {
                             unit1 = unit_tracker[0];
@@ -499,6 +500,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
                         $('#data_table tbody tr:eq('+number+') td:eq(1)').click()
 
                         number = number + 1;
+                        //console.log(chart)
                     }
                 }
                 //    end of looping through timeseries
@@ -641,11 +643,13 @@ $(document).ready(function (callback) {
     if (source == "['cuahsi']"){
         src='cuahsi'
     }
-    else if (src =='hydroshare'){
-        src ='hydroshare'
-    }
+
     else{
-        src =null
+        var src1 = find_query_parameter("src");
+
+        if (src1 =='hydroshare'){src = src1}
+        else{src =null}
+
     }
     var table = $('#data_table').DataTable({
         "createdRow": function (row, data, dataIndex) {
@@ -820,11 +824,14 @@ function format(d) {
         '<td>' + d.sourcedescription + '</td>' +
         '</tr>' +
         '<tr>' +
+            '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:100px; margin-left:8.5%;font-size: 9pt">'+
+            '<td>Line Plot</td>'+
         '<td><label class="switch"> <input id= "'+d.number+'"type="checkbox"onClick ="scatter_line(this.id);"> <div class="slider round"></div> </label></td>' +
         '<td>' +
-            '<div id="scatter'+ d.number+'">Click for Scatter Plot</div>' +
-            '<div id="line'+ d.number+'" style="display:none">Click for Line Plot</div>' +
+            '<div id="scatter'+ d.number+'">Scatter Plot</div>' +
+            '' +
         '</td>' +
+        '</table>'+
         '</tr>' +
         '</table>';
             //'<input type="checkbox" checked data-toggle="toggle">
@@ -991,44 +998,7 @@ function multipletime() {
     addingseries(unit_off);
 }
 
-function toggleOn() {
-    //var chart = $("#chartContainer").CanvasJSChart()
-    //chart.options.data = []
-    //chart.render()
-    u =7
-    //for(i = 0; i < u; i++) {
-    //    for(p=0;p<u;p++){
-    //        $('#data_table tbody tr:eq('+p+') td:eq(1)').click()
-    //        x="$('#data_table tbody tr:eq('+p+') td:eq(1)').click()"
-    //        console.log(x)
-    //    }
-    //    console.log(i)
-    //
-    //    //$('#data_table tbody tr:eq('+i+') td:eq(1)').click()
-    //
-    //}
-    //$('#data_table tbody tr:eq(0) td:eq(1)').click()
-    //$('#data_table tbody tr:eq(0) td:eq(1)').click()
 
-    $('#data_table tbody tr:eq(3) td:eq(1)').click()
-    var table = $('#data_table').DataTable()
-    for(i = 0; i < u; i++) {
-        tr = i
-        var row = table.row(tr);
-        row.child(format(row.data())).show();
-        //row.child(format(row.data())).hide();
-
-    }
-    var tr = 3
-    for(i = 0; i < u; i++) {
-        tr = i
-        var row = table.row(tr);
-        row.child(format(row.data())).hide();
-        //row.child(format(row.data())).hide();
-
-    }
-
-}
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
@@ -1168,12 +1138,12 @@ function scatter_line(id){
 
     var type = chart1.options.data[id].type
     if(type =='line'){chart1.options.data[id].type = 'scatter'
-    $("#line"+ id ).show()
-    $('#scatter'+ id).hide()
+    //$("#line"+ id ).show()
+    //$('#scatter'+ id).hide()
     }
     else{chart1.options.data[id].type='line'
-    $('#scatter'+ id).show()
-    $('#line'+ id).hide()
+    //$('#scatter'+ id).show()
+    //$('#line'+ id).hide()
     }
     chart1.render()
     //res = selected_box.getAttribute("data-resid")

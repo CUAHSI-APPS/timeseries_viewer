@@ -21,6 +21,10 @@ from hs_restclient import HydroShare
 import controllers
 import operator
 import collections
+import json
+from suds.transport import TransportError
+from suds.client import Client
+from xml.sax._exceptions import SAXParseException
 
 def get_app_base_uri(request):
     base_url = request.build_absolute_uri()
@@ -540,13 +544,12 @@ def read_error_file(xml_file):
         return {'status': 'invalid WaterML file'}
 
 def unzip_waterml(request, res_id,src,res_id2,xml_id):
-
+        print src
         temp_dir = get_workspace()
         file_data =None
         # get the URL of the remote zipped WaterML resource
         if not os.path.exists(temp_dir+"/id"):
             os.makedirs(temp_dir+"/id")
-
         if 'cuahsi'in src :
             url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
         elif 'hydroshare' in src:
@@ -555,8 +558,6 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
             hs.getResource(res_id, destination=file_path, unzip=True)
             root_dir = file_path + '/' + res_id
             data_dir = root_dir + '/' + res_id + '/data/contents/'
-            # f = open(data_dir)
-            # print f.read()
             for subdir, dirs, files in os.walk(data_dir):
                 for file in files:
                     if  'wml_1_' in file:
@@ -569,6 +570,12 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                             file_temp = open(file_temp_name, 'wb')
                             file_temp.write(file_data)
                             file_temp.close()
+                    if '.json.refts' in file:
+                        data_file = data_dir +file
+                        # with open(data_file, 'r') as f:
+                        #     file_data = f.read()
+                        #     print file_data
+                        #     parse_ts_layer(file_data)
         elif "xmlrest" in src:
             url_zip = res_id2
             res = urllib.unquote(res_id2).decode()
@@ -675,3 +682,47 @@ def viewer_counter(request):
             file_temp.close()
     else:
         user1=''
+def parse_ts_layer(data):
+    print type(data)
+    data = data.encode(encoding ='UTF-8')
+    json_data = json.loads(data)
+
+    print json_data
+    layer = json_data['timeSeriesLayerResource']['REFTS']
+    for sub in layer:
+        ref_type= sub['refType']
+        service_type = sub['serviceType']
+        url =sub['url']
+        if ref_type =='WOF':
+            if service_type =='SOAP':
+                url = 'http://hydroportal.cuahsi.org/nwisdv/cuahsi_1_1.asmx?WSDL'
+                client = connect_wsdl_url(url)
+                print client
+                site_code = 'NWISUV:10170500'
+                variable_code = 'ODM:Discharge'
+                variable_code = 'NWISUV:00055'
+                start_date =''
+                end_date = ''
+                auth_token = ''
+                # response1 = client.service.GetSiteInfo('NWISDV:10147100')
+                response1 = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
+                print response1
+
+            if(service_type=='REST'):
+                waterml_url = url+'/GetValueObject'
+                response = urllib2.urlopen(waterml_url)
+                html = response.read()
+
+
+def connect_wsdl_url(wsdl_url):
+    try:
+        client = Client(wsdl_url)
+    except TransportError:
+        raise Exception('Url not found')
+    except ValueError:
+        raise Exception('Invalid url')  # ought to be a 400, but no page implemented for that
+    except SAXParseException:
+        raise Exception("The correct url format ends in '.asmx?WSDL'.")
+    except:
+        raise Exception("Unexpected error")
+    return client
