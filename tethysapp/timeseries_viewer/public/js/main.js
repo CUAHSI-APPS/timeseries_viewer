@@ -88,7 +88,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
     if (src==null){
         src='cuahsi'
     }
-    //console.log(src)
+    console.log(src)
 
     // in the start we show the loading...
     // the res_id can contain multiple IDs separated by comma
@@ -648,6 +648,7 @@ $(document).ready(function (callback) {
         var src1 = find_query_parameter("src");
 
         if (src1 =='hydroshare'){src = src1}
+        else if (src1 =='xmlrest'){src=src1}
         else{src =null}
 
     }
@@ -768,8 +769,9 @@ $(document).ready(function (callback) {
         if (document.referrer == "https://apps.hydroshare.org/apps/") {
             $('#extra-buttons').append('<a class="btn btn-default btn" href="https://apps.hydroshare.org/apps/">Return to HydroShare Apps</a>');
         }
-        popupDiv.modal('show');
-        $('#loading').hide();
+        //popupDiv.modal('show');
+        //$('#loading').hide();
+        window.location ='http://data.cuahsi.org/#'
     }
     else{
         $('#loading').show();

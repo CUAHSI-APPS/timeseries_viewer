@@ -37,6 +37,7 @@ def chart_data(request, res_id, src,id_qms):
     xml_id = None
     xml_rest = False
     if "xmlrest" in src:
+
         xml_rest = True
         test = request.POST.get('url_xml')
         xml_id =  str(uuid.uuid4())
@@ -110,6 +111,7 @@ def home(request):
 @login_required()
 def hydroshare(request):
     utilities.viewer_counter(request)
+    hs = getOAuthHS(request)
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
 

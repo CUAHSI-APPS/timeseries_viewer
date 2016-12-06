@@ -25,6 +25,8 @@ import json
 from suds.transport import TransportError
 from suds.client import Client
 from xml.sax._exceptions import SAXParseException
+import requests
+import codecs
 
 def get_app_base_uri(request):
     base_url = request.build_absolute_uri()
@@ -572,15 +574,18 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                             file_temp.close()
                     if '.json.refts' in file:
                         data_file = data_dir +file
-                        # with open(data_file, 'r') as f:
-                        #     file_data = f.read()
-                        #     print file_data
-                        #     parse_ts_layer(file_data)
+                        with open(data_file, 'r') as f:
+                            file_data = f.read()
+                            print file_data
+                            parse_ts_layer(file_data)
         elif "xmlrest" in src:
+
             url_zip = res_id2
             res = urllib.unquote(res_id2).decode()
             r = requests.get(res, verify=False)
+
             file_data = r.content
+            print file_data
             file_temp_name = temp_dir + '/id/'+xml_id+'.xml'
             file_temp = open(file_temp_name, 'wb')
             file_temp.write(file_data)
@@ -686,27 +691,43 @@ def parse_ts_layer(data):
     print type(data)
     data = data.encode(encoding ='UTF-8')
     json_data = json.loads(data)
+    print type(json_data)
+    # print json_data
+    json_data = json.loads(json_data['timeSeriesLayerResource'])
 
-    print json_data
-    layer = json_data['timeSeriesLayerResource']['REFTS']
+
+
+    layer = json_data['REFTS']
     for sub in layer:
         ref_type= sub['refType']
         service_type = sub['serviceType']
         url =sub['url']
+        print ref_type
         if ref_type =='WOF':
             if service_type =='SOAP':
-                url = 'http://hydroportal.cuahsi.org/nwisdv/cuahsi_1_1.asmx?WSDL'
+
                 client = connect_wsdl_url(url)
-                print client
-                site_code = 'NWISUV:10170500'
-                variable_code = 'ODM:Discharge'
-                variable_code = 'NWISUV:00055'
-                start_date =''
-                end_date = ''
+                # print client
+                site_code = 'NWISUV:10164500'
+                # variable_code = 'ODM:Discharge'
+                variable_code = 'NWISUV:00060'
+                start_date ='2016-06-03T00:00:00+00:00'
+                end_date = '2016-10-26T00:00:00+00:00'
                 auth_token = ''
+
                 # response1 = client.service.GetSiteInfo('NWISDV:10147100')
-                response1 = client.service.GetValues(site_code, variable_code, start_date, end_date, auth_token)
+                response1 = client.service.GetValues(site_code, variable_code, start_date, end_date)
                 print response1
+                temp_dir = get_workspace()
+                file_path = temp_dir + '/id/' + 'testing' + '.xml'
+                response1 = response1.encode('utf-8')
+                # response1 = unicode(response1.strip(codecs.BOM_UTF8), 'utf-8')
+                with open(file_path, 'w') as outfile:
+                    outfile.write(response1)
+                print type(response1)
+
+                # print client.service
+                print "done"
 
             if(service_type=='REST'):
                 waterml_url = url+'/GetValueObject'
