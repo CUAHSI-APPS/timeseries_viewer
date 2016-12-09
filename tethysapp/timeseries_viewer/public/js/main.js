@@ -88,7 +88,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
     if (src==null){
         src='cuahsi'
     }
-    console.log(src)
+
 
     // in the start we show the loading...
     // the res_id can contain multiple IDs separated by comma
@@ -112,15 +112,15 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
             var dseries =[]
             len=-1
             var chart = $("#chartContainer").CanvasJSChart()
-            console.log(json1)
+
             json2 = json1.data
-            console.log(json2)
+
             //len = length(json2)
             for (series in json2){len = len+1}
-            console.log(len)
+
 
             for (series in json2){
-                console.log("plotting")
+
                  plot_data(chart, res_id, end_of_resources, unit_off,id_qms,json2[series],len)
             }
 
@@ -1584,14 +1584,13 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                 number = number + 1;
                 //console.log(chart)
             }
-            console.log("aaaaa")
+
         }
-        console.log(chart)
+
         //    end of looping through timeseries
 
     }
-    console.log("tessssssssssssssssssssting")
-    console.log(end_of_resources)
+
     if (end_of_resources == true )//checks to see if all the data is loaded before displaying
     {
         if (title == 1) {
@@ -1611,7 +1610,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
             $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
 
         }
-        console.log("hhhhhhhhhhhhhhhhhhhhhhhhh")
+
         finishloading();
     }
 
