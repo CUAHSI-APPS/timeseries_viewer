@@ -26,7 +26,7 @@ from suds.transport import TransportError
 from suds.client import Client
 from xml.sax._exceptions import SAXParseException
 import requests
-import codecs
+
 
 def get_app_base_uri(request):
     base_url = request.build_absolute_uri()

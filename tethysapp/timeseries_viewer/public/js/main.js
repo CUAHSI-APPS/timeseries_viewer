@@ -994,7 +994,7 @@ function addingseries(unit_off) {
         }
         counter2 = counter2 + 1
         if (counter2 ==series_counter){end_of_resources =true}
-        console.log(end_of_resources)
+        //console.log(end_of_resources)
         add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms);
 
 

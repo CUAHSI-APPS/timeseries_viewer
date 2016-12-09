@@ -31,7 +31,6 @@ class TimeSeriesViewer(TethysAppBase):
                     UrlMap(name='chart_data',
                            url='chart_data/{res_id}/{id_qms}/{src}',
                            controller='timeseries_viewer.controllers.chart_data'),
-
                     UrlMap(name='api',
                            url='api',
                            controller='timeseries_viewer.api.home'),
@@ -41,8 +40,6 @@ class TimeSeriesViewer(TethysAppBase):
                     UrlMap(name='error_report',
                            url='error_report',
                            controller='timeseries_viewer.controllers.error_report'),
-
-
                     UrlMap(name='api_list_apps',
                            url='api/list_apps',
                            controller='timeseries_viewer.api.list_apps'),
