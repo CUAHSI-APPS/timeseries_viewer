@@ -19,6 +19,15 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 import urllib
 # -- coding: utf-8--
+import logging
+logger = logging.getLogger(__name__)
+
+use_hs_client_helper = True
+try:
+    from tethys_services.backends.hs_restclient_helper import get_oauth_hs
+except Exception as ex:
+    use_hs_client_helper = False
+    logger.error("tethys_services.backends.hs_restclient_helper import get_oauth_hs: " + ex.message)
 
 # helper controller for fetching the WaterML file
 def temp_waterml(request, id):
@@ -33,34 +42,43 @@ def temp_waterml(request, id):
 @csrf_exempt
 @never_cache
 def chart_data(request, res_id, src,id_qms):
+    data_for_chart =[]
     test = ''
+    file_number =0
     xml_id = None
     xml_rest = False
-    if "xmlrest" in src:
-
+    if "xmlrest" in src:#id from USGS Gauge Viewer app
         xml_rest = True
         test = request.POST.get('url_xml')
-        xml_id =  str(uuid.uuid4())
+        xml_id =  str(uuid.uuid4())#creates a unique id for the time series
 
     # print datetime.now()
     # checks if we already have an unzipped xml file
     file_path = utilities.waterml_file_path(res_id,xml_rest,xml_id)
-    # if we don't have the xml file, downloads and unzips it
-    if not os.path.exists(file_path):
-        utilities.unzip_waterml(request, res_id, src, test,xml_id)
-
-    # returns an error message if the unzip_waterml failed
-    if not os.path.exists(file_path):
-        data_for_chart = {'status': 'Resource file not found'}
+    if src =='hydroshare':
+        file_number = utilities.unzip_waterml(request, res_id, src, test,xml_id)
     else:
-        # parses the WaterML to a chart data object
-        data_for_chart = utilities.Original_Checker(file_path,id_qms)
+        if not os.path.exists(file_path):
+            file_number = utilities.unzip_waterml(request, res_id, src, test,xml_id)
+    # if we don't have the xml file, downloads and unzips it
+    if file_number >0:
+        for i in range(0,file_number):
+            print i
+            temp_dir = utilities.get_workspace()
+            file_path = temp_dir+'/id/timeserieslayer' + str(i) + '.xml'
+            data_for_chart.append(utilities.Original_Checker(file_path,id_qms))
+        # data_for_chart.append({'file_number':file_number})
+    else:
+        # returns an error message if the unzip_waterml failed
+        if not os.path.exists(file_path):
+            data_for_chart = {'status': 'Resource file not found'}
+        else:
+            # parses the WaterML to a chart data object
+            data_for_chart.append(utilities.Original_Checker(file_path,id_qms))
     # print "JSON Reponse"
     # print datetime.now()
     print "end of chart data"
-    return JsonResponse(data_for_chart)
-
-
+    return JsonResponse({'data':data_for_chart})
 # home page controller
 @csrf_exempt
 @never_cache
@@ -71,10 +89,8 @@ def home(request):
     quality=[]
     method=[]
     sourceid=[]
-
     try: #Check to see if request if from CUAHSI. For data validation
         request_url = request.META['HTTP_REFERER']
-
     except:
         request_url ="test"
     data = request.META['QUERY_STRING']#stores all values in the query string
@@ -103,7 +119,6 @@ def home(request):
                'quality':quality,
                'method':method,
                'sourceid':sourceid,
-
                }
     return render(request, 'timeseries_viewer/home.html', context)
 #seperate handler for request originating from hydroshare.org
@@ -111,7 +126,10 @@ def home(request):
 @login_required()
 def hydroshare(request):
     utilities.viewer_counter(request)
-    hs = getOAuthHS(request)
+    # if use_hs_client_helper:
+	 #    hs = get_oauth_hs(request)
+    # else:
+    #     hs = getOAuthHS(request)
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
 

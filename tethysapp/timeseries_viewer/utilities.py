@@ -519,6 +519,8 @@ def parse_2_0(root):#waterml 2 has not been implemented in the viewer at this ti
 
 
 def Original_Checker(xml_file,id_qms):
+
+    print xml_file
     try:
         tree = etree.parse(xml_file)
         root = tree.getroot()
@@ -547,6 +549,7 @@ def read_error_file(xml_file):
 
 def unzip_waterml(request, res_id,src,res_id2,xml_id):
         print src
+        file_number=0
         temp_dir = get_workspace()
         file_data =None
         # get the URL of the remote zipped WaterML resource
@@ -555,7 +558,10 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
         if 'cuahsi'in src :
             url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
         elif 'hydroshare' in src:
-            hs = controllers.getOAuthHS(request)
+            if controllers.use_hs_client_helper:
+                hs = controllers.get_oauth_hs(request)
+            else:
+                hs = controllers.getOAuthHS(request)
             file_path = get_workspace() + '/id'
             hs.getResource(res_id, destination=file_path, unzip=True)
             root_dir = file_path + '/' + res_id
@@ -576,8 +582,8 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                         data_file = data_dir +file
                         with open(data_file, 'r') as f:
                             file_data = f.read()
-                            print file_data
-                            parse_ts_layer(file_data)
+
+                            file_number = parse_ts_layer(file_data)
         elif "xmlrest" in src:
 
             url_zip = res_id2
@@ -639,7 +645,7 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                     error_message = "Bad Zip File"
                     error_report(error_message)
                     print "Bad Zip file"
-
+        return file_number
 # finds the waterML file path in the workspace folder
 def waterml_file_path(res_id,xml_rest,xml_id):
     base_path = get_workspace()
@@ -663,7 +669,13 @@ def error_report(text):
 def viewer_counter(request):
     temp_dir = get_workspace()
     try:
-        hs = controllers.getOAuthHS(request)
+
+
+        if controllers.use_hs_client_helper:
+            hs = controllers.get_oauth_hs(request)
+        else:
+            hs = controllers.getOAuthHS(request)
+
         user =  hs.getUserInfo()
         user1 = user['username']
     except:
@@ -688,53 +700,56 @@ def viewer_counter(request):
     else:
         user1=''
 def parse_ts_layer(data):
+    counter = 0
     print type(data)
     data = data.encode(encoding ='UTF-8')
     json_data = json.loads(data)
     print type(json_data)
     # print json_data
     json_data = json.loads(json_data['timeSeriesLayerResource'])
-
-
-
     layer = json_data['REFTS']
     for sub in layer:
         ref_type= sub['refType']
         service_type = sub['serviceType']
         url =sub['url']
-        print ref_type
+        site_code = sub['siteCode']
+        variable_code = sub['variableCode']
+        start_date = sub['beginDate']
+        end_date = sub['endDate']
+
         if ref_type =='WOF':
             if service_type =='SOAP':
-
-                client = connect_wsdl_url(url)
+                print url
+                print site_code
+                print variable_code
+                print start_date
+                print end_date
                 # print client
-                site_code = 'NWISUV:10164500'
-                # variable_code = 'ODM:Discharge'
-                variable_code = 'NWISUV:00060'
-                start_date ='2016-06-03T00:00:00+00:00'
-                end_date = '2016-10-26T00:00:00+00:00'
+                # site_code = 'NWISUV:10164500'
+                # variable_code = 'NWISUV:00060'
+                # start_date ='2016-06-03T00:00:00+00:00'
+                # end_date = '2016-10-26T00:00:00+00:00'
                 auth_token = ''
-
+                client = connect_wsdl_url(url)
                 # response1 = client.service.GetSiteInfo('NWISDV:10147100')
                 response1 = client.service.GetValues(site_code, variable_code, start_date, end_date)
-                print response1
+
                 temp_dir = get_workspace()
-                file_path = temp_dir + '/id/' + 'testing' + '.xml'
+                file_path = temp_dir + '/id/' + 'timeserieslayer'+str(counter) + '.xml'
                 response1 = response1.encode('utf-8')
                 # response1 = unicode(response1.strip(codecs.BOM_UTF8), 'utf-8')
                 with open(file_path, 'w') as outfile:
                     outfile.write(response1)
-                print type(response1)
 
                 # print client.service
                 print "done"
-
             if(service_type=='REST'):
                 waterml_url = url+'/GetValueObject'
                 response = urllib2.urlopen(waterml_url)
                 html = response.read()
+            counter = counter +1
 
-
+    return counter
 def connect_wsdl_url(wsdl_url):
     try:
         client = Client(wsdl_url)

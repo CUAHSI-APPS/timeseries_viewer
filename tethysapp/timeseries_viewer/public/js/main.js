@@ -108,429 +108,455 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
         dataType: 'json',
         data:{'url_xml':res_id},
         url: data_url,
-        success: function (json) {
+        success: function (json1) {
+            var dseries =[]
+            len=-1
             var chart = $("#chartContainer").CanvasJSChart()
+            console.log(json1)
+            json2 = json1.data
+            console.log(json2)
+            //len = length(json2)
+            for (series in json2){len = len+1}
+            console.log(len)
 
-            // first of all check for the status
-            var status = json.status;
-            if (status !== 'success') //displays error
-            {
-                show_error(chart, "Error loading time series from " + res_id1 + ": " + status)
-                $('#loading').hide();
-                return;
-            }
-            var units = json.units;
-            var master_values= json.master_values;
-            var master_counter = json.master_counter;
-            var master_times = json.master_times;
-            var meta_dic = json.meta_dic;
-            var master_boxplot = json.master_boxplot
-            var master_stat = json.master_stat
-            var bad_meta=false
-            var bad_meta_counter = 0
-            id_qms_a_split = id_qms.split('aa')
-            for (val in master_values){
-                meta1 = val.split("aa");
-                if(id_qms !='meta'){
-                    if(id_qms_a_split[0]==''){meta1[0]=''}
-                    if(id_qms_a_split[1]==''){meta1[1]=''}
-                    if(id_qms_a_split[2]==''){meta1[2]=''}
-                }
-                if(meta_dic['quality_code'][meta1[0]]==undefined){
-                    meta1[0] = ''
-                }
-                else{
-                    meta1[0]= meta_dic['quality_code'][meta1[0]]
-                }
-                id_qms_a = id_qms_a_split[0]+'aa'+id_qms_a_split[1]+'aa'+id_qms_a_split[2]
-                val1 = meta1[0]+'aa'+meta1[1]+'aa'+meta1[2]
-
-                if(val1 !=id_qms_a){
-                    bad_meta_counter +=1
-                }
-            }
-            if(bad_meta_counter == Object.keys(master_values).length){
-                bad_meta = true
-            }
-            id_qms_a_split = id_qms.split('aa')
-
-            //console.log(master_values)
-
-            if (master_counter == true){
-
-                for (val in master_values) {
-
-                    if(bad_meta == true){
-                        val1 =''
-                        id_qms_a=''
-                    }
-                    else {
-                        meta1 = val.split("aa");
-
-                        if (id_qms != 'meta') {
-
-                            if (id_qms_a_split[0] == '') {
-                                meta1[0] = ''
-                            }
-                            if (id_qms_a_split[1] == '') {
-                                meta1[1] = ''
-                            }
-                            if (id_qms_a_split[2] == '') {
-                                meta1[2] = ''
-                            }
-                        }
-                        if (meta_dic['quality_code'][meta1[0]] == undefined) {
-                            meta1[0] = ''
-                            //id_qms_a_split[0]=''
-                        }
-                        else {
-                            meta1[0] = meta_dic['quality_code'][meta1[0]]
-                        }
-                        id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
-                        val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
-                        id_qms_a_split = id_qms.split('aa')
-                    }
-
-                    if (id_qms_a == val1 || id_qms_a == 'meta') {
-                        m_xval = []
-                        m_yval = []
-                        length_master = length_master + 1
-
-                        master_id.push(val)
-                        meta = val.split("aa");
-                        code = meta_dic['quality_code'][meta[0]]
-                        quality = meta_dic['quality'][code]
-                        quality_code = [meta[0]]
-                        method = meta_dic['method'][meta[1]]
-                        sourcedescription = meta_dic['source'][meta[2]]
-                        organization = meta_dic['organization'][meta[2]]
-                        m_yval = master_times[val]
-                        boxplot = master_boxplot[val]
-                        mean = master_stat[val][0]
-                        median = master_stat[val][1]
-                        max = master_stat[val][2]
-                        min = master_stat[val][3]
-                        m_xval = master_values[val]
-                        count = m_xval.length
-                        var site_name = json.site_name
-                        var variable_name = json.variable_name
-                        var unit = json.units
-                        var datatype = json.datatype
-                        var valuetype = json.valuetype
-                        var samplemedium = json.samplemedium
-                        var timesupport = json.timesupport
-                        var timeunit = json.timeunit
-                        var boxplot_count = number
-                        if (site_name == null) {
-                            site_name = "N/A"
-                        }
-                        if (variable_name == null) {
-                            variable_name = "N/A"
-                        }
-                        if (organization == null) {
-                            organization = "N/A"
-                        }
-                        if (quality == null) {
-                            quality = "N/A"
-                        }
-                        if (method == null) {
-                            method = "N/A"
-                        }
-                        if (datatype == null) {
-                            datatype = "N/A"
-                        }
-                        if (valuetype == null) {
-                            valuetype = "N/A"
-                        }
-                        if (unit == null) {
-                            unit = 'N/A'
-                        }
-                        if (timesupport == null) {
-                            timesupport = "N/A"
-                        }
-                        if (timeunit == null || timeunit == ' ') {
-                            timeunit = "N/A"
-                        }
-                        if (sourcedescription == null) {
-                            sourcedescription = "N/A"
-                        }
-                        if (samplemedium == null) {
-                            samplemedium = "N/A"
-                        }
-                        if (units != null) {
-                            units = units.replace(/\s+/g, '');//removes any spaces in the units
-                        }
-                        if (units == null) {
-                            units = "N/A";
-                        }
-
-                        var unit_off_bool = false
-                        unit_tracker.push(units);//tracks the units of the different time series
-                        unit_different2 = null;
-                        same_unit = 1//goes to 2 when more than one unit type is graphed
-                        yaxis = 0 //tracks which dataset set goes on which axis
-                        var y_title = null;//tracks which variable to use for the yaxis title
-                        test = []
-                        for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
-                        {
-
-                            temp_date = new Date(m_yval[i])
-                            test.push(temp_date)
-                            xtime.push({x: temp_date.getTime(), y: m_xval[i]})
-                        }
-
-                        data1 = xtime
-                        //console.log(data1)
-                        if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
-                        {
-                            unit1 = unit_tracker[0];
-                            if (unit1 == units) {
-                                y_title = 0
-                            }
-                            if (unit1 != units)//checks the first unit type agaisnt the current unit
-                            {
-                                same_unit = 2;//flags which axis is to be used
-                                y_title = 1
-                                if (unit2 == null) {
-                                    unit2 = units //this tracks the second unit type if there is one
-                                }
-                                if (units != unit2) {
-                                    same_unit = 3
-                                    y_title = 3
-                                }
-                            }
-                        }
-                        else {
-                            y_title = 3
-                            unit_off_bool = true
-                            if (units != unit_off) {
-                                if (units == unit1) {
-                                    y_title = 0
-                                    unit_off_bool = false
-                                }
-                                else if (resid_on == res_id) {
-                                    y_title = 1
-                                    unit_off_bool = false
-                                }
-                            }
-                        }
-
-
-
-                        if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
-
-                            if (max > ymax) {
-                                ymax = max
-                            }
-                            if (min < ymin) {
-                                ymin = min
-                            }
-
-                            var newSeries =
-                            {
-                                //type: "scatter",
-                                type: "line",
-                                axisYType: "primary",
-                                //axisYType:"secondary",
-                                xValueType: "dateTime",
-                                xValueFormatString: "MMM DD, YYYY: HH:mm",
-                                showInLegend: false,
-                                indexLabelFontSize: 1,
-                                visible: true,
-                                name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-                                dataPoints: data1
-                            };
-                            chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
-                            chart.options.axisY.titleWrap = true
-                            chart.options.data.push(newSeries);
-                            if(ymax==0 &&ymin==0){ymax=4.5,ymin=0}
-                            maxview = roundUp(Math.ceil(ymax))
-                            maxview = maxview+0.1*maxview
-                            minview = roundDown(Math.floor(ymin))
-                            minview = minview+minview*.1
-                            interval = (maxview - minview) / 10
-
-                            if(minview<0){
-                                maxview = 10*interval+minview
-                                rem = minview/interval
-                                rem1 = Math.floor(rem)
-                                rem2 = rem1-rem
-                                minview = (rem2*interval+minview).toFixed(2)
-                                rema = maxview/interval
-                                rem1a = Math.ceil(rema)
-                                rem2a = rem1a-rema
-                                maxview = (rem2a*interval+maxview+maxview *.01).toFixed(2)
-
-                            }
-                            else{
-                                interval = (maxview - minview) / 11
-
-                                minview = (Math.ceil((minview / interval)) * interval)
-
-                            }
-
-                            chart.options.axisY.viewportMaximum = maxview
-                            chart.options.axisY.maximum = maxview
-                            chart.options.axisY.viewportMinimum = minview
-                            chart.options.axisY.minimum = minview
-                            chart.options.axisY.interval = interval
-
-                        }
-                        else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
-                            if (max > y2max) {
-                                y2max = max
-                            }
-                            if (min < y2min) {
-                                y2min = min
-                            }
-                            var newSeries =
-                            {
-                                type: "line",
-                                //axisYType:"primary",
-                                axisYType: "secondary",
-                                xValueType: "dateTime",
-                                xValueFormatString: "MMM DD, YYYY: HH:mm",
-                                showInLegend: false,
-                                indexLabelFontSize: 1,
-                                visible: true,
-                                name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-                                dataPoints: data1
-                            };
-
-                            chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
-                            chart.options.axisY2.titleWrap = true
-                            chart.options.data.push(newSeries);
-                            if(y2max==0 &&y2min==0){y2max=4.5,y2min=0}
-                            maxview2 = roundUp(Math.ceil(y2max))
-                            minview2 = roundDown(Math.floor(y2min))
-                            interval2 = ((maxview2 - minview2) / 10)
-                            if(minview2<0){
-
-                                maxview = 10*interva2l+minview2
-                                rem = minview2/interval2
-                                rem1 = Math.floor(rem)
-                                rem2 = rem1-rem
-                                minview = (rem2*interval2+minview2).toFixed(2)
-                                rema = maxview2/interval2
-                                rem1a = Math.ceil(rema)
-                                rem2a = rem1a-rema
-                                maxview2 = (rem2a*interval2+maxview2).toFixed(2)
-                            }
-                            else{
-                                interval2 = ((maxview2 - minview2) / 11)
-                                minview2 = (Math.ceil((minview2 / interval2)) * interval2)}
-                            chart.options.axisY2.viewportMaximum = maxview2
-                            chart.options.axisY2.viewportMinimum = minview2
-                            chart.options.axisY2.interval = interval2
-                        }
-                        else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
-                            var newSeries =
-                            {
-                                type: "line",
-                                //axisYType:"primary",
-                                axisYType: "primary",
-                                xValueType: "dateTime",
-                                showInLegend: false,
-                                indexLabelFontSize: 1,
-                                visible: false,
-                                name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-                                dataPoints: data1
-                            };
-                            chart.options.data.push(newSeries);
-                        }
-                        chart.options.axisY.titleFontSize = 15
-                        chart.options.axisY2.titleFontSize = 15
-                        chart.options.axisX.titleFontSize = 15
-                        xtime = []
-
-                        if ((unit1 != units && unit2 != units) || unit_off_bool == true)//this triggers if more than 2 different units are used
-                        {
-                            var legend = "<div style='text-align:center'><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
-                                + " type='checkbox' onClick ='myFunc(this.id,this.name);' >" + "</div"
-                            $('#multiple_units').html("")
-                            $('#multiple_units').append('* Only two types of units are displayed at a time.');
-                            title = 1
-                            var chart = $("#chartContainer").CanvasJSChart()
-                        }
-                        else {
-                            var legend = "<div style='text-align:center' '><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
-                                + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
-                            var chart = $("#chartContainer").CanvasJSChart()
-                        }
-
-                        if (quality == "N/A") {
-                            quality_title = "N/A"
-                        }
-                        else {
-                            quality_title = quality //string representing the contents of the tooltip
-                            if (quality.length > 20) {
-                                quality = '(' + quality_code + ') ' + quality.substring(0, quality.indexOf(' ') + 1) + '...'
-                            }
-                        }
-                        var dataset = {
-                            legend: legend,
-                            number:number,
-                            organization: organization,
-                            name: site_name,
-                            variable: variable_name,
-                            unit: unit,
-                            samplemedium: samplemedium,
-                            count: count,
-                            //download:download,
-                            quality: quality,
-                            method: method,
-                            datatype: datatype,
-                            valuetype: valuetype,
-                            timesupport: timesupport,
-                            timeunit: timeunit,
-                            sourcedescription: sourcedescription,
-                            mean: mean,
-                            median: median,
-                            max: max,
-                            min: min,
-                            boxplot: boxplot,
-                            boxplot_count: boxplot_count
-                        }
-                        var table = $('#data_table').DataTable();//defines the primary table
-                        table.row.add(dataset).draw();//adds data from the time series to the primary table
-
-                        chart.render();//updated chart with new values
-
-                        $('#data_table tbody tr:eq('+number+') td:eq(1)').click()
-                        $('#data_table tbody tr:eq('+number+') td:eq(1)').click()
-
-                        number = number + 1;
-                        //console.log(chart)
-                    }
-                }
-                //    end of looping through timeseries
-
-            }
-
-            if (end_of_resources == true )//checks to see if all the data is loaded before displaying
-            {
-                if (title == 1) {
-                    //chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
-                    chart.options.title.text = "CUAHSI Data Series Viewer*"
-                    chart.render();
-                }
-                else {
-                    //chart.setTitle({ text: "CUAHSI Data Series Viewer" });
-                    chart.options.title.text = "CUAHSI Data Series Viewer"
-                    chart.render();
-                }
-                $('#data_table tbody tr:eq(0) td:eq(1)').click()
-                $('#data_table tbody tr:eq(0) td:eq(1)').click()
-                for (i = 0; i < number; i++) {
-                    $('#data_table tbody tr:eq('+i+') td:eq(1)').click()
-                    $('#data_table tbody tr:eq('+i+') td:eq(1)').click()
-
-                }
-
-                finishloading();
+            for (series in json2){
+                console.log("plotting")
+                 plot_data(chart, res_id, end_of_resources, unit_off,id_qms,json2[series],len)
             }
 
 
+            //for (series in json2) {
+            //    console.log(json2[series])
+            //    json = json2[series]
+            //    console.log(json)
+            //
+            //    //console.log(dseries)
+            //    // first of all check for the status
+            //    var status = json.status;
+            //    if (status !== 'success') //displays error
+            //    {
+            //        show_error(chart, "Error loading time series from " + res_id1 + ": " + status)
+            //        $('#loading').hide();
+            //        return;
+            //    }
+            //    var units = json.units;
+            //    var master_values = json.master_values;
+            //    var master_counter = json.master_counter;
+            //    var master_times = json.master_times;
+            //    var meta_dic = json.meta_dic;
+            //    var master_boxplot = json.master_boxplot
+            //    var master_stat = json.master_stat
+            //    var bad_meta = false
+            //    var bad_meta_counter = 0
+            //    id_qms_a_split = id_qms.split('aa')
+            //    for (val in master_values) {
+            //        meta1 = val.split("aa");
+            //        if (id_qms != 'meta') {
+            //            if (id_qms_a_split[0] == '') {
+            //                meta1[0] = ''
+            //            }
+            //            if (id_qms_a_split[1] == '') {
+            //                meta1[1] = ''
+            //            }
+            //            if (id_qms_a_split[2] == '') {
+            //                meta1[2] = ''
+            //            }
+            //        }
+            //        if (meta_dic['quality_code'][meta1[0]] == undefined) {
+            //            meta1[0] = ''
+            //        }
+            //        else {
+            //            meta1[0] = meta_dic['quality_code'][meta1[0]]
+            //        }
+            //        id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
+            //        val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
+            //
+            //        if (val1 != id_qms_a) {
+            //            bad_meta_counter += 1
+            //        }
+            //    }
+            //    if (bad_meta_counter == Object.keys(master_values).length) {
+            //        bad_meta = true
+            //    }
+            //    id_qms_a_split = id_qms.split('aa')
+            //
+            //    //console.log(master_values)
+            //
+            //    if (master_counter == true) {
+            //
+            //        for (val in master_values) {
+            //
+            //            if (bad_meta == true) {
+            //                val1 = ''
+            //                id_qms_a = ''
+            //            }
+            //            else {
+            //                meta1 = val.split("aa");
+            //
+            //                if (id_qms != 'meta') {
+            //
+            //                    if (id_qms_a_split[0] == '') {
+            //                        meta1[0] = ''
+            //                    }
+            //                    if (id_qms_a_split[1] == '') {
+            //                        meta1[1] = ''
+            //                    }
+            //                    if (id_qms_a_split[2] == '') {
+            //                        meta1[2] = ''
+            //                    }
+            //                }
+            //                if (meta_dic['quality_code'][meta1[0]] == undefined) {
+            //                    meta1[0] = ''
+            //                    //id_qms_a_split[0]=''
+            //                }
+            //                else {
+            //                    meta1[0] = meta_dic['quality_code'][meta1[0]]
+            //                }
+            //                id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
+            //                val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
+            //                id_qms_a_split = id_qms.split('aa')
+            //            }
+            //
+            //            if (id_qms_a == val1 || id_qms_a == 'meta') {
+            //                m_xval = []
+            //                m_yval = []
+            //                length_master = length_master + 1
+            //
+            //                master_id.push(val)
+            //                meta = val.split("aa");
+            //                code = meta_dic['quality_code'][meta[0]]
+            //                quality = meta_dic['quality'][code]
+            //                quality_code = [meta[0]]
+            //                method = meta_dic['method'][meta[1]]
+            //                sourcedescription = meta_dic['source'][meta[2]]
+            //                organization = meta_dic['organization'][meta[2]]
+            //                m_yval = master_times[val]
+            //                boxplot = master_boxplot[val]
+            //                mean = master_stat[val][0]
+            //                median = master_stat[val][1]
+            //                max = master_stat[val][2]
+            //                min = master_stat[val][3]
+            //                m_xval = master_values[val]
+            //                count = m_xval.length
+            //                var site_name = json.site_name
+            //                var variable_name = json.variable_name
+            //                var unit = json.units
+            //                var datatype = json.datatype
+            //                var valuetype = json.valuetype
+            //                var samplemedium = json.samplemedium
+            //                var timesupport = json.timesupport
+            //                var timeunit = json.timeunit
+            //                var boxplot_count = number
+            //                if (site_name == null) {
+            //                    site_name = "N/A"
+            //                }
+            //                if (variable_name == null) {
+            //                    variable_name = "N/A"
+            //                }
+            //                if (organization == null) {
+            //                    organization = "N/A"
+            //                }
+            //                if (quality == null) {
+            //                    quality = "N/A"
+            //                }
+            //                if (method == null) {
+            //                    method = "N/A"
+            //                }
+            //                if (datatype == null) {
+            //                    datatype = "N/A"
+            //                }
+            //                if (valuetype == null) {
+            //                    valuetype = "N/A"
+            //                }
+            //                if (unit == null) {
+            //                    unit = 'N/A'
+            //                }
+            //                if (timesupport == null) {
+            //                    timesupport = "N/A"
+            //                }
+            //                if (timeunit == null || timeunit == ' ') {
+            //                    timeunit = "N/A"
+            //                }
+            //                if (sourcedescription == null) {
+            //                    sourcedescription = "N/A"
+            //                }
+            //                if (samplemedium == null) {
+            //                    samplemedium = "N/A"
+            //                }
+            //                if (units != null) {
+            //                    units = units.replace(/\s+/g, '');//removes any spaces in the units
+            //                }
+            //                if (units == null) {
+            //                    units = "N/A";
+            //                }
+            //
+            //                var unit_off_bool = false
+            //                unit_tracker.push(units);//tracks the units of the different time series
+            //                unit_different2 = null;
+            //                same_unit = 1//goes to 2 when more than one unit type is graphed
+            //                yaxis = 0 //tracks which dataset set goes on which axis
+            //                var y_title = null;//tracks which variable to use for the yaxis title
+            //                test = []
+            //                for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
+            //                {
+            //
+            //                    temp_date = new Date(m_yval[i])
+            //                    test.push(temp_date)
+            //                    xtime.push({x: temp_date.getTime(), y: m_xval[i]})
+            //                }
+            //
+            //                data1 = xtime
+            //                //console.log(data1)
+            //                if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
+            //                {
+            //                    unit1 = unit_tracker[0];
+            //                    if (unit1 == units) {
+            //                        y_title = 0
+            //                    }
+            //                    if (unit1 != units)//checks the first unit type agaisnt the current unit
+            //                    {
+            //                        same_unit = 2;//flags which axis is to be used
+            //                        y_title = 1
+            //                        if (unit2 == null) {
+            //                            unit2 = units //this tracks the second unit type if there is one
+            //                        }
+            //                        if (units != unit2) {
+            //                            same_unit = 3
+            //                            y_title = 3
+            //                        }
+            //                    }
+            //                }
+            //                else {
+            //                    y_title = 3
+            //                    unit_off_bool = true
+            //                    if (units != unit_off) {
+            //                        if (units == unit1) {
+            //                            y_title = 0
+            //                            unit_off_bool = false
+            //                        }
+            //                        else if (resid_on == res_id) {
+            //                            y_title = 1
+            //                            unit_off_bool = false
+            //                        }
+            //                    }
+            //                }
+            //
+            //
+            //                if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
+            //
+            //                    if (max > ymax) {
+            //                        ymax = max
+            //                    }
+            //                    if (min < ymin) {
+            //                        ymin = min
+            //                    }
+            //
+            //                    var newSeries =
+            //                    {
+            //                        //type: "scatter",
+            //                        type: "line",
+            //                        axisYType: "primary",
+            //                        //axisYType:"secondary",
+            //                        xValueType: "dateTime",
+            //                        xValueFormatString: "MMM DD, YYYY: HH:mm",
+            //                        showInLegend: false,
+            //                        indexLabelFontSize: 1,
+            //                        visible: true,
+            //                        name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+            //                        dataPoints: data1
+            //                    };
+            //                    chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
+            //                    chart.options.axisY.titleWrap = true
+            //                    chart.options.data.push(newSeries);
+            //                    if (ymax == 0 && ymin == 0) {
+            //                        ymax = 4.5, ymin = 0
+            //                    }
+            //                    maxview = roundUp(Math.ceil(ymax))
+            //                    maxview = maxview + 0.1 * maxview
+            //                    minview = roundDown(Math.floor(ymin))
+            //                    minview = minview + minview * .1
+            //                    interval = (maxview - minview) / 10
+            //
+            //                    if (minview < 0) {
+            //                        maxview = 10 * interval + minview
+            //                        rem = minview / interval
+            //                        rem1 = Math.floor(rem)
+            //                        rem2 = rem1 - rem
+            //                        minview = (rem2 * interval + minview).toFixed(2)
+            //                        rema = maxview / interval
+            //                        rem1a = Math.ceil(rema)
+            //                        rem2a = rem1a - rema
+            //                        maxview = (rem2a * interval + maxview + maxview * .01).toFixed(2)
+            //
+            //                    }
+            //                    else {
+            //                        interval = (maxview - minview) / 11
+            //                        minview = (Math.ceil((minview / interval)) * interval)
+            //                    }
+            //                    chart.options.axisY.viewportMaximum = maxview
+            //                    chart.options.axisY.maximum = maxview
+            //                    chart.options.axisY.viewportMinimum = minview
+            //                    chart.options.axisY.minimum = minview
+            //                    chart.options.axisY.interval = interval
+            //
+            //                }
+            //                else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
+            //                    if (max > y2max) {
+            //                        y2max = max
+            //                    }
+            //                    if (min < y2min) {
+            //                        y2min = min
+            //                    }
+            //                    var newSeries =
+            //                    {
+            //                        type: "line",
+            //                        //axisYType:"primary",
+            //                        axisYType: "secondary",
+            //                        xValueType: "dateTime",
+            //                        xValueFormatString: "MMM DD, YYYY: HH:mm",
+            //                        showInLegend: false,
+            //                        indexLabelFontSize: 1,
+            //                        visible: true,
+            //                        name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+            //                        dataPoints: data1
+            //                    };
+            //
+            //                    chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
+            //                    chart.options.axisY2.titleWrap = true
+            //                    chart.options.data.push(newSeries);
+            //                    if (y2max == 0 && y2min == 0) {
+            //                        y2max = 4.5, y2min = 0
+            //                    }
+            //                    maxview2 = roundUp(Math.ceil(y2max))
+            //                    minview2 = roundDown(Math.floor(y2min))
+            //                    interval2 = ((maxview2 - minview2) / 10)
+            //                    if (minview2 < 0) {
+            //                        maxview = 10 * interva2l + minview2
+            //                        rem = minview2 / interval2
+            //                        rem1 = Math.floor(rem)
+            //                        rem2 = rem1 - rem
+            //                        minview = (rem2 * interval2 + minview2).toFixed(2)
+            //                        rema = maxview2 / interval2
+            //                        rem1a = Math.ceil(rema)
+            //                        rem2a = rem1a - rema
+            //                        maxview2 = (rem2a * interval2 + maxview2).toFixed(2)
+            //                    }
+            //                    else {
+            //                        interval2 = ((maxview2 - minview2) / 11)
+            //                        minview2 = (Math.ceil((minview2 / interval2)) * interval2)
+            //                    }
+            //                    chart.options.axisY2.viewportMaximum = maxview2
+            //                    chart.options.axisY2.viewportMinimum = minview2
+            //                    chart.options.axisY2.interval = interval2
+            //                }
+            //                else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
+            //                    var newSeries =
+            //                    {
+            //                        type: "line",
+            //                        //axisYType:"primary",
+            //                        axisYType: "primary",
+            //                        xValueType: "dateTime",
+            //                        showInLegend: false,
+            //                        indexLabelFontSize: 1,
+            //                        visible: false,
+            //                        name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+            //                        dataPoints: data1
+            //                    };
+            //                    chart.options.data.push(newSeries);
+            //                }
+            //                chart.options.axisY.titleFontSize = 15
+            //                chart.options.axisY2.titleFontSize = 15
+            //                chart.options.axisX.titleFontSize = 15
+            //                xtime = []
+            //
+            //                if ((unit1 != units && unit2 != units) || unit_off_bool == true)//this triggers if more than 2 different units are used
+            //                {
+            //                    var legend = "<div style='text-align:center'><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
+            //                        + " type='checkbox' onClick ='myFunc(this.id,this.name);' >" + "</div"
+            //                    $('#multiple_units').html("")
+            //                    $('#multiple_units').append('* Only two types of units are displayed at a time.');
+            //                    title = 1
+            //                    var chart = $("#chartContainer").CanvasJSChart()
+            //                }
+            //                else {
+            //                    var legend = "<div style='text-align:center' '><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
+            //                        + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
+            //                    var chart = $("#chartContainer").CanvasJSChart()
+            //                }
+            //
+            //                if (quality == "N/A") {
+            //                    quality_title = "N/A"
+            //                }
+            //                else {
+            //                    quality_title = quality //string representing the contents of the tooltip
+            //                    if (quality.length > 20) {
+            //                        quality = '(' + quality_code + ') ' + quality.substring(0, quality.indexOf(' ') + 1) + '...'
+            //                    }
+            //                }
+            //                var dataset = {
+            //                    legend: legend,
+            //                    number: number,
+            //                    organization: organization,
+            //                    name: site_name,
+            //                    variable: variable_name,
+            //                    unit: unit,
+            //                    samplemedium: samplemedium,
+            //                    count: count,
+            //                    //download:download,
+            //                    quality: quality,
+            //                    method: method,
+            //                    datatype: datatype,
+            //                    valuetype: valuetype,
+            //                    timesupport: timesupport,
+            //                    timeunit: timeunit,
+            //                    sourcedescription: sourcedescription,
+            //                    mean: mean,
+            //                    median: median,
+            //                    max: max,
+            //                    min: min,
+            //                    boxplot: boxplot,
+            //                    boxplot_count: boxplot_count
+            //                }
+            //                var table = $('#data_table').DataTable();//defines the primary table
+            //                table.row.add(dataset).draw();//adds data from the time series to the primary table
+            //
+            //                chart.render();//updated chart with new values
+            //
+            //                $('#data_table tbody tr:eq(' + number + ') td:eq(1)').click()
+            //                $('#data_table tbody tr:eq(' + number + ') td:eq(1)').click()
+            //
+            //                number = number + 1;
+            //                //console.log(chart)
+            //            }
+            //        }
+            //        //    end of looping through timeseries
+            //
+            //    }
+            //
+            //    if (end_of_resources == true)//checks to see if all the data is loaded before displaying
+            //    {
+            //        if (title == 1) {
+            //            //chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
+            //            chart.options.title.text = "CUAHSI Data Series Viewer*"
+            //            chart.render();
+            //        }
+            //        else {
+            //            //chart.setTitle({ text: "CUAHSI Data Series Viewer" });
+            //            chart.options.title.text = "CUAHSI Data Series Viewer"
+            //            chart.render();
+            //        }
+            //        $('#data_table tbody tr:eq(0) td:eq(1)').click()
+            //        $('#data_table tbody tr:eq(0) td:eq(1)').click()
+            //        for (i = 0; i < number; i++) {
+            //            $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
+            //            $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
+            //
+            //        }
+            //
+            //        finishloading();
+            //    }
+            //
+            //}
 
         },
         error: function () {
@@ -783,7 +809,7 @@ $(document).ready(function (callback) {
     $('#multiple_units').hide();
     $('#data_table_length').html("")
     $('#data_table_filter').html("")
-    $("#chart").toggle();
+    $("#chart").hide();
     // add the series to the chart
 
     // change the app title
@@ -826,17 +852,17 @@ function format(d) {
         '<td>' + d.sourcedescription + '</td>' +
         '</tr>' +
         '<tr>' +
-            '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:100px; margin-left:8.5%;font-size: 9pt">'+
-            '<td>Line Plot</td>'+
+        '<table cellpadding="5" cellspacing="0" border="0" style="padding-left:100px; margin-left:8.5%;font-size: 9pt">'+
+        '<td>Line Plot</td>'+
         '<td><label class="switch"> <input id= "'+d.number+'"type="checkbox"onClick ="scatter_line(this.id);"> <div class="slider round"></div> </label></td>' +
         '<td>' +
-            '<div id="scatter'+ d.number+'">Scatter Plot</div>' +
-            '' +
+        '<div id="scatter'+ d.number+'">Scatter Plot</div>' +
+        '' +
         '</td>' +
         '</table>'+
         '</tr>' +
         '</table>';
-            //'<input type="checkbox" checked data-toggle="toggle">
+    //'<input type="checkbox" checked data-toggle="toggle">
 }
 
 function box(number) {
@@ -882,7 +908,7 @@ function finishloading(callback) {
     $('#loading').hide();
     $('#multiple_units').show();
     var chart = $("#chartContainer").CanvasJSChart()
-    $("#chart").toggle();
+    $("#chart").show();
     chart.render();
 
 
@@ -968,7 +994,7 @@ function addingseries(unit_off) {
         }
         counter2 = counter2 + 1
         if (counter2 ==series_counter){end_of_resources =true}
-
+        console.log(end_of_resources)
         add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms);
 
 
@@ -987,7 +1013,7 @@ function multipletime() {
     resid_on = res
     chart.options.data = []
     chart.render()
-    $("#chart").toggle();
+    $("#chart").hide();
     ymax =0
     ymin=0
     y2max=0
@@ -1140,12 +1166,12 @@ function scatter_line(id){
 
     var type = chart1.options.data[id].type
     if(type =='line'){chart1.options.data[id].type = 'scatter'
-    //$("#line"+ id ).show()
-    //$('#scatter'+ id).hide()
+        //$("#line"+ id ).show()
+        //$('#scatter'+ id).hide()
     }
     else{chart1.options.data[id].type='line'
-    //$('#scatter'+ id).show()
-    //$('#line'+ id).hide()
+        //$('#scatter'+ id).show()
+        //$('#line'+ id).hide()
     }
     chart1.render()
     //res = selected_box.getAttribute("data-resid")
@@ -1154,3 +1180,440 @@ function scatter_line(id){
     //    chart1.render();
     //}
 }
+function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
+    json = data
+    //console.log(json2[series])
+    //json = json2[series]
+    //console.log(json)
+
+    //console.log(dseries)
+    // first of all check for the status
+    var status = json.status;
+    if (status !== 'success') //displays error
+    {
+        show_error(chart, "Error loading time series from " + res_id1 + ": " + status)
+        $('#loading').hide();
+        return;
+    }
+    var units = json.units;
+    var master_values = json.master_values;
+    var master_counter = json.master_counter;
+    var master_times = json.master_times;
+    var meta_dic = json.meta_dic;
+    var master_boxplot = json.master_boxplot
+    var master_stat = json.master_stat
+    var bad_meta = false
+    var bad_meta_counter = 0
+    id_qms_a_split = id_qms.split('aa')
+    for (val in master_values) {
+        meta1 = val.split("aa");
+        if (id_qms != 'meta') {
+            if (id_qms_a_split[0] == '') {
+                meta1[0] = ''
+            }
+            if (id_qms_a_split[1] == '') {
+                meta1[1] = ''
+            }
+            if (id_qms_a_split[2] == '') {
+                meta1[2] = ''
+            }
+        }
+        if (meta_dic['quality_code'][meta1[0]] == undefined) {
+            meta1[0] = ''
+        }
+        else {
+            meta1[0] = meta_dic['quality_code'][meta1[0]]
+        }
+        id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
+        val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
+
+        if (val1 != id_qms_a) {
+            bad_meta_counter += 1
+        }
+    }
+    if (bad_meta_counter == Object.keys(master_values).length) {
+        bad_meta = true
+    }
+    id_qms_a_split = id_qms.split('aa')
+
+    //console.log(master_values)
+
+    if (master_counter == true) {
+
+        for (val in master_values) {
+
+            if (bad_meta == true) {
+                val1 = ''
+                id_qms_a = ''
+            }
+            else {
+                meta1 = val.split("aa");
+
+                if (id_qms != 'meta') {
+
+                    if (id_qms_a_split[0] == '') {
+                        meta1[0] = ''
+                    }
+                    if (id_qms_a_split[1] == '') {
+                        meta1[1] = ''
+                    }
+                    if (id_qms_a_split[2] == '') {
+                        meta1[2] = ''
+                    }
+                }
+                if (meta_dic['quality_code'][meta1[0]] == undefined) {
+                    meta1[0] = ''
+                    //id_qms_a_split[0]=''
+                }
+                else {
+                    meta1[0] = meta_dic['quality_code'][meta1[0]]
+                }
+                id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
+                val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
+                id_qms_a_split = id_qms.split('aa')
+            }
+
+            if (id_qms_a == val1 || id_qms_a == 'meta') {
+                m_xval = []
+                m_yval = []
+                length_master = length_master + 1
+
+                master_id.push(val)
+                meta = val.split("aa");
+                code = meta_dic['quality_code'][meta[0]]
+                quality = meta_dic['quality'][code]
+                quality_code = [meta[0]]
+                method = meta_dic['method'][meta[1]]
+                sourcedescription = meta_dic['source'][meta[2]]
+                organization = meta_dic['organization'][meta[2]]
+                m_yval = master_times[val]
+                boxplot = master_boxplot[val]
+                mean = master_stat[val][0]
+                median = master_stat[val][1]
+                max = master_stat[val][2]
+                min = master_stat[val][3]
+                m_xval = master_values[val]
+                count = m_xval.length
+                var site_name = json.site_name
+                var variable_name = json.variable_name
+                var unit = json.units
+                var datatype = json.datatype
+                var valuetype = json.valuetype
+                var samplemedium = json.samplemedium
+                var timesupport = json.timesupport
+                var timeunit = json.timeunit
+                var boxplot_count = number
+                if (site_name == null) {
+                    site_name = "N/A"
+                }
+                if (variable_name == null) {
+                    variable_name = "N/A"
+                }
+                if (organization == null) {
+                    organization = "N/A"
+                }
+                if (quality == null) {
+                    quality = "N/A"
+                }
+                if (method == null) {
+                    method = "N/A"
+                }
+                if (datatype == null) {
+                    datatype = "N/A"
+                }
+                if (valuetype == null) {
+                    valuetype = "N/A"
+                }
+                if (unit == null) {
+                    unit = 'N/A'
+                }
+                if (timesupport == null) {
+                    timesupport = "N/A"
+                }
+                if (timeunit == null || timeunit == ' ') {
+                    timeunit = "N/A"
+                }
+                if (sourcedescription == null) {
+                    sourcedescription = "N/A"
+                }
+                if (samplemedium == null) {
+                    samplemedium = "N/A"
+                }
+                if (units != null) {
+                    units = units.replace(/\s+/g, '');//removes any spaces in the units
+                }
+                if (units == null) {
+                    units = "N/A";
+                }
+
+                var unit_off_bool = false
+                unit_tracker.push(units);//tracks the units of the different time series
+                unit_different2 = null;
+                same_unit = 1//goes to 2 when more than one unit type is graphed
+                yaxis = 0 //tracks which dataset set goes on which axis
+                var y_title = null;//tracks which variable to use for the yaxis title
+                test = []
+                for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
+                {
+
+                    temp_date = new Date(m_yval[i])
+                    test.push(temp_date)
+                    xtime.push({x: temp_date.getTime(), y: m_xval[i]})
+                }
+
+                data1 = xtime
+                //console.log(data1)
+                if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
+                {
+                    unit1 = unit_tracker[0];
+                    if (unit1 == units) {
+                        y_title = 0
+                    }
+                    if (unit1 != units)//checks the first unit type agaisnt the current unit
+                    {
+                        same_unit = 2;//flags which axis is to be used
+                        y_title = 1
+                        if (unit2 == null) {
+                            unit2 = units //this tracks the second unit type if there is one
+                        }
+                        if (units != unit2) {
+                            same_unit = 3
+                            y_title = 3
+                        }
+                    }
+                }
+                else {
+                    y_title = 3
+                    unit_off_bool = true
+                    if (units != unit_off) {
+                        if (units == unit1) {
+                            y_title = 0
+                            unit_off_bool = false
+                        }
+                        else if (resid_on == res_id) {
+                            y_title = 1
+                            unit_off_bool = false
+                        }
+                    }
+                }
+
+
+                if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
+
+                    if (max > ymax) {
+                        ymax = max
+                    }
+                    if (min < ymin) {
+                        ymin = min
+                    }
+
+                    var newSeries =
+                    {
+                        //type: "scatter",
+                        type: "line",
+                        axisYType: "primary",
+                        //axisYType:"secondary",
+                        xValueType: "dateTime",
+                        xValueFormatString: "MMM DD, YYYY: HH:mm",
+                        showInLegend: false,
+                        indexLabelFontSize: 1,
+                        visible: true,
+                        name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+                        dataPoints: data1
+                    };
+                    chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
+                    chart.options.axisY.titleWrap = true
+                    chart.options.data.push(newSeries);
+                    if (ymax == 0 && ymin == 0) {
+                        ymax = 4.5, ymin = 0
+                    }
+                    maxview = roundUp(Math.ceil(ymax))
+                    maxview = maxview + 0.1 * maxview
+                    minview = roundDown(Math.floor(ymin))
+                    minview = minview + minview * .1
+                    interval = (maxview - minview) / 10
+
+                    if (minview < 0) {
+                        maxview = 10 * interval + minview
+                        rem = minview / interval
+                        rem1 = Math.floor(rem)
+                        rem2 = rem1 - rem
+                        minview = (rem2 * interval + minview).toFixed(2)
+                        rema = maxview / interval
+                        rem1a = Math.ceil(rema)
+                        rem2a = rem1a - rema
+                        maxview = (rem2a * interval + maxview + maxview * .01).toFixed(2)
+
+                    }
+                    else {
+                        interval = (maxview - minview) / 11
+                        minview = (Math.ceil((minview / interval)) * interval)
+                    }
+                    chart.options.axisY.viewportMaximum = maxview
+                    chart.options.axisY.maximum = maxview
+                    chart.options.axisY.viewportMinimum = minview
+                    chart.options.axisY.minimum = minview
+                    chart.options.axisY.interval = interval
+
+                }
+                else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
+                    if (max > y2max) {
+                        y2max = max
+                    }
+                    if (min < y2min) {
+                        y2min = min
+                    }
+                    var newSeries =
+                    {
+                        type: "line",
+                        //axisYType:"primary",
+                        axisYType: "secondary",
+                        xValueType: "dateTime",
+                        xValueFormatString: "MMM DD, YYYY: HH:mm",
+                        showInLegend: false,
+                        indexLabelFontSize: 1,
+                        visible: true,
+                        name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+                        dataPoints: data1
+                    };
+
+                    chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
+                    chart.options.axisY2.titleWrap = true
+                    chart.options.data.push(newSeries);
+                    if (y2max == 0 && y2min == 0) {
+                        y2max = 4.5, y2min = 0
+                    }
+                    maxview2 = roundUp(Math.ceil(y2max))
+                    minview2 = roundDown(Math.floor(y2min))
+                    interval2 = ((maxview2 - minview2) / 10)
+                    if (minview2 < 0) {
+                        maxview = 10 * interva2l + minview2
+                        rem = minview2 / interval2
+                        rem1 = Math.floor(rem)
+                        rem2 = rem1 - rem
+                        minview = (rem2 * interval2 + minview2).toFixed(2)
+                        rema = maxview2 / interval2
+                        rem1a = Math.ceil(rema)
+                        rem2a = rem1a - rema
+                        maxview2 = (rem2a * interval2 + maxview2).toFixed(2)
+                    }
+                    else {
+                        interval2 = ((maxview2 - minview2) / 11)
+                        minview2 = (Math.ceil((minview2 / interval2)) * interval2)
+                    }
+                    chart.options.axisY2.viewportMaximum = maxview2
+                    chart.options.axisY2.viewportMinimum = minview2
+                    chart.options.axisY2.interval = interval2
+                }
+                else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
+                    var newSeries =
+                    {
+                        type: "line",
+                        //axisYType:"primary",
+                        axisYType: "primary",
+                        xValueType: "dateTime",
+                        showInLegend: false,
+                        indexLabelFontSize: 1,
+                        visible: false,
+                        name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+                        dataPoints: data1
+                    };
+                    chart.options.data.push(newSeries);
+                }
+                chart.options.axisY.titleFontSize = 15
+                chart.options.axisY2.titleFontSize = 15
+                chart.options.axisX.titleFontSize = 15
+                xtime = []
+
+                if ((unit1 != units && unit2 != units) || unit_off_bool == true)//this triggers if more than 2 different units are used
+                {
+                    var legend = "<div style='text-align:center'><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
+                        + " type='checkbox' onClick ='myFunc(this.id,this.name);' >" + "</div"
+                    $('#multiple_units').html("")
+                    $('#multiple_units').append('* Only two types of units are displayed at a time.');
+                    title = 1
+                    var chart = $("#chartContainer").CanvasJSChart()
+                }
+                else {
+                    var legend = "<div style='text-align:center' '><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
+                        + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
+                    var chart = $("#chartContainer").CanvasJSChart()
+                }
+
+                if (quality == "N/A") {
+                    quality_title = "N/A"
+                }
+                else {
+                    quality_title = quality //string representing the contents of the tooltip
+                    if (quality.length > 20) {
+                        quality = '(' + quality_code + ') ' + quality.substring(0, quality.indexOf(' ') + 1) + '...'
+                    }
+                }
+                var dataset = {
+                    legend: legend,
+                    number: number,
+                    organization: organization,
+                    name: site_name,
+                    variable: variable_name,
+                    unit: unit,
+                    samplemedium: samplemedium,
+                    count: count,
+                    //download:download,
+                    quality: quality,
+                    method: method,
+                    datatype: datatype,
+                    valuetype: valuetype,
+                    timesupport: timesupport,
+                    timeunit: timeunit,
+                    sourcedescription: sourcedescription,
+                    mean: mean,
+                    median: median,
+                    max: max,
+                    min: min,
+                    boxplot: boxplot,
+                    boxplot_count: boxplot_count
+                }
+                var table = $('#data_table').DataTable();//defines the primary table
+                table.row.add(dataset).draw();//adds data from the time series to the primary table
+
+                chart.render();//updated chart with new values
+
+                $('#data_table tbody tr:eq(' + number + ') td:eq(1)').click()
+                $('#data_table tbody tr:eq(' + number + ') td:eq(1)').click()
+
+                number = number + 1;
+                //console.log(chart)
+            }
+            console.log("aaaaa")
+        }
+        console.log(chart)
+        //    end of looping through timeseries
+
+    }
+    console.log("tessssssssssssssssssssting")
+    console.log(end_of_resources)
+    if (end_of_resources == true )//checks to see if all the data is loaded before displaying
+    {
+        if (title == 1) {
+            //chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
+            chart.options.title.text = "CUAHSI Data Series Viewer*"
+            chart.render();
+        }
+        else {
+            //chart.setTitle({ text: "CUAHSI Data Series Viewer" });
+            chart.options.title.text = "CUAHSI Data Series Viewer"
+            chart.render();
+        }
+        $('#data_table tbody tr:eq(0) td:eq(1)').click()
+        $('#data_table tbody tr:eq(0) td:eq(1)').click()
+        for (i = 0; i < number; i++) {
+            $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
+            $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
+
+        }
+        console.log("hhhhhhhhhhhhhhhhhhhhhhhhh")
+        finishloading();
+    }
+
+}
+
