@@ -44,7 +44,7 @@ def list_apps(request):
             'max_series': 1,
             'icon': 'https://appsdev.hydroshare.org/static/gap_filler_tool/images/icon.gif',
             }
-    app4 = {'name': 'Create HydroShare Resource',
+    app4 = {'name': 'HydroShare Resource Creator',
             'url': 'https://appsdev.hydroshare.org/apps/hydroshare-resource-creator/',
             'description': 'Creates a HydroShare resource from selected time series',
             'min_series': 1,
