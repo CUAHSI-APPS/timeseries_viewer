@@ -1182,12 +1182,6 @@ function scatter_line(id){
 }
 function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
     json = data
-    //console.log(json2[series])
-    //json = json2[series]
-    //console.log(json)
-
-    //console.log(dseries)
-    // first of all check for the status
     var status = json.status;
     if (status !== 'success') //displays error
     {

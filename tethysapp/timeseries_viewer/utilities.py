@@ -703,10 +703,17 @@ def parse_ts_layer(data):
     counter = 0
     print type(data)
     data = data.encode(encoding ='UTF-8')
+    data = data.replace("'",'"')
+    print data
     json_data = json.loads(data)
     print type(json_data)
+    print json_data
+    json_data = json_data["timeSeriesLayerResource"]
+    # json_data = json_data.replace("'",'"')
+    # json_data = urllib.unquote(json_data)
+    # json_data = json.loads(json_data)
     # print json_data
-    json_data = json.loads(json_data['timeSeriesLayerResource'])
+
     layer = json_data['REFTS']
     for sub in layer:
         ref_type= sub['refType']
@@ -740,7 +747,7 @@ def parse_ts_layer(data):
                 # response1 = unicode(response1.strip(codecs.BOM_UTF8), 'utf-8')
                 with open(file_path, 'w') as outfile:
                     outfile.write(response1)
-
+                print response1
                 # print client.service
                 print "done"
             if(service_type=='REST'):
