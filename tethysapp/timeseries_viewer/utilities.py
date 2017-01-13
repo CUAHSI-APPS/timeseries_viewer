@@ -184,10 +184,15 @@ def parse_1_0_and_1_1(root,id_qms):
                             meta_dic['quality_code'].update({m_code1:m_code})
                         # print meta_dic
                     elif 'value' == tag:
-                        try:
-                            n = element.attrib['dateTimeUTC']
-                        except:
-                            n =element.attrib['dateTime']
+                        # try:
+                        #     n = element.attrib['dateTimeUTC']
+                        # except:
+                        #     n =element.attrib['dateTime']
+                        n =element.attrib['dateTime']
+                        # if 'Z' in n:
+                        #     n = n.replace('Z','')
+                        #     print "there is a z"
+                        #     print n
                         try:
                             quality= element.attrib['qualityControlLevelCode']
                         except:
@@ -747,7 +752,7 @@ def parse_ts_layer(data):
                 # response1 = unicode(response1.strip(codecs.BOM_UTF8), 'utf-8')
                 with open(file_path, 'w') as outfile:
                     outfile.write(response1)
-                print response1
+                # print response1
                 # print client.service
                 print "done"
             if(service_type=='REST'):
