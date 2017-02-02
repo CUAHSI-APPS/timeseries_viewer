@@ -86,8 +86,6 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
     if (src==null){
         src='cuahsi'
     }
-    // in the start we show the loading...
-    // the res_id can contain multiple IDs separated by comma
     if(src == "xmlrest"){
         res_id1 = 'test1'
     }
@@ -101,6 +99,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
         type:"POST",
         headers:{'X-CSRFToken':csrf_token},
         dataType: 'json',
+        //timeout: 5000,
         data:{'url_xml':res_id},
         url: data_url,
         success: function (json1) {
@@ -109,7 +108,9 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
             var chart = $("#chartContainer").CanvasJSChart()
             json2 = json1.data
             //len = length(json2)
-            for (series in json2){len = len+1}
+            len = json2.length
+            //for (series in json2){len = len+1}
+            //console.log(len)
             for (series in json2){
                  plot_data(chart, res_id, end_of_resources, unit_off,id_qms,json2[series],len)
             }
@@ -330,7 +331,7 @@ $(document).ready(function (callback) {
                 data: [],
                 groupPadding: 0,
             }
-            // add the time series to the chart
+            // creating and formatting the boxplot for each time series
             series.data = [row.data().boxplot.map(Number)];
             var name_plot = '#container' + row.data().boxplot_count
             var chart = $(name_plot).highcharts();
@@ -363,8 +364,6 @@ $(document).ready(function (callback) {
     $('#data_table_length').html("")
     $('#data_table_filter').html("")
     $("#chart").hide();
-    // add the series to the chart
-
     // change the app title
     document.title = 'Data Series Viewer';
 })
@@ -488,6 +487,8 @@ function addingseries(unit_off) {
     }
     else if(src=='hydroshare'){
         var res_id = find_query_parameter("res_id");
+
+
         if (res_id != null) {
             res_ids = res_id.split(",");
             res_id = trim_input(res_id)
@@ -1099,7 +1100,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                 $('#data_table tbody tr:eq(' + number + ') td:eq(1)').click()
 
                 number = number + 1;
-                console.log(chart)
+                //console.log(chart)
             }
 
         }
@@ -1133,10 +1134,11 @@ function gridlines1_original(ymax,ymin){
     maxview = maxview + 0.1 * maxview
     minview = roundDown(Math.floor(ymin))
     minview = minview + minview * .1
-    console.log(maxview)
-    console.log(minview)
+
     interval = (maxview - minview) / 11
-    console.log(interval)
+    //console.log(maxview)
+    //console.log(minview)
+    //console.log(interval)
     if (minview < 0) {
         maxview = 10 * interval + minview
         rem = minview / interval
@@ -1160,25 +1162,16 @@ function gridlines(ymax,ymin){
     maxview = maxview + 0.1 * maxview
     minview = roundDown(Math.floor(ymin))
     minview = minview + minview * .1
-    console.log(maxview)
-    console.log(minview)
+
     interval = (maxview - minview) / 11
-    console.log(interval)
+    //console.log(interval)
+    //console.log(maxview)
+    //console.log(minview)
     if (minview < 0) {
         neg_interval = -1*Math.floor(minview/interval)
         pos_interval = 11-neg_interval
         maxview = pos_interval*interval
         minview = -1*neg_interval*interval
-        //maxview = 10 * interval + minview
-        //rem = minview / interval
-        //rem1 = Math.floor(rem)
-        //rem2 = rem1 - rem
-        //minview = (rem2 * interval + minview+minview *.00000001).toFixed(2)
-        //rema = maxview / interval
-        //rem1a = Math.ceil(rema)
-        //rem2a = rem1a - rema
-        //maxview = (rem2a * interval + maxview + maxview * .00000001).toFixed(2)
-
     }
     else {
         interval = (maxview - minview) / 11

@@ -28,6 +28,7 @@ from xml.sax._exceptions import SAXParseException
 import requests
 
 
+
 def get_app_base_uri(request):
     base_url = request.build_absolute_uri()
     if "?" in base_url:
@@ -557,12 +558,11 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
         file_number=0
         temp_dir = get_workspace()
         file_data =None
-        # get the URL of the remote zipped WaterML resource
+
         if not os.path.exists(temp_dir+"/id"):
             os.makedirs(temp_dir+"/id")
-        if 'cuahsi'in src :
-            url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
-        elif 'hydroshare' in src:
+
+        if 'hydroshare' in src:
             if controllers.use_hs_client_helper:
                 hs = controllers.get_oauth_hs(request)
             else:
@@ -571,7 +571,7 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
             hs.getResource(res_id, destination=file_path, unzip=True)
             root_dir = file_path + '/' + res_id
             data_dir = root_dir + '/' + res_id + '/data/contents/'
-            for subdir, dirs, files in os.walk(data_dir):
+            for subdir, dirs, files in os.walk(root_dir):
                 for file in files:
                     if  'wml_1_' in file:
                         data_file = data_dir + file
@@ -587,44 +587,31 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                         data_file = data_dir +file
                         with open(data_file, 'r') as f:
                             file_data = f.read()
-
                             file_number = parse_ts_layer(file_data)
-        elif "xmlrest" in src:
-
+        elif "xmlrest" in src: #Data from USGS and AHPS Gaugeviewer WML
             url_zip = res_id2
             res = urllib.unquote(res_id2).decode()
             r = requests.get(res, verify=False)
-
             file_data = r.content
             print file_data
             file_temp_name = temp_dir + '/id/'+xml_id+'.xml'
             file_temp = open(file_temp_name, 'wb')
             file_temp.write(file_data)
             file_temp.close()
-        else:
-            url_zip = 'http://' + request.META['HTTP_HOST'] + '/apps/data-cart/showfile/'+res_id
-
-
-        if src != 'hydroshare_generic' and src != 'xmlrest' and src !='hydroshare':
+        elif src=='cuahsi':
+             # get the URL of the remote zipped WaterML resource
+            url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
             try:
                 r = requests.get(url_zip, verify=False)
                 z = zipfile.ZipFile(StringIO.StringIO(r.content))
                 file_list = z.namelist()
                 try:
                     for file in file_list:
-                        if 'hydroshare' in src:
-                            if 'wml_1_' in file:
-                                file_data = z.read(file)
-                                file_temp_name = temp_dir + '/id/' + res_id + '.xml'
-                                file_temp = open(file_temp_name, 'wb')
-                                file_temp.write(file_data)
-                                file_temp.close()
-                        else:
-                            file_data = z.read(file)
-                            file_temp_name = temp_dir + '/id/' + res_id + '.xml'
-                            file_temp = open(file_temp_name, 'wb')
-                            file_temp.write(file_data)
-                            file_temp.close()
+                        file_data = z.read(file)
+                        file_temp_name = temp_dir + '/id/' + res_id + '.xml'
+                        file_temp = open(file_temp_name, 'wb')
+                        file_temp.write(file_data)
+                        file_temp.close()
                 # error handling
 
                 # checks to see if data is an xml
@@ -674,8 +661,6 @@ def error_report(text):
 def viewer_counter(request):
     temp_dir = get_workspace()
     try:
-
-
         if controllers.use_hs_client_helper:
             hs = controllers.get_oauth_hs(request)
         else:
@@ -706,19 +691,11 @@ def viewer_counter(request):
         user1=''
 def parse_ts_layer(data):
     counter = 0
-    print type(data)
+    error=''
     data = data.encode(encoding ='UTF-8')
     data = data.replace("'",'"')
-    print data
     json_data = json.loads(data)
-    print type(json_data)
-    print json_data
     json_data = json_data["timeSeriesLayerResource"]
-    # json_data = json_data.replace("'",'"')
-    # json_data = urllib.unquote(json_data)
-    # json_data = json.loads(json_data)
-    # print json_data
-
     layer = json_data['REFTS']
     for sub in layer:
         ref_type= sub['refType']
@@ -728,7 +705,6 @@ def parse_ts_layer(data):
         variable_code = sub['variableCode']
         start_date = sub['beginDate']
         end_date = sub['endDate']
-
         if ref_type =='WOF':
             if service_type =='SOAP':
                 print url
@@ -743,24 +719,25 @@ def parse_ts_layer(data):
                 # end_date = '2016-10-26T00:00:00+00:00'
                 auth_token = ''
                 client = connect_wsdl_url(url)
-                # response1 = client.service.GetSiteInfo('NWISDV:10147100')
-                response1 = client.service.GetValues(site_code, variable_code, start_date, end_date)
+                print client
+                print "client!!!!!!!!!!!!!!!!!!!!!"
 
+                try:
+                    response1 = client.service.GetValues(location= site_code, variable=variable_code, startDate = start_date, endDate= end_date,authoToken='')
+                except:
+                    error = "unable to connect to HydroSever"
                 temp_dir = get_workspace()
                 file_path = temp_dir + '/id/' + 'timeserieslayer'+str(counter) + '.xml'
                 response1 = response1.encode('utf-8')
                 # response1 = unicode(response1.strip(codecs.BOM_UTF8), 'utf-8')
                 with open(file_path, 'w') as outfile:
                     outfile.write(response1)
-                # print response1
-                # print client.service
                 print "done"
             if(service_type=='REST'):
                 waterml_url = url+'/GetValueObject'
                 response = urllib2.urlopen(waterml_url)
                 html = response.read()
             counter = counter +1
-
     return counter
 def connect_wsdl_url(wsdl_url):
     try:
