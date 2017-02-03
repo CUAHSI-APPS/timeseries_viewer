@@ -46,7 +46,7 @@ def list_apps(request):
             }
     app4 = {'name': 'Create HydroShare Resource',
             # 'name': 'HydroShare Resource Creator',
-            'url': 'https://appsdev.hydroshare.org/apps/hydroshare-resource-creator',
+            'url': 'https://appsdev.hydroshare.org/apps/hydroshare-resource-creator/',
             'description': 'Creates a HydroShare resource from selected time series',
             'min_series': 1,
             'max_series': 10,

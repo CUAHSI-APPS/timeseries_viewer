@@ -90,8 +90,6 @@ def home(request):
     method=[]
     sourceid=[]
     test = request.GET.getlist('MethodId')
-
-    print "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaa"
     print test
     try: #Check to see if request if from CUAHSI. For data validation
         request_url = request.META['HTTP_REFERER']
