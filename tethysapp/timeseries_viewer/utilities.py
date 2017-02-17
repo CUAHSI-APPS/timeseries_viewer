@@ -581,7 +581,7 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
             else:
                 hs = controllers.getOAuthHS(request)
             file_path = get_workspace() + '/id'
-            # hs.getResource(res_id, destination=file_path, unzip=True)
+            hs.getResource(res_id, destination=file_path, unzip=True)
             root_dir = file_path + '/' + res_id
             data_dir = root_dir + '/' + res_id + '/data/contents/'
             for subdir, dirs, files in os.walk(root_dir):

@@ -11,8 +11,8 @@ var y2min=0
 //tool tip for the quality control column
 var quality_title=null
 var number = 0
-var unit_list = [];
-var title = 0
+
+
 var unit3 = ''
 var res = null
 // here we set up the configuration of the CanvasJS chart
@@ -98,7 +98,6 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
         type:"POST",
         headers:{'X-CSRFToken':csrf_token},
         dataType: 'json',
-
         //timeout: 5000,
         data:{'url_xml':res_id},
         url: data_url,
@@ -214,22 +213,18 @@ function myFunc(id, name) {
 var popupDiv = $('#welcome-popup');
 $(document).ready(function (callback) {
     console.log("ready")
-
     var src = find_query_parameter("SourceId");
     var wu = find_query_parameter("WofUri");
-
     var source =find_query_parameter("Source");
     if (source[0] == "cuahsi"){
         src='cuahsi'
     }
-
     else{
         var src1 = find_query_parameter("src");
 
         if (src1 =='hydroshare'){src = src1}
         else if (src1 =='xmlrest'){src=src1}
         else{src =null}
-
     }
     var table = $('#data_table').DataTable({
         "createdRow": function (row, data, dataIndex) {
@@ -454,8 +449,7 @@ function finishloading(callback) {
     var chart = $("#chartContainer").CanvasJSChart()
     $("#chart").show();
     chart.render();
-    console.log(chart)
-    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
 
 }
 
@@ -473,21 +467,10 @@ function addingseries(unit_off) {
     else if (source[0]=''){window.location ='http://data.cuahsi.org/#'}
 
     if (src =='cuahsi'){
-        //var res_id=$('#cuahsi_ids').text()
-        //var quality=$('#quality').text()
-        //var method=$('#method').text()
-        //var sourceid=$('#sourceid').text()
-
-
         var res_id=find_query_parameter('WofUri')
         var quality=find_query_parameter('QCLID')
         var method=find_query_parameter('MethodId')
         var sourceid = find_query_parameter('SourceId')
-
-        //res_id =trim_input(res_id)
-        //quality =trim_input(quality)
-        //method =trim_input(method)
-        //sourceid =trim_input(sourceid)
     }
     else if(src=='hydroshare'){
         var res_id = find_query_parameter("res_id");
@@ -527,11 +510,10 @@ function addingseries(unit_off) {
         ])
     $("#chartContainer").CanvasJSChart(chart_options);
     var chart = $("#chartContainer").CanvasJSChart()
-    counter2 = 0
+    var counter = 0
 
     for (var id in res_id){
         xtime = []
-
         if( src =='cuahsi'){
             if(quality[id]=='null' || quality[id]=='None')
             {quality1=''}
@@ -547,12 +529,9 @@ function addingseries(unit_off) {
         else{
             id_qms="meta"
         }
-        counter2 = counter2 + 1
-        if (counter2 ==series_counter){end_of_resources =true}
-        //console.log(end_of_resources)
+        counter = counter + 1
+        if (counter ==series_counter){end_of_resources =true}
         add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms);
-
-
     }
 }
 function multipletime() {
@@ -610,15 +589,11 @@ function trim_input(string){
 function find_query_parameter(name) {
     url = location.href;
     values=[]
-    //name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-    //console.log(url)
     url1 = url.split('?')
     if (url1[1]==undefined){values.push('')}
     else {
         url1 = url1[1].split('&')
-
         for (e in url1) {
-            //console.log(url1[e].indexOf(name))
             if (url1[e].indexOf(name) == 0) {
                 string = url1[e]
                 string = string.split('=')
@@ -626,26 +601,14 @@ function find_query_parameter(name) {
             }
         }
     }
-    //console.log(values)
-    //var regexS = "[\\?&]" + name + "=([^&#]*)";
-    ////console.log(regexS)
-    //var regex = new RegExp(regexS);
-    ////console.log(regex)
-    //var results = regex.exec(url);
-    ////console.log(results)
-    //return results == null ? null : results[1];
     return values
 }
 function scatter_line(id){
-
     var chart1 = $("#chartContainer").CanvasJSChart()
     data = chart1.options.data
     var size = Object.keys(data).length;
-    console.log(size)
     var selected_box = document.getElementById(id)
-
     var chk_unit = document.getElementById(id).name;
-
     var type = chart1.options.data[id].type
     if(type =='line'){
         chart1.options.data[id].type = 'scatter'
@@ -666,7 +629,6 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
         $('#loading').hide();
         return;
     }
-    console.log(json)
     var units = json.units;
     var master_values = json.master_values;
     var master_counter = json.master_counter;
@@ -744,21 +706,16 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                 val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
                 id_qms_a_split = id_qms.split('aa')
             }
-
             if (id_qms_a == val1 || id_qms_a == 'meta') {
                 m_xval = []
                 m_yval = []
                 length_master = length_master + 1
-
                 master_id.push(val)
                 meta = val.split("aa");
-
                 code = meta_dic['quality_code'][meta[0]]
-
                 quality = meta_dic['quality'][code]
                 quality_code = [meta[0]]
                 method = meta_dic['method'][meta[1]]
-
                 sourcedescription = meta_dic['source'][meta[2]]
                 organization = meta_dic['organization'][meta[2]]
                 m_yval = master_times[val]
@@ -817,10 +774,6 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                 if (units != null) {
                     units = units.replace(/\s+/g, '==');//removes any spaces in the units
                 }
-                if (units == null) {
-                    units = "N/A";
-                }
-
                 var unit_off_bool = false
                 unit_tracker.push(units);//tracks the units of the different time series
                 unit_different2 = null;
@@ -830,20 +783,12 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                 test = []
                 for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
                 {
-
                     temp_date = new Date(m_yval[i])
                     test.push(temp_date)
                     actual_date = temp_date.getTimezoneOffset()*1000*60+temp_date.getTime()
-                    //console.log(actual_date)
                     xtime.push({x:actual_date , y: m_xval[i]})
-                    //xtime.push({x: temp_date.getTime(), y: m_xval[i]})
                 }
-
                 data1 = xtime
-
-
-                var offset = new Date().getTimezoneOffset();
-
                 if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
                 {
                     unit1 = unit_tracker[0];
@@ -877,18 +822,13 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                         }
                     }
                 }
-                //console.log(y_title)
-
-
                 if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
-
                     if (max > ymax) {
                         ymax = max
                     }
                     if (min < ymin) {
                         ymin = min
                     }
-
                     var newSeries =
                     {
                         //type: "scatter",
@@ -909,15 +849,12 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                     if (ymax == 0 && ymin == 0) {
                         ymax = 4.5, ymin = 0
                     }
-                    console.log(ymax,ymin)
                     grid_values = gridlines(ymax,ymin)
-
                     chart.options.axisY.viewportMaximum = grid_values.maxview
                     chart.options.axisY.maximum = grid_values.maxview
                     chart.options.axisY.viewportMinimum = grid_values.minview
                     chart.options.axisY.minimum = grid_values.minview
                     chart.options.axisY.interval = grid_values.interval
-
                 }
                 else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
                     if (max > y2max) {
@@ -939,21 +876,18 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                         name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
                         dataPoints: data1
                     };
-
                     chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
                     chart.options.axisY2.titleWrap = true
                     chart.options.data.push(newSeries);
                     if (y2max == 0 && y2min == 0) {
                         y2max = 4.5, y2min = 0
                     }
-
                     grid_values = gridlines(y2max,y2min)
                     chart.options.axisY2.viewportMaximum = grid_values.maxview
                     chart.options.axisY2.viewportMinimum = grid_values.minview
                     chart.options.axisY2.interval = grid_values.interval
                     chart.options.axisY2.maximum = grid_values.maxview
                     chart.options.axisY2.minimum = grid_values.minview
-
                 }
                 else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
                     var newSeries =
@@ -988,8 +922,9 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                     var legend = "<div style='text-align:center' '><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
                         + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
                     var chart = $("#chartContainer").CanvasJSChart()
+                    title=0
                 }
-                console.log(quality)
+
                 if (quality == "N/A") {
                     quality_title = "N/A"
                 }
@@ -1025,17 +960,9 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                 }
                 var table = $('#data_table').DataTable();//defines the primary table
                 table.row.add(dataset).draw();//adds data from the time series to the primary table
-
                 chart.render();//updated chart with new values
-
-                //$('#data_table tbody tr:eq(' + number + ') td:eq(1)').click()
-                //$('#data_table tbody tr:eq(' + number + ') td:eq(1)').click()
-                //$('td', number).eq(0).css("backgroundColor", "#fbfd07")
-
                 number = number + 1;
-                //console.log(chart)
             }
-
         }
         //    end of looping through timeseries
     }
@@ -1059,19 +986,13 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
         }
         finishloading();
     }
-
 }
 function gridlines(ymax,ymin){
     maxview = roundUp(Math.ceil(ymax))
     maxview = maxview + 0.1 * maxview
     minview = roundDown(Math.floor(ymin))
-    console.log(minview)
     minview = minview + minview * .1
-
     interval = Math.ceil(maxview - minview) / 11
-    //console.log(interval)
-    //console.log(maxview)
-    //console.log(minview)
     if (minview < 0) {
         console.log(minview)
         neg_interval = Math.ceil(-1*(minview/interval))
@@ -1085,6 +1006,5 @@ function gridlines(ymax,ymin){
         interval = (maxview - minview) / 11
         minview = (Math.ceil((minview / interval)) * interval)
     }
-    console.log(maxview,minview,interval)
     return {'maxview':maxview,'minview':minview,'interval':interval}
 }
