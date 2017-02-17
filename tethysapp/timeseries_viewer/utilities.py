@@ -26,6 +26,7 @@ from suds.transport import TransportError
 from suds.client import Client
 from xml.sax._exceptions import SAXParseException
 import requests
+import sqlite3
 
 
 
@@ -51,7 +52,8 @@ def get_version(root):
 
     return wml_version
 
-def parse_1_0_and_1_1(root,id_qms):
+def parse_1_0_and_1_1(root):
+    print root
     root_tag = root.tag.lower()
     boxplot = []
     master_values=collections.OrderedDict()
@@ -92,10 +94,13 @@ def parse_1_0_and_1_1(root,id_qms):
 
                     if 'value'!= tag:
                         # in the xml there is a unit for the value, then for time. just take the first
+                        # print tag
                         if 'unitName' == tag or 'units' ==tag or 'UnitName'==tag or 'unitCode'==tag:
                             if not unit_is_set:
                                 units = element.text
+                                print units
                                 unit_is_set = True
+                        # print units
                         if 'noDataValue' == tag:
                             nodata = element.text
                         if 'siteName' == tag:
@@ -240,17 +245,21 @@ def parse_1_0_and_1_1(root,id_qms):
                         v = element.text
                         if v == nodata:
                             value = None
-                            x_value.append(n)
-                            y_value.append(value)
+                            # x_value.append(n)
+                            # y_value.append(value)
                             v =None
 
                         else:
                             v = float(element.text)
-                            x_value.append(n)
-                            y_value.append(v)
+                            # x_value.append(n)
+                            # y_value.append(v)
                             master_data_values[dic].append(v) #records only none null values for running statistics
                         master_values[dic].append(v)
                         master_times[dic].append(n)
+
+
+
+
             for item in master_data_values:
                 if len(master_data_values[item]) ==0:
                     mean = None
@@ -282,7 +291,7 @@ def parse_1_0_and_1_1(root,id_qms):
                 'variable_name': variable_name,
                 'units': units,
                 'meta_dic':meta_dic,
-                'for_canvas':for_canvas,
+
                 'organization': organization,
                 'quality': quality,
                 'method': method,
@@ -294,11 +303,12 @@ def parse_1_0_and_1_1(root,id_qms):
                 'sourcedescription' :sourcedescription,
                 'timesupport' : timesupport,
                 'master_counter':master_counter,
-                'boxplot':boxplot,
+
                 'master_values':master_values,
                 'master_times':master_times,
                 'master_boxplot':master_boxplot,
-                'master_stat':master_stat
+                'master_stat':master_stat,
+                'master_data_values':master_data_values
             }
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
@@ -524,7 +534,7 @@ def parse_2_0(root):#waterml 2 has not been implemented in the viewer at this ti
 
 
 
-def Original_Checker(xml_file,id_qms):
+def Original_Checker(xml_file):
 
     print xml_file
     try:
@@ -534,7 +544,7 @@ def Original_Checker(xml_file,id_qms):
 
         if wml_version == '1':
 
-            return parse_1_0_and_1_1(root,id_qms)
+            return parse_1_0_and_1_1(root)
 
         elif wml_version == '2.0':
             return parse_2_0(root)
@@ -554,11 +564,14 @@ def read_error_file(xml_file):
         return {'status': 'invalid WaterML file'}
 
 def unzip_waterml(request, res_id,src,res_id2,xml_id):
+    # try:
         print src
         file_number=0
         temp_dir = get_workspace()
         file_data =None
-
+        file_type ='waterml'
+        error=''
+        data_file=''
         if not os.path.exists(temp_dir+"/id"):
             os.makedirs(temp_dir+"/id")
 
@@ -568,13 +581,14 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
             else:
                 hs = controllers.getOAuthHS(request)
             file_path = get_workspace() + '/id'
-            hs.getResource(res_id, destination=file_path, unzip=True)
+            # hs.getResource(res_id, destination=file_path, unzip=True)
             root_dir = file_path + '/' + res_id
             data_dir = root_dir + '/' + res_id + '/data/contents/'
             for subdir, dirs, files in os.walk(root_dir):
                 for file in files:
+                    data_file = data_dir + file
                     if  'wml_1_' in file:
-                        data_file = data_dir + file
+
                         with open(data_file, 'r') as f:
                             # print f.read()
                             file_data = f.read()
@@ -584,10 +598,15 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                             file_temp.write(file_data)
                             file_temp.close()
                     if '.json.refts' in file:
-                        data_file = data_dir +file
+
                         with open(data_file, 'r') as f:
                             file_data = f.read()
                             file_number = parse_ts_layer(file_data)
+                    if '.sqlite' in file:
+                        file_type = 'sqlite'
+                        # with open(data_file, 'r') as f:
+
+
         elif "xmlrest" in src: #Data from USGS and AHPS Gaugeviewer WML
             url_zip = res_id2
             res = urllib.unquote(res_id2).decode()
@@ -609,9 +628,10 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                     for file in file_list:
                         file_data = z.read(file)
                         file_temp_name = temp_dir + '/id/' + res_id + '.xml'
-                        file_temp = open(file_temp_name, 'wb')
-                        file_temp.write(file_data)
-                        file_temp.close()
+                        # file_temp = open(file_temp_name, 'wb')
+                        with open(file_temp_name, 'wb') as f:
+                            f.write(file_data)
+                            # file_temp.close()
                 # error handling
 
                 # checks to see if data is an xml
@@ -637,7 +657,10 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                     error_message = "Bad Zip File"
                     error_report(error_message)
                     print "Bad Zip file"
-        return file_number
+        return {'file_number':file_number,"file_type":file_type,'error':error,'file_path':data_file}
+    # except:
+    #     print "There was an error loading your file"
+    #     return "There was an error loading your file"
 # finds the waterML file path in the workspace folder
 def waterml_file_path(res_id,xml_rest,xml_id):
     base_path = get_workspace()
@@ -719,8 +742,8 @@ def parse_ts_layer(data):
                 # end_date = '2016-10-26T00:00:00+00:00'
                 auth_token = ''
                 client = connect_wsdl_url(url)
-                print client
-                print "client!!!!!!!!!!!!!!!!!!!!!"
+                # print client
+                # print "client!!!!!!!!!!!!!!!!!!!!!"
 
                 try:
                     response1 = client.service.GetValues(location= site_code, variable=variable_code, startDate = start_date, endDate= end_date,authoToken='')
@@ -729,6 +752,8 @@ def parse_ts_layer(data):
                 temp_dir = get_workspace()
                 file_path = temp_dir + '/id/' + 'timeserieslayer'+str(counter) + '.xml'
                 response1 = response1.encode('utf-8')
+                # print response1
+                # print "Response"
                 # response1 = unicode(response1.strip(codecs.BOM_UTF8), 'utf-8')
                 with open(file_path, 'w') as outfile:
                     outfile.write(response1)
@@ -751,3 +776,209 @@ def connect_wsdl_url(wsdl_url):
     except:
         raise Exception("Unexpected error")
     return client
+def parse_odm2(file_path,result_num):
+    #assumes only one time series in the database!!!!!!!!!!
+    print "hi"
+    master_times=[]
+    master_values=collections.OrderedDict()
+    master_times = collections.OrderedDict()
+    site_name =None
+    variable_name=None
+    units=None
+    meta_dic=None
+    for_canvas=None
+    organization=None
+    quality=None
+    method=None
+    source=None
+    datatype=None
+    valuetype=None
+    samplemedium=None
+    timeunit=None
+    sourcedescription=None
+    timesupport=None
+    master_counter=True
+    boxplot=None
+    master_boxplot = collections.OrderedDict()
+    master_stat = collections.OrderedDict()
+    master_data_values = collections.OrderedDict()
+    meta_dic ={'method':{},'quality':{},'source':{},'organization':{},'quality_code':{}}
+    meth_qual = [] # List of all the quality, method, and source combinations
+    nodatavalue=None
+    conn = sqlite3.connect(file_path)
+    c = conn.cursor()
+    # c.execute('SELECT Variables.VariableNameCV,Units.UnitsName,Units.UnitsID '
+    #           'FROM Results,Variables,Units '
+    #           'WHERE Results.ResultID='+result_num+' '
+    #           'AND ((Results.VariableID = Variables.VariableID) OR (Results.UnitsID = Units.UnitsID))')
+    # var_unit = c.fetchall()
+
+
+
+    c.execute('SELECT Variables.VariableNameCV,Units.UnitsName,Results.SampledMediumCV,Variables.NoDataValue '
+              'FROM Results,Variables,Units '
+              'WHERE Results.ResultID='+result_num+' '
+              'AND Results.UnitsID = Units.UnitsID AND Results.VariableID = Variables.VariableID')
+    var_unit = c.fetchall()
+    for unit in var_unit:
+        variable_name = unit[0]
+        units=unit[1]
+        samplemedium= unit[2]
+        nodatavalue=unit[3]
+    c.execute('SELECT  TimeSeriesResults.IntendedTimeSpacing, Units.UnitsName,TimeSeriesResults.AggregationStatisticCV '
+              'FROM TimeSeriesResults, Units '
+              'WHERE TimeSeriesResults.ResultID ='+result_num+' '
+              'AND TimeSeriesResults.IntendedTimeSpacingUnitsID = Units.UnitsID')
+    time_support = c.fetchall()
+    for time in time_support:
+        timeunit = time[1]
+
+        timesupport=time[0]
+        datatype=time[2]
+    print var_unit
+    # c.execute('SELECT Variables.VariableNameCV,Units.UnitsName '
+    #           'FROM Results,Variables,Units ')
+    #
+    # var_unit = c.fetchall()
+    # print var_unit
+
+
+    #Seperate timeseries by result id . Build dictionary of meta data for each result and then loop through values and assign to apporpiate dictionary
+    #Methods
+    print "AAAAAAAAAAAAAAAAAAAAAA"
+    c.execute('SELECT Results.ResultID,Methods.MethodID,Methods.MethodName, SamplingFeatures.SamplingFeatureName,Actions.ActionTypeCV '
+              'FROM Results,FeatureActions,Actions,Methods, SamplingFeatures '+
+              'WHERE Results.ResultID='+result_num+' '
+              'AND Results.FeatureActionID=FeatureActions.FeatureActionID '+
+              'AND ((FeatureActions.ActionID=Actions.ActionID '
+              'AND Actions.MethodID=Methods.MethodID) OR(FeatureActions.SamplingFeatureID = SamplingFeatures.SamplingFeatureID)) ')
+    methods = c.fetchall()#Returns Result id method id and method description for each result
+    #Quality Control
+    c.execute('SELECT ProcessingLevels.ProcessingLevelCode, ProcessingLevels.Explanation '
+              'FROM Results, ProcessingLevels '+
+              'WHERE Results.ResultID='+result_num+' '
+              'AND Results.ProcessingLevelID = ProcessingLevels.ProcessingLevelID')
+    qualityControl = c.fetchall()
+    c.execute('SELECT Organizations.OrganizationID,Organizations.OrganizationName,Organizations.OrganizationName '
+              'FROM Organizations,Affiliations,ActionBy,Actions,FeatureActions,Results '+
+              'WHERE Results.ResultID='+result_num+' '
+              'AND Results.FeatureActionID=FeatureActions.FeatureActionID '+
+              'AND FeatureActions.ActionID=Actions.ActionID '+
+              'AND Actions.ActionID=ActionBy.ActionID '+
+              'AND ActionBy.AffiliationID = Affiliations.AffiliationID '+
+              'AND Affiliations.OrganizationID = Organizations.OrganizationID ')
+    # c.execute('Select *')
+    organizations = c.fetchall()
+    for meth,qual,org in zip(methods,qualityControl,organizations):
+        print meth,qual,org
+        result_id=str(meth[0])
+        m_code=meth[1]
+        m_des= meth[2]
+        site_name = meth[3]
+        valuetype=meth[4]
+
+        q_code=qual[0]
+        q_des=qual[1]
+
+        s_code=org[0]
+        o_org=org[1]
+        s_des=org[2]
+
+        # print ele[0]
+
+        # result_id.update(ele[0])
+        print "BBBBBBBBBBBBBBBBBB"
+
+        meta_dic['method'].update({m_code:m_des})
+
+        meta_dic['quality_code'].update({q_code:q_code})
+        meta_dic['quality'].update({q_code:q_des})
+
+        meta_dic['source'].update({s_code:s_des})
+        meta_dic['organization'].update({s_code:o_org})
+
+
+        dic = str(q_code) +'aa'+str(m_code)+'aa'+str(s_code)
+        # dic = dic.replace(" ","")
+        if dic not in meth_qual:
+            # meth_qual.append(dic)
+            master_values.update({dic:[]})
+            master_times.update({dic:[]})
+            master_boxplot.update({dic:[]})
+            master_stat.update({dic:[]})
+            master_data_values.update({dic:[]})
+
+
+
+    c.execute('SELECT ResultID,ValueDateTime,DataValue FROM TimeSeriesResultValues')
+    data = c.fetchall()
+    print "end of dic setup"
+    for ele in data:
+        res_id = ele[0]
+        if int(result_num) ==res_id:
+            v = ele[2]
+            n= ele[1]
+            # if v == nodata:
+            if v == nodatavalue:
+                v =None
+            else:
+                v = float(v)
+                master_data_values[dic].append(v) #records only none null values for running statistics
+            master_values[dic].append(v)
+            master_times[dic].append(n)
+
+    for item in master_data_values:
+        if len(master_data_values[item]) ==0:
+            mean = None
+            median =None
+            quar1 = None
+            quar3 = None
+            min1 = None
+            max1=None
+        else:
+
+            mean = numpy.mean(master_data_values[item])
+            mean = float(format(mean, '.2f'))
+            median = float(format(numpy.median(master_data_values[item]), '.2f'))
+            quar1 = float(format(numpy.percentile(master_data_values[item],25), '.2f'))
+            quar3 = float(format(numpy.percentile(master_data_values[item],75), '.2f'))
+            min1 = float(format(min(master_data_values[item]), '.2f'))
+            max1 = float(format(max(master_data_values[item]), '.2f'))
+
+        master_stat[item].append(mean)
+        master_stat[item].append(median)
+        master_stat[item].append(max1)
+        master_stat[item].append(min1)
+        master_boxplot[item].append(1)
+        master_boxplot[item].append(min1)#adding data for the boxplot
+        master_boxplot[item].append(quar1)
+        master_boxplot[item].append(median)
+        master_boxplot[item].append(quar3)
+        master_boxplot[item].append(max1)
+
+    conn.close()
+    return {
+                'site_name': site_name,
+                'variable_name': variable_name,
+                'units': units,
+                'meta_dic':meta_dic,
+
+                'organization': organization,
+                'quality': quality,
+                'method': method,
+                'status': 'success',
+                'datatype' :datatype,
+                'valuetype' :valuetype,
+                'samplemedium':samplemedium,
+                'timeunit':timeunit,
+                'sourcedescription' :sourcedescription,
+                'timesupport' : timesupport,
+                'master_counter':master_counter,
+
+                'master_values':master_values,
+                'master_times':master_times,
+                'master_boxplot':master_boxplot,
+                'master_stat':master_stat,
+                'master_data_values':master_data_values
+
+            }

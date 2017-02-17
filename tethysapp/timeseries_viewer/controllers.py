@@ -18,6 +18,7 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 import urllib
+import sqlite3
 # -- coding: utf-8--
 import logging
 logger = logging.getLogger(__name__)
@@ -39,14 +40,57 @@ def temp_waterml(request, id):
 # formats the time series for highcharts
 
 # @ensure_csrf_cookie
+def home(request):
+    # ids=[]
+    # meta =[]
+    # source=[]
+    # quality=[]
+    # method=[]
+    # sourceid=[]
+    # test = request.GET.getlist('MethodId')
+    # print test
+    try: #Check to see if request if from CUAHSI. For data validation
+        request_url = request.META['HTTP_REFERER']
+    except:
+        request_url ="test"
+    # data = request.META['QUERY_STRING']#stores all values in the query string
+    # data = data.encode(encoding ='UTF-8')#encodes the data string to avoid having unicode character in string
+    # data  =data.split('&')
+    # for e in data:
+    #     s= e.split('=')
+    #     meta.append(s)
+    # for e in meta:
+    #     print e
+    #     if e[0] == 'Source':
+    #         source.append(e[1])
+    #     if e[0] == 'WofUri':
+    #         ids.append(e[1])
+    #     if e[0] == 'QCLID':
+    #         quality.append(e[1])
+    #     if e[0] == 'MethodId':
+    #         method.append(e[1])
+    #     if e[0] == 'SourceId':
+    #         sourceid.append(e[1])
+
+    utilities.viewer_counter(request)
+    #the parametes passed from CUAHSI are stored in a hidden div on the home page so that the js file is able to read them
+    context = {}
+    # context = {'source':source,
+    #            'cuahsi_ids':ids,
+    #            'quality':quality,
+    #            'method':method,
+    #            'sourceid':sourceid,
+    #            }
+    return render(request, 'timeseries_viewer/home.html', context)
 @csrf_exempt
 @never_cache
-def chart_data(request, res_id, src,id_qms):
+def chart_data(request, res_id, src):
     data_for_chart =[]
     test = ''
     file_number =0
     xml_id = None
     xml_rest = False
+    temp_dir = utilities.get_workspace()
     if "xmlrest" in src:#id from USGS Gauge Viewer app
         xml_rest = True
         test = request.POST.get('url_xml')
@@ -54,75 +98,50 @@ def chart_data(request, res_id, src,id_qms):
 
     # print datetime.now()
     # checks if we already have an unzipped xml file
-    file_path = utilities.waterml_file_path(res_id,xml_rest,xml_id)
-    if src =='hydroshare':
-        file_number = utilities.unzip_waterml(request, res_id, src, test,xml_id)
-    else:
-        if not os.path.exists(file_path):
-            file_number = utilities.unzip_waterml(request, res_id, src, test,xml_id)
+
+    # print file_path
+    # if not os.path.exists(file_path):
+    file_meta = utilities.unzip_waterml(request, res_id, src, test,xml_id)
     # if we don't have the xml file, downloads and unzips it
-    if file_number >0:
-        for i in range(0,file_number):
-            print i
-            temp_dir = utilities.get_workspace()
-            file_path = temp_dir+'/id/timeserieslayer' + str(i) + '.xml'
-            data_for_chart.append(utilities.Original_Checker(file_path,id_qms))
-        # data_for_chart.append({'file_number':file_number})
-    else:
-        # returns an error message if the unzip_waterml failed
-        if not os.path.exists(file_path):
-            data_for_chart = {'status': 'Resource file not found'}
+    print file_meta
+    file_number = int(file_meta['file_number'])
+    if file_meta['file_type']=='waterml':
+        print "waterml"
+        file_path = utilities.waterml_file_path(res_id,xml_rest,xml_id)
+        if file_number >0:
+            for i in range(0,file_number):
+
+                file_path = temp_dir+'/id/timeserieslayer' + str(i) + '.xml'
+                print file_path
+                data_for_chart.append(utilities.Original_Checker(file_path,))
+            # data_for_chart.append({'file_number':file_number})
         else:
-            # parses the WaterML to a chart data object
-            data_for_chart.append(utilities.Original_Checker(file_path,id_qms))
-    # print "JSON Reponse"
-    # print datetime.now()
-    print "end of chart data"
+            # returns an error message if the unzip_waterml failed
+            # if not os.path.exists(file_path):
+            #     data_for_chart = {'status': 'Resource file not found'}
+            # else:
+                # parses the WaterML to a chart data object
+            data_for_chart.append(utilities.Original_Checker(file_path))
+        # print "JSON Reponse"
+        # print datetime.now()
+        print "end of chart data"
+    elif file_meta['file_type']=='sqlite':
+        file_path = file_meta['file_path']
+        conn = sqlite3.connect(file_path)
+        c = conn.cursor()
+        c.execute('SELECT Results.ResultID FROM Results')
+        num_series=c.fetchall()
+        for series in num_series:
+            str_series =str(series[0])
+            print series[0]
+            data_for_chart.append(utilities.parse_odm2(file_path,str_series))
+    # print data_for_chart
+        conn.close()
     return JsonResponse({'data':data_for_chart})
 # home page controller
 @csrf_exempt
 @never_cache
-def home(request):
-    ids=[]
-    meta =[]
-    source=[]
-    quality=[]
-    method=[]
-    sourceid=[]
-    test = request.GET.getlist('MethodId')
-    print test
-    try: #Check to see if request if from CUAHSI. For data validation
-        request_url = request.META['HTTP_REFERER']
-    except:
-        request_url ="test"
-    data = request.META['QUERY_STRING']#stores all values in the query string
-    data = data.encode(encoding ='UTF-8')#encodes the data string to avoid having unicode character in string
-    data  =data.split('&')
-    for e in data:
-        s= e.split('=')
-        meta.append(s)
-    for e in meta:
-        print e
-        if e[0] == 'Source':
-            source.append(e[1])
-        if e[0] == 'WofUri':
-            ids.append(e[1])
-        if e[0] == 'QCLID':
-            quality.append(e[1])
-        if e[0] == 'MethodId':
-            method.append(e[1])
-        if e[0] == 'SourceId':
-            sourceid.append(e[1])
 
-    utilities.viewer_counter(request)
-    #the parametes passed from CUAHSI are stored in a hidden div on the home page so that the js file is able to read them
-    context = {'source':source,
-               'cuahsi_ids':ids,
-               'quality':quality,
-               'method':method,
-               'sourceid':sourceid,
-               }
-    return render(request, 'timeseries_viewer/home.html', context)
 #seperate handler for request originating from hydroshare.org
 @csrf_exempt
 @login_required()

@@ -1,10 +1,8 @@
 var data = [];
 var unit_tracker = [];
-var counter = 0;
 var unit1 = null
 var unit2 = null;
 var resid_on = null;
-counter1 = [];
 //ymax and ymin store the maximum y value for each axis.
 var ymax =0
 var ymin=0
@@ -15,7 +13,8 @@ var quality_title=null
 var number = 0
 var unit_list = [];
 var title = 0
-xtime = []
+var unit3 = ''
+var res = null
 // here we set up the configuration of the CanvasJS chart
 var chart_options = {
     zoomEnabled: true,
@@ -83,34 +82,33 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
     index = current_url.indexOf("timeseries-viewer");
     base_url = current_url.substring(0, index);
     var src = find_query_parameter("src");
-    if (src==null){
+    if (src.length==0){
         src='cuahsi'
     }
     if(src == "xmlrest"){
-        res_id1 = 'test1'
+        res_id = 'None'
     }
     else{
-        res_id1 = res_id
+        res_id = res_id
     }
     //console.log(res_id1)
     var csrf_token = getCookie('csrftoken');
-    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id1 + '/'+id_qms+'/' + src + '/';
+    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/' + src + '/';
     $.ajax({
         type:"POST",
         headers:{'X-CSRFToken':csrf_token},
         dataType: 'json',
+
         //timeout: 5000,
         data:{'url_xml':res_id},
         url: data_url,
         success: function (json1) {
+            console.log(json1)
             var dseries =[]
-            len=-1
+
             var chart = $("#chartContainer").CanvasJSChart()
             json2 = json1.data
-            //len = length(json2)
             len = json2.length
-            //for (series in json2){len = len+1}
-            //console.log(len)
             for (series in json2){
                  plot_data(chart, res_id, end_of_resources, unit_off,id_qms,json2[series],len)
             }
@@ -176,26 +174,27 @@ function roundDown(x){
         return x;
     }
 }
-var unit3 = ''
-var res = null
+
 function myFunc(id, name) {
     var chart1 = $("#chartContainer").CanvasJSChart()
-    var number_chk = $('.checkbox').length
     var selected_box = document.getElementById(id)
-    var check_unit = []
-    var chk_unit = document.getElementById(id).name;
 
+    var chk_unit = document.getElementById(id).name;
     var series = chart1.options.data[id].visible
     res = selected_box.getAttribute("data-resid")
+
+    //units = units.replace(/\s+/g, '==')
     if (series == true) {
         chart1.options.data[id].visible = false
         chart1.render();
     } else if (series == false) {
         //first_unit =''
         if (chk_unit != unit1 && chk_unit != unit2) {
+            unit1_display =unit1.replace(/==/g, ' ')
+            unit2_display =unit2.replace(/==/g, ' ')
             var test1 = 'Please select a unit type to hide.<br>' +
-                '<input type="radio" id ="r1" name ="units" value=' + unit1 + ' checked>' + unit1 + '<br>' +
-                '<input type="radio" id ="r2" name ="units" value=' + unit2 + '>' + unit2 + '<br>' +
+                '<input type="radio" id ="r1" name ="units" value=' + unit1 + ' checked>' + unit1_display + '<br>' +
+                '<input type="radio" id ="r2" name ="units" value=' + unit2 + '>' + unit2_display + '<br>' +
                 '<button class="btn btn-danger" id="change_unit" onclick ="multipletime()" >submit</button>'
             $('#' + id).attr('checked', false);
             $('#unit_selector_info').html("")
@@ -203,7 +202,7 @@ function myFunc(id, name) {
             unit3 = chk_unit
             var popupDiv = $('#unit_selector');
             popupDiv.modal('show');
-            check_unit.length = 0;
+
         }
         else {
             chart1.options.data[id].visible = true
@@ -219,8 +218,8 @@ $(document).ready(function (callback) {
     var src = find_query_parameter("SourceId");
     var wu = find_query_parameter("WofUri");
 
-    var source = $('#source').text()
-    if (source == "['cuahsi']"){
+    var source =find_query_parameter("Source");
+    if (source[0] == "cuahsi"){
         src='cuahsi'
     }
 
@@ -234,6 +233,7 @@ $(document).ready(function (callback) {
     }
     var table = $('#data_table').DataTable({
         "createdRow": function (row, data, dataIndex) {
+
             if (number == 0 || number%10 ==0) {
                 color1 = "#ec3131"
             }
@@ -264,6 +264,7 @@ $(document).ready(function (callback) {
             if (number == 9|| number%10 ==9) {
                 color1 = "#660099"
             }
+
             $('td', row).eq(0).css("backgroundColor", color1)
             $('td', row).eq(1).each(function () {
                 var sTitle;
@@ -345,20 +346,11 @@ $(document).ready(function (callback) {
             tr.addClass('shown');
         }
     });
-    if (src == null) {
-        if (document.referrer == "https://apps.hydroshare.org/apps/") {
-            $('#extra-buttons').append('<a class="btn btn-default btn" href="https://apps.hydroshare.org/apps/">Return to HydroShare Apps</a>');
-        }
-        //popupDiv.modal('show');
-        //$('#loading').hide();
-        window.location ='http://data.cuahsi.org/#'
-    }
-    else{
-        $('#loading').show();
-        addingseries();
-    }
+
+    $('#loading').show();
+    addingseries();
     $('#stat_div').hide();
-    $('#button').hide();
+    //$('#button').hide();
 
     $('#multiple_units').hide();
     $('#data_table_length').html("")
@@ -462,36 +454,47 @@ function finishloading(callback) {
     var chart = $("#chartContainer").CanvasJSChart()
     $("#chart").show();
     chart.render();
+    console.log(chart)
+    console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+
 }
 
 function addingseries(unit_off) {
     var src = find_query_parameter("src");
     var series_counter =0
-    var source = $('#source').text()
+    var source = find_query_parameter('Source')
     var end_of_resources = false
-    if (source == "['cuahsi']"){
+    if (source[0] == 'cuahsi'){
         src='cuahsi'
     }
-    else if (source != "['cuahsi']"){
+    else if (source[0] != 'cuahsi'){
         src ='hydroshare'
     }
+    else if (source[0]=''){window.location ='http://data.cuahsi.org/#'}
+
     if (src =='cuahsi'){
-        var res_id=$('#cuahsi_ids').text()
-        var quality=$('#quality').text()
-        var method=$('#method').text()
-        var sourceid=$('#sourceid').text()
-        res_id =trim_input(res_id)
-        quality =trim_input(quality)
-        method =trim_input(method)
-        sourceid =trim_input(sourceid)
+        //var res_id=$('#cuahsi_ids').text()
+        //var quality=$('#quality').text()
+        //var method=$('#method').text()
+        //var sourceid=$('#sourceid').text()
+
+
+        var res_id=find_query_parameter('WofUri')
+        var quality=find_query_parameter('QCLID')
+        var method=find_query_parameter('MethodId')
+        var sourceid = find_query_parameter('SourceId')
+
+        //res_id =trim_input(res_id)
+        //quality =trim_input(quality)
+        //method =trim_input(method)
+        //sourceid =trim_input(sourceid)
     }
     else if(src=='hydroshare'){
         var res_id = find_query_parameter("res_id");
-
-
         if (res_id != null) {
-            res_ids = res_id.split(",");
-            res_id = trim_input(res_id)
+            res_id = res_id
+            //res_ids = res_id.split(",");
+            //res_id = trim_input(res_id)
         }
         else {
             res_ids = ''
@@ -528,7 +531,7 @@ function addingseries(unit_off) {
 
     for (var id in res_id){
         xtime = []
-        counter1.push(counter);
+
         if( src =='cuahsi'){
             if(quality[id]=='null' || quality[id]=='None')
             {quality1=''}
@@ -565,20 +568,19 @@ function multipletime() {
     resid_on = res
     chart.options.data = []
     chart.render()
+    $("#chartContainer").html=''
     $("#chart").hide();
     ymax =0
     ymin=0
     y2max=0
     y2min=0
     var table = $('#data_table').DataTable();
-    number  = -1
+    number  = 0
     table
         .clear()
         .draw();
     addingseries(unit_off);
 }
-
-
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
@@ -595,102 +597,6 @@ function getCookie(name) {
     return cookieValue;
 }
 
-function launchByuHydroshareApp() {
-
-    //var tableId = '#' + event.data.tableId;
-    //var table = $(tableId).DataTable();
-    //var apps = event.data.getApps().apps;
-
-    //Currently selected BYU app
-    //var valueSelected = $('#' + event.data.divId).text().trim();
-    //var byuUrl= null;
-    var byuUrl= '/apps/timeseries-viewer/';
-    var csrf_token = getCookie('csrftoken');
-
-
-    //New selection - find the associated app URL...
-    //var length = apps.length;
-
-    //for (var i = 0; i < length; ++i) {
-    //    if (valueSelected === apps[i].name) {
-    //        byuUrl = apps[i].url;
-    //        break;
-    //    }
-    //}
-
-    if (null !== byuUrl) {
-        //URL found - find selected water one flow archives...
-        //var selectedRows = table.rows('.selected').data();
-        var selectedRows =[{WofUri:"cuahsi-wdc-2016-10-07-54297240",QCLID:'P Ice',MethodId:'',SourceId: '1'},{WofUri:"cuahsi-wdc-2016-10-07-54297240",QCLID:'P',MethodId:'',SourceId: '1'}]
-
-        var rowsLength = selectedRows.length;
-
-        var wofParams = [];
-        var extension = '.zip';
-
-        for (var ii = 0; ii < rowsLength; ++ii) {
-            //if (timeSeriesRequestStatus.Completed == selectedRows[ii].TimeSeriesRequestStatus) {
-            var row = selectedRows[ii];
-            var item = { 'WofUri': (row.WofUri.split(extension))[0],
-                'QCLID': row.QCLID,
-
-                'MethodId': row.MethodId,
-                'SourceId': row.SourceId
-            };
-            wofParams.push(item);
-            //}
-        }
-
-        //Create a dynamic form and submit to BYU URL...
-        // Sources: http://htmldog.com/guides/javascript/advanced/creatingelements/
-        //          http://stackoverflow.com/questions/30835990/how-to-submit-form-to-new-window
-        //          http://jsfiddle.net/qqzxtk67/
-        //          http://stackoverflow.com/questions/17431760/create-a-form-dynamically-with-jquery-and-submit
-        //          http://jsfiddle.net/MVXXX/1/
-        if ( 0 < wofParams.length) {
-            //Remove/create form...
-            //$('form#dataViewerForm').remove();
-
-            var jqForm = $('<form id="dataViewerForm"></form>').appendTo(document.body);
-
-            //Add method, action and target...
-            var targetWindow = 'dataViewerWindow';
-
-            jqForm.attr('method', 'post');
-            jqForm.attr('action', byuUrl);
-            //jqForm.attr('headers',{'X-CSRFToken':csrf_token});
-            //headers:{'X-CSRFToken':csrf_token},
-            jqForm.attr('target', targetWindow);
-
-            //Append source...
-            jqForm.append('<input type="hidden" name="Source" value="cuahsi">');
-
-            //Append child list...
-            jqForm.append('<ul id="wofParams"></ul>');
-
-            //For each wofParams item...
-            var itemsLength = wofParams.length;
-            var jqList = $('#wofParams');
-
-
-            for (var iii = 0; iii < itemsLength; ++iii) {
-                //Append to child list...
-                var item = wofParams[iii];
-                jqList.append('<li>' +
-                    '<input type="hidden" name="WofUri" value="' + item.WofUri + '">' +
-                    '<input type="hidden" name="QCLID" value="' + item.QCLID + '">' +
-                    '<input type="hidden" name="MethodId" value="' + item.MethodId + '">' +
-                    '<input type="hidden" name="SourceId" value="' + item.SourceId + '">' +
-                    '</li>'
-                );
-            }
-
-            //Open Data Viewer window, submit form...
-            window.open('', targetWindow, '', false);
-            jqForm.submit();
-        }
-    }
-}
 function trim_input(string){
     string = string.replace(']','')
     string = string.replace('[','')
@@ -703,44 +609,64 @@ function trim_input(string){
 }
 function find_query_parameter(name) {
     url = location.href;
+    values=[]
     //name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
-    var regexS = "[\\?&]" + name + "=([^&#]*)";
-    var regex = new RegExp(regexS);
-    var results = regex.exec(url);
-    return results == null ? null : results[1];
+    //console.log(url)
+    url1 = url.split('?')
+    if (url1[1]==undefined){values.push('')}
+    else {
+        url1 = url1[1].split('&')
+
+        for (e in url1) {
+            //console.log(url1[e].indexOf(name))
+            if (url1[e].indexOf(name) == 0) {
+                string = url1[e]
+                string = string.split('=')
+                values.push(string[1])
+            }
+        }
+    }
+    //console.log(values)
+    //var regexS = "[\\?&]" + name + "=([^&#]*)";
+    ////console.log(regexS)
+    //var regex = new RegExp(regexS);
+    ////console.log(regex)
+    //var results = regex.exec(url);
+    ////console.log(results)
+    //return results == null ? null : results[1];
+    return values
 }
 function scatter_line(id){
 
     var chart1 = $("#chartContainer").CanvasJSChart()
+    data = chart1.options.data
+    var size = Object.keys(data).length;
+    console.log(size)
     var selected_box = document.getElementById(id)
-    var check_unit = []
+
     var chk_unit = document.getElementById(id).name;
 
     var type = chart1.options.data[id].type
-    if(type =='line'){chart1.options.data[id].type = 'scatter'
-        //$("#line"+ id ).show()
-        //$('#scatter'+ id).hide()
+    if(type =='line'){
+        chart1.options.data[id].type = 'scatter'
+        if (size==1){chart1.options.data[id].color='#ec3131'}//keeps the scatter plot points the same color
+
     }
     else{chart1.options.data[id].type='line'
-        //$('#scatter'+ id).show()
-        //$('#line'+ id).hide()
+
     }
     chart1.render()
-    //res = selected_box.getAttribute("data-resid")
-    //if (series == true) {
-    //    chart1.options.data[id].visible = false
-    //    chart1.render();
-    //}
 }
 function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
     json = data
     var status = json.status;
     if (status !== 'success') //displays error
     {
-        show_error(chart, "Error loading time series from " + res_id1 + ": " + status)
+        show_error(chart, "Error loading time series from " + res_id + ": " + status)
         $('#loading').hide();
         return;
     }
+    console.log(json)
     var units = json.units;
     var master_values = json.master_values;
     var master_counter = json.master_counter;
@@ -826,10 +752,13 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
 
                 master_id.push(val)
                 meta = val.split("aa");
+
                 code = meta_dic['quality_code'][meta[0]]
+
                 quality = meta_dic['quality'][code]
                 quality_code = [meta[0]]
                 method = meta_dic['method'][meta[1]]
+
                 sourcedescription = meta_dic['source'][meta[2]]
                 organization = meta_dic['organization'][meta[2]]
                 m_yval = master_times[val]
@@ -886,7 +815,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                     samplemedium = "N/A"
                 }
                 if (units != null) {
-                    units = units.replace(/\s+/g, '');//removes any spaces in the units
+                    units = units.replace(/\s+/g, '==');//removes any spaces in the units
                 }
                 if (units == null) {
                     units = "N/A";
@@ -948,6 +877,8 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                         }
                     }
                 }
+                //console.log(y_title)
+
 
                 if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
 
@@ -978,7 +909,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                     if (ymax == 0 && ymin == 0) {
                         ymax = 4.5, ymin = 0
                     }
-
+                    console.log(ymax,ymin)
                     grid_values = gridlines(ymax,ymin)
 
                     chart.options.axisY.viewportMaximum = grid_values.maxview
@@ -1015,6 +946,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                     if (y2max == 0 && y2min == 0) {
                         y2max = 4.5, y2min = 0
                     }
+
                     grid_values = gridlines(y2max,y2min)
                     chart.options.axisY2.viewportMaximum = grid_values.maxview
                     chart.options.axisY2.viewportMinimum = grid_values.minview
@@ -1057,7 +989,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                         + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
                     var chart = $("#chartContainer").CanvasJSChart()
                 }
-
+                console.log(quality)
                 if (quality == "N/A") {
                     quality_title = "N/A"
                 }
@@ -1096,8 +1028,9 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
 
                 chart.render();//updated chart with new values
 
-                $('#data_table tbody tr:eq(' + number + ') td:eq(1)').click()
-                $('#data_table tbody tr:eq(' + number + ') td:eq(1)').click()
+                //$('#data_table tbody tr:eq(' + number + ') td:eq(1)').click()
+                //$('#data_table tbody tr:eq(' + number + ') td:eq(1)').click()
+                //$('td', number).eq(0).css("backgroundColor", "#fbfd07")
 
                 number = number + 1;
                 //console.log(chart)
@@ -1128,47 +1061,22 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
     }
 
 }
-
-function gridlines1_original(ymax,ymin){
-    maxview = roundUp(Math.ceil(ymax))
-    maxview = maxview + 0.1 * maxview
-    minview = roundDown(Math.floor(ymin))
-    minview = minview + minview * .1
-
-    interval = (maxview - minview) / 11
-    //console.log(maxview)
-    //console.log(minview)
-    //console.log(interval)
-    if (minview < 0) {
-        maxview = 10 * interval + minview
-        rem = minview / interval
-        rem1 = Math.floor(rem)
-        rem2 = rem1 - rem
-        minview = (rem2 * interval + minview+minview *.00000001).toFixed(2)
-        rema = maxview / interval
-        rem1a = Math.ceil(rema)
-        rem2a = rem1a - rema
-        maxview = (rem2a * interval + maxview + maxview * .00000001).toFixed(2)
-
-    }
-    else {
-        interval = (maxview - minview) / 11
-        minview = (Math.ceil((minview / interval)) * interval)
-    }
-    return {'maxview':maxview,'minview':minview,'interval':interval}
-}
 function gridlines(ymax,ymin){
     maxview = roundUp(Math.ceil(ymax))
     maxview = maxview + 0.1 * maxview
     minview = roundDown(Math.floor(ymin))
+    console.log(minview)
     minview = minview + minview * .1
 
-    interval = (maxview - minview) / 11
+    interval = Math.ceil(maxview - minview) / 11
     //console.log(interval)
     //console.log(maxview)
     //console.log(minview)
     if (minview < 0) {
-        neg_interval = -1*Math.floor(minview/interval)
+        console.log(minview)
+        neg_interval = Math.ceil(-1*(minview/interval))
+        console.log(interval)
+        console.log(neg_interval)
         pos_interval = 11-neg_interval
         maxview = pos_interval*interval
         minview = -1*neg_interval*interval
@@ -1177,5 +1085,6 @@ function gridlines(ymax,ymin){
         interval = (maxview - minview) / 11
         minview = (Math.ceil((minview / interval)) * interval)
     }
+    console.log(maxview,minview,interval)
     return {'maxview':maxview,'minview':minview,'interval':interval}
 }
