@@ -64,34 +64,31 @@ var chart_options = {
 };
 
 // shows an error message in the chart title
-function show_error(chart, error_message) {
+function show_error( error_message) {
     $('#loading').hide();
     console.log(error_message);
     $('#error-message').text(error_message);
 }
 
-function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
+function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms,src,xml_rest_id) {
 
     xtime.length = 0
     xval = ''
     yvalu = ''
     master_id =[]
     length_master= 0
-    //console.log(xtime)
+
     current_url = location.href;
     index = current_url.indexOf("timeseries-viewer");
     base_url = current_url.substring(0, index);
-    var src = find_query_parameter("src");
-    if (src.length==0){
-        src='cuahsi'
+
+
+    if (src =='xmlrest'){
+
+        xml_rest_id = res_id
+        res_id ='xmlrest'
+
     }
-    if(src == "xmlrest"){
-        res_id = 'None'
-    }
-    else{
-        res_id = res_id
-    }
-    //console.log(res_id1)
     var csrf_token = getCookie('csrftoken');
     data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/' + src + '/';
     $.ajax({
@@ -99,17 +96,20 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms) {
         headers:{'X-CSRFToken':csrf_token},
         dataType: 'json',
         //timeout: 5000,
-        data:{'url_xml':res_id},
+        data:{'url_xml':xml_rest_id},
         url: data_url,
-        success: function (json1) {
-            console.log(json1)
+        success: function (json) {
+            console.log(json)
             var dseries =[]
-
-            var chart = $("#chartContainer").CanvasJSChart()
-            json2 = json1.data
-            len = json2.length
-            for (series in json2){
-                 plot_data(chart, res_id, end_of_resources, unit_off,id_qms,json2[series],len)
+            error = json.error
+            if (error != ''){show_error(error)}
+            else {
+                var chart = $("#chartContainer").CanvasJSChart()
+                json = json.data
+                len = json.length
+                for (series in json) {
+                    plot_data(chart, res_id, end_of_resources, unit_off, id_qms, json[series], len)
+                }
             }
         },
         error: function () {
@@ -458,43 +458,10 @@ function addingseries(unit_off) {
     var series_counter =0
     var source = find_query_parameter('Source')
     var end_of_resources = false
-    if (source[0] == 'cuahsi'){
-        src='cuahsi'
-    }
-    else if (source[0] != 'cuahsi'){
-        src ='hydroshare'
-    }
-    else if (source[0]=''){window.location ='http://data.cuahsi.org/#'}
-
-    if (src =='cuahsi'){
-        var res_id=find_query_parameter('WofUri')
-        var quality=find_query_parameter('QCLID')
-        var method=find_query_parameter('MethodId')
-        var sourceid = find_query_parameter('SourceId')
-    }
-    else if(src=='hydroshare'){
-        var res_id = find_query_parameter("res_id");
-        if (res_id != null) {
-            res_id = res_id
-            //res_ids = res_id.split(",");
-            //res_id = trim_input(res_id)
-        }
-        else {
-            res_ids = ''
-            $('#loading').hide();
-        }
-
-    }
-
-    //var series_counter = 0
-    if (unit_off == null) {
-        unit_off = ''
-    }
-
-    for (var r in res_id) {
-        series_counter = series_counter + 1
-    }
-
+    var chart = $("#chartContainer").CanvasJSChart()
+    var counter = 0
+    var res_id =null
+    var xml_rest_id=null
     CanvasJS.addColorSet("greenShades",
         [//colorSet Array
             "#ec3131",
@@ -509,8 +476,35 @@ function addingseries(unit_off) {
             "#660099",
         ])
     $("#chartContainer").CanvasJSChart(chart_options);
-    var chart = $("#chartContainer").CanvasJSChart()
-    var counter = 0
+
+    if (source[0] == 'cuahsi'){
+        src='cuahsi'
+    }
+    else if (source[0]=''){window.location ='http://data.cuahsi.org/#'}
+
+    if (src =='cuahsi'){
+        res_id=find_query_parameter('WofUri')
+        var quality=find_query_parameter('QCLID')
+        var method=find_query_parameter('MethodId')
+        var sourceid = find_query_parameter('SourceId')
+
+    }
+    else if(src=='hydroshare') {
+        res_id = find_query_parameter("res_id");
+    }
+    else if (src=='xmlrest'){
+
+        res_id = find_query_parameter("res_id");
+
+        res_id = res_id[0].split(',')
+    }
+
+
+    //var series_counter = 0
+    if (unit_off == null) {
+        unit_off = ''
+    }
+    series_counter = res_id.length
 
     for (var id in res_id){
         xtime = []
@@ -527,11 +521,11 @@ function addingseries(unit_off) {
             id_qms =  quality1 +'aa'+method1+'aa'+sourceid1
         }
         else{
-            id_qms="meta"
+            id_qms="not_cuahsi"
         }
         counter = counter + 1
         if (counter ==series_counter){end_of_resources =true}
-        add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms);
+        add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms,src);
     }
 }
 function multipletime() {
@@ -638,10 +632,17 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
     var master_stat = json.master_stat
     var bad_meta = false
     var bad_meta_counter = 0
-    id_qms_a_split = id_qms.split('aa')
-    for (val in master_values) {
-        meta1 = val.split("aa");
-        if (id_qms != 'meta') {
+    var val1=[]
+
+    var counter =0
+    id_qms_a_split = id_qms.split('aa')//identifier based upon url parameters
+    var counter1 = 0
+    for (val in master_values)//this loop deals with any parameters that are not specified in the url query
+    {
+
+        meta1 = val.split("aa");// an identifier based upon data in file
+        if (id_qms != 'not_cuahsi')
+        {
             if (id_qms_a_split[0] == '') {
                 meta1[0] = ''
             }
@@ -656,316 +657,321 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
             meta1[0] = ''
         }
         else {
-            meta1[0] = meta_dic['quality_code'][meta1[0]]
+            meta1[0] = meta_dic['quality_code'][meta1[0]]// replaces quality code with quality id
         }
         id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
-        val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
+        val1.push(meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2])
 
-        if (val1 != id_qms_a) {
+        if (val1[counter1] != id_qms_a) {
             bad_meta_counter += 1
         }
+        counter1 = counter1+1
     }
     if (bad_meta_counter == Object.keys(master_values).length) {
         bad_meta = true
     }
-    id_qms_a_split = id_qms.split('aa')
 
-    //console.log(master_values)
+    for (val in master_values) {
+        if (bad_meta == true) {
+            var arr=[]
+            for (entry in val1){arr.push('')}
+            val1 = arr
 
-    if (master_counter == true) {
+            id_qms_a = ''
+        }
 
-        for (val in master_values) {
-
-            if (bad_meta == true) {
-                val1 = ''
-                id_qms_a = ''
+        //else {
+        //    meta1 = val.split("aa");
+        //
+        //    if (id_qms != 'not_cuahsi') {
+        //
+        //        if (id_qms_a_split[0] == '') {
+        //            meta1[0] = ''
+        //        }
+        //        if (id_qms_a_split[1] == '') {
+        //            meta1[1] = ''
+        //        }
+        //        if (id_qms_a_split[2] == '') {
+        //            meta1[2] = ''
+        //        }
+        //    }
+        //    if (meta_dic['quality_code'][meta1[0]] == undefined) {
+        //        meta1[0] = ''
+        //        //id_qms_a_split[0]=''
+        //    }
+        //    else {
+        //        meta1[0] = meta_dic['quality_code'][meta1[0]]
+        //    }
+        //    id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
+        //    val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
+        //    id_qms_a_split = id_qms.split('aa')
+        //}
+        //console.log(counter)
+        //console.log(val1)
+        //console.log(id_qms_a)
+        //console.log(val1[counter])
+        //console.log(val)
+        if (id_qms_a == val1[counter] || id_qms_a == 'not_cuahsi') {
+            m_xval = []
+            m_yval = []
+            length_master = length_master + 1
+            master_id.push(val)
+            meta = val.split("aa");
+            code = meta_dic['quality_code'][meta[0]]
+            quality = meta_dic['quality'][code]
+            quality_code = [meta[0]]
+            method = meta_dic['method'][meta[1]]
+            sourcedescription = meta_dic['source'][meta[2]]
+            organization = meta_dic['organization'][meta[2]]
+            m_yval = master_times[val]
+            boxplot = master_boxplot[val]
+            mean = master_stat[val][0]
+            median = master_stat[val][1]
+            max = master_stat[val][2]
+            min = master_stat[val][3]
+            m_xval = master_values[val]
+            count = m_xval.length
+            var site_name = json.site_name
+            var variable_name = json.variable_name
+            var unit = json.units
+            var datatype = json.datatype
+            var valuetype = json.valuetype
+            var samplemedium = json.samplemedium
+            var timesupport = json.timesupport
+            var timeunit = json.timeunit
+            var boxplot_count = number
+            if (site_name == null) {
+                site_name = "N/A"
+            }
+            if (variable_name == null) {
+                variable_name = "N/A"
+            }
+            if (organization == null) {
+                organization = "N/A"
+            }
+            if (quality == null) {
+                quality = "N/A"
+            }
+            if (method == null) {
+                method = "N/A"
+            }
+            if (datatype == null) {
+                datatype = "N/A"
+            }
+            if (valuetype == null) {
+                valuetype = "N/A"
+            }
+            if (unit == null) {
+                unit = 'N/A'
+            }
+            if (timesupport == null) {
+                timesupport = "N/A"
+            }
+            if (timeunit == null || timeunit == ' ') {
+                timeunit = "N/A"
+            }
+            if (sourcedescription == null) {
+                sourcedescription = "N/A"
+            }
+            if (samplemedium == null) {
+                samplemedium = "N/A"
+            }
+            if (units != null) {
+                units = units.replace(/\s+/g, '==');//removes any spaces in the units
+            }
+            var unit_off_bool = false
+            unit_tracker.push(units);//tracks the units of the different time series
+            unit_different2 = null;
+            same_unit = 1//goes to 2 when more than one unit type is graphed
+            yaxis = 0 //tracks which dataset set goes on which axis
+            var y_title = null;//tracks which variable to use for the yaxis title
+            test = []
+            for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
+            {
+                temp_date = new Date(m_yval[i])
+                test.push(temp_date)
+                actual_date = temp_date.getTimezoneOffset()*1000*60+temp_date.getTime()
+                xtime.push({x:actual_date , y: m_xval[i]})
+            }
+            data1 = xtime
+            if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
+            {
+                unit1 = unit_tracker[0];
+                if (unit1 == units) {
+                    y_title = 0
+                }
+                if (unit1 != units)//checks the first unit type agaisnt the current unit
+                {
+                    same_unit = 2;//flags which axis is to be used
+                    y_title = 1
+                    if (unit2 == null) {
+                        unit2 = units //this tracks the second unit type if there is one
+                    }
+                    if (units != unit2) {
+                        same_unit = 3
+                        y_title = 3
+                    }
+                }
             }
             else {
-                meta1 = val.split("aa");
-
-                if (id_qms != 'meta') {
-
-                    if (id_qms_a_split[0] == '') {
-                        meta1[0] = ''
-                    }
-                    if (id_qms_a_split[1] == '') {
-                        meta1[1] = ''
-                    }
-                    if (id_qms_a_split[2] == '') {
-                        meta1[2] = ''
-                    }
-                }
-                if (meta_dic['quality_code'][meta1[0]] == undefined) {
-                    meta1[0] = ''
-                    //id_qms_a_split[0]=''
-                }
-                else {
-                    meta1[0] = meta_dic['quality_code'][meta1[0]]
-                }
-                id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
-                val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
-                id_qms_a_split = id_qms.split('aa')
-            }
-            if (id_qms_a == val1 || id_qms_a == 'meta') {
-                m_xval = []
-                m_yval = []
-                length_master = length_master + 1
-                master_id.push(val)
-                meta = val.split("aa");
-                code = meta_dic['quality_code'][meta[0]]
-                quality = meta_dic['quality'][code]
-                quality_code = [meta[0]]
-                method = meta_dic['method'][meta[1]]
-                sourcedescription = meta_dic['source'][meta[2]]
-                organization = meta_dic['organization'][meta[2]]
-                m_yval = master_times[val]
-                boxplot = master_boxplot[val]
-                mean = master_stat[val][0]
-                median = master_stat[val][1]
-                max = master_stat[val][2]
-                min = master_stat[val][3]
-                m_xval = master_values[val]
-                count = m_xval.length
-                var site_name = json.site_name
-                var variable_name = json.variable_name
-                var unit = json.units
-                var datatype = json.datatype
-                var valuetype = json.valuetype
-                var samplemedium = json.samplemedium
-                var timesupport = json.timesupport
-                var timeunit = json.timeunit
-                var boxplot_count = number
-                if (site_name == null) {
-                    site_name = "N/A"
-                }
-                if (variable_name == null) {
-                    variable_name = "N/A"
-                }
-                if (organization == null) {
-                    organization = "N/A"
-                }
-                if (quality == null) {
-                    quality = "N/A"
-                }
-                if (method == null) {
-                    method = "N/A"
-                }
-                if (datatype == null) {
-                    datatype = "N/A"
-                }
-                if (valuetype == null) {
-                    valuetype = "N/A"
-                }
-                if (unit == null) {
-                    unit = 'N/A'
-                }
-                if (timesupport == null) {
-                    timesupport = "N/A"
-                }
-                if (timeunit == null || timeunit == ' ') {
-                    timeunit = "N/A"
-                }
-                if (sourcedescription == null) {
-                    sourcedescription = "N/A"
-                }
-                if (samplemedium == null) {
-                    samplemedium = "N/A"
-                }
-                if (units != null) {
-                    units = units.replace(/\s+/g, '==');//removes any spaces in the units
-                }
-                var unit_off_bool = false
-                unit_tracker.push(units);//tracks the units of the different time series
-                unit_different2 = null;
-                same_unit = 1//goes to 2 when more than one unit type is graphed
-                yaxis = 0 //tracks which dataset set goes on which axis
-                var y_title = null;//tracks which variable to use for the yaxis title
-                test = []
-                for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
-                {
-                    temp_date = new Date(m_yval[i])
-                    test.push(temp_date)
-                    actual_date = temp_date.getTimezoneOffset()*1000*60+temp_date.getTime()
-                    xtime.push({x:actual_date , y: m_xval[i]})
-                }
-                data1 = xtime
-                if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
-                {
-                    unit1 = unit_tracker[0];
-                    if (unit1 == units) {
+                y_title = 3
+                unit_off_bool = true
+                if (units != unit_off) {
+                    if (units == unit1) {
                         y_title = 0
+                        unit_off_bool = false
                     }
-                    if (unit1 != units)//checks the first unit type agaisnt the current unit
-                    {
-                        same_unit = 2;//flags which axis is to be used
+                    else if (resid_on == res_id) {
                         y_title = 1
-                        if (unit2 == null) {
-                            unit2 = units //this tracks the second unit type if there is one
-                        }
-                        if (units != unit2) {
-                            same_unit = 3
-                            y_title = 3
-                        }
+                        unit_off_bool = false
                     }
                 }
-                else {
-                    y_title = 3
-                    unit_off_bool = true
-                    if (units != unit_off) {
-                        if (units == unit1) {
-                            y_title = 0
-                            unit_off_bool = false
-                        }
-                        else if (resid_on == res_id) {
-                            y_title = 1
-                            unit_off_bool = false
-                        }
-                    }
-                }
-                if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
-                    if (max > ymax) {
-                        ymax = max
-                    }
-                    if (min < ymin) {
-                        ymin = min
-                    }
-                    var newSeries =
-                    {
-                        //type: "scatter",
-                        type: "line",
-                        axisYType: "primary",
-                        //axisYType:"secondary",
-                        xValueType: "dateTime",
-                        xValueFormatString: "MMM DD, YYYY: HH:mm",
-                        showInLegend: false,
-                        indexLabelFontSize: 1,
-                        visible: true,
-                        name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-                        dataPoints: data1
-                    };
-                    chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
-                    chart.options.axisY.titleWrap = true
-                    chart.options.data.push(newSeries);
-                    if (ymax == 0 && ymin == 0) {
-                        ymax = 4.5, ymin = 0
-                    }
-                    grid_values = gridlines(ymax,ymin)
-                    chart.options.axisY.viewportMaximum = grid_values.maxview
-                    chart.options.axisY.maximum = grid_values.maxview
-                    chart.options.axisY.viewportMinimum = grid_values.minview
-                    chart.options.axisY.minimum = grid_values.minview
-                    chart.options.axisY.interval = grid_values.interval
-                }
-                else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
-                    if (max > y2max) {
-                        y2max = max
-                    }
-                    if (min < y2min) {
-                        y2min = min
-                    }
-                    var newSeries =
-                    {
-                        type: "line",
-                        //axisYType:"primary",
-                        axisYType: "secondary",
-                        xValueType: "dateTime",
-                        xValueFormatString: "MMM DD, YYYY: HH:mm",
-                        showInLegend: false,
-                        indexLabelFontSize: 1,
-                        visible: true,
-                        name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-                        dataPoints: data1
-                    };
-                    chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
-                    chart.options.axisY2.titleWrap = true
-                    chart.options.data.push(newSeries);
-                    if (y2max == 0 && y2min == 0) {
-                        y2max = 4.5, y2min = 0
-                    }
-                    grid_values = gridlines(y2max,y2min)
-                    chart.options.axisY2.viewportMaximum = grid_values.maxview
-                    chart.options.axisY2.viewportMinimum = grid_values.minview
-                    chart.options.axisY2.interval = grid_values.interval
-                    chart.options.axisY2.maximum = grid_values.maxview
-                    chart.options.axisY2.minimum = grid_values.minview
-                }
-                else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
-                    var newSeries =
-                    {
-                        type: "line",
-                        //axisYType:"primary",
-                        axisYType: "primary",
-                        xValueType: "dateTime",
-                        showInLegend: false,
-                        indexLabelFontSize: 1,
-                        visible: false,
-                        name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-                        dataPoints: data1
-                    };
-                    chart.options.data.push(newSeries);
-                }
-                chart.options.axisY.titleFontSize = 15
-                chart.options.axisY2.titleFontSize = 15
-                chart.options.axisX.titleFontSize = 15
-                xtime = []
-
-                if ((unit1 != units && unit2 != units) || unit_off_bool == true)//this triggers if more than 2 different units are used
-                {
-                    var legend = "<div style='text-align:center'><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
-                        + " type='checkbox' onClick ='myFunc(this.id,this.name);' >" + "</div"
-                    $('#multiple_units').html("")
-                    $('#multiple_units').append('* Only two types of units are displayed at a time.');
-                    title = 1
-                    var chart = $("#chartContainer").CanvasJSChart()
-                }
-                else {
-                    var legend = "<div style='text-align:center' '><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
-                        + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
-                    var chart = $("#chartContainer").CanvasJSChart()
-                    title=0
-                }
-
-                if (quality == "N/A") {
-                    quality_title = "N/A"
-                }
-                else {
-                    quality_title = quality //string representing the contents of the tooltip
-                    if (quality.length > 20) {
-                        quality = '(' + quality_code + ') ' + quality.substring(0, quality.indexOf(' ') + 1) + '...'
-                    }
-                }
-                var dataset = {
-                    legend: legend,
-                    number: number,
-                    organization: organization,
-                    name: site_name,
-                    variable: variable_name,
-                    unit: unit,
-                    samplemedium: samplemedium,
-                    count: count,
-                    //download:download,
-                    quality: quality,
-                    method: method,
-                    datatype: datatype,
-                    valuetype: valuetype,
-                    timesupport: timesupport,
-                    timeunit: timeunit,
-                    sourcedescription: sourcedescription,
-                    mean: mean,
-                    median: median,
-                    max: max,
-                    min: min,
-                    boxplot: boxplot,
-                    boxplot_count: boxplot_count
-                }
-                var table = $('#data_table').DataTable();//defines the primary table
-                table.row.add(dataset).draw();//adds data from the time series to the primary table
-                chart.render();//updated chart with new values
-                number = number + 1;
             }
+            if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
+                if (max > ymax) {
+                    ymax = max
+                }
+                if (min < ymin) {
+                    ymin = min
+                }
+                var newSeries =
+                {
+                    //type: "scatter",
+                    type: "line",
+                    axisYType: "primary",
+                    //axisYType:"secondary",
+                    xValueType: "dateTime",
+                    xValueFormatString: "MMM DD, YYYY: HH:mm",
+                    showInLegend: false,
+                    indexLabelFontSize: 1,
+                    visible: true,
+                    name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+                    dataPoints: data1
+                };
+                chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
+                chart.options.axisY.titleWrap = true
+                chart.options.data.push(newSeries);
+                if (ymax == 0 && ymin == 0) {
+                    ymax = 4.5, ymin = 0
+                }
+                grid_values = gridlines(ymax,ymin)
+                chart.options.axisY.viewportMaximum = grid_values.maxview
+                chart.options.axisY.maximum = grid_values.maxview
+                chart.options.axisY.viewportMinimum = grid_values.minview
+                chart.options.axisY.minimum = grid_values.minview
+                chart.options.axisY.interval = grid_values.interval
+            }
+            else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
+                if (max > y2max) {
+                    y2max = max
+                }
+                if (min < y2min) {
+                    y2min = min
+                }
+                var newSeries =
+                {
+                    type: "line",
+                    //axisYType:"primary",
+                    axisYType: "secondary",
+                    xValueType: "dateTime",
+                    xValueFormatString: "MMM DD, YYYY: HH:mm",
+                    showInLegend: false,
+                    indexLabelFontSize: 1,
+                    visible: true,
+                    name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+                    dataPoints: data1
+                };
+                chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
+                chart.options.axisY2.titleWrap = true
+                chart.options.data.push(newSeries);
+                if (y2max == 0 && y2min == 0) {
+                    y2max = 4.5, y2min = 0
+                }
+                grid_values = gridlines(y2max,y2min)
+                chart.options.axisY2.viewportMaximum = grid_values.maxview
+                chart.options.axisY2.viewportMinimum = grid_values.minview
+                chart.options.axisY2.interval = grid_values.interval
+                chart.options.axisY2.maximum = grid_values.maxview
+                chart.options.axisY2.minimum = grid_values.minview
+            }
+            else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
+                var newSeries =
+                {
+                    type: "line",
+                    //axisYType:"primary",
+                    axisYType: "primary",
+                    xValueType: "dateTime",
+                    showInLegend: false,
+                    indexLabelFontSize: 1,
+                    visible: false,
+                    name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+                    dataPoints: data1
+                };
+                chart.options.data.push(newSeries);
+            }
+            chart.options.axisY.titleFontSize = 15
+            chart.options.axisY2.titleFontSize = 15
+            chart.options.axisX.titleFontSize = 15
+            xtime = []
+
+            if ((unit1 != units && unit2 != units) || unit_off_bool == true)//this triggers if more than 2 different units are used
+            {
+                var legend = "<div style='text-align:center'><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
+                    + " type='checkbox' onClick ='myFunc(this.id,this.name);' >" + "</div"
+                $('#multiple_units').html("")
+                $('#multiple_units').append('* Only two types of units are displayed at a time.');
+                title = 1
+                var chart = $("#chartContainer").CanvasJSChart()
+            }
+            else {
+                var legend = "<div style='text-align:center' '><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
+                    + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
+                var chart = $("#chartContainer").CanvasJSChart()
+                title=0
+            }
+
+            if (quality == "N/A") {
+                quality_title = "N/A"
+            }
+            else {
+                quality_title = quality //string representing the contents of the tooltip
+                if (quality.length > 20) {
+                    quality = '(' + quality_code + ') ' + quality.substring(0, quality.indexOf(' ') + 1) + '...'
+                }
+            }
+            var dataset = {
+                legend: legend,
+                number: number,
+                organization: organization,
+                name: site_name,
+                variable: variable_name,
+                unit: unit,
+                samplemedium: samplemedium,
+                count: count,
+                //download:download,
+                quality: quality,
+                method: method,
+                datatype: datatype,
+                valuetype: valuetype,
+                timesupport: timesupport,
+                timeunit: timeunit,
+                sourcedescription: sourcedescription,
+                mean: mean,
+                median: median,
+                max: max,
+                min: min,
+                boxplot: boxplot,
+                boxplot_count: boxplot_count
+            }
+            var table = $('#data_table').DataTable();//defines the primary table
+            table.row.add(dataset).draw();//adds data from the time series to the primary table
+            chart.render();//updated chart with new values
+            number = number + 1;
         }
-        //    end of looping through timeseries
+        counter =counter+1
     }
+    //    end of looping through timeseries
+
     if (end_of_resources == true )//checks to see if all the data is loaded before displaying
     {
         if (title == 1) {
@@ -988,23 +994,53 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
     }
 }
 function gridlines(ymax,ymin){
+    console.log(ymax)
+    console.log(ymin)
+
     maxview = roundUp(Math.ceil(ymax))
     maxview = maxview + 0.1 * maxview
+
     minview = roundDown(Math.floor(ymin))
     minview = minview + minview * .1
+
     interval = Math.ceil(maxview - minview) / 11
+    console.log(maxview)
+    console.log(minview)
+    console.log(interval)
+
     if (minview < 0) {
-        console.log(minview)
+        console.log(minview/interval)
         neg_interval = Math.ceil(-1*(minview/interval))
-        console.log(interval)
-        console.log(neg_interval)
+        //pos1_interval = Math.ceil(maxview/interval)
         pos_interval = 11-neg_interval
+
+
+        if (ymax> pos_interval*interval)//checks to make sure points are in view range
+        {
+            interval = Math.ceil(maxview/interval)*interval
+        }
+        if (ymin<minview){
+            interval = Math.ceil(-1*minview/interval)*interval
+        }
+
         maxview = pos_interval*interval
         minview = -1*neg_interval*interval
+        console.log(maxview)
+        console.log(minview)
+        //while(maxview <ymax){
+        //
+        //}
     }
     else {
         interval = (maxview - minview) / 11
         minview = (Math.ceil((minview / interval)) * interval)
+    }
+    console.log(maxview)
+    console.log(minview)
+    console.log(interval)
+
+    if (maxview <ymax || minview>ymin){
+       interval = Math.ceil(maxview - minview) / 11
     }
     return {'maxview':maxview,'minview':minview,'interval':interval}
 }

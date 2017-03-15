@@ -27,7 +27,8 @@ from suds.client import Client
 from xml.sax._exceptions import SAXParseException
 import requests
 import sqlite3
-
+import datetime
+from time import gmtime, strftime
 
 
 def get_app_base_uri(request):
@@ -53,7 +54,7 @@ def get_version(root):
     return wml_version
 
 def parse_1_0_and_1_1(root):
-    print root
+
     root_tag = root.tag.lower()
     boxplot = []
     master_values=collections.OrderedDict()
@@ -98,7 +99,7 @@ def parse_1_0_and_1_1(root):
                         if 'unitName' == tag or 'units' ==tag or 'UnitName'==tag or 'unitCode'==tag:
                             if not unit_is_set:
                                 units = element.text
-                                print units
+
                                 unit_is_set = True
                         # print units
                         if 'noDataValue' == tag:
@@ -536,7 +537,7 @@ def parse_2_0(root):#waterml 2 has not been implemented in the viewer at this ti
 
 def Original_Checker(xml_file):
 
-    print xml_file
+
     try:
         tree = etree.parse(xml_file)
         root = tree.getroot()
@@ -563,15 +564,15 @@ def read_error_file(xml_file):
         error_report('invalid WaterML file')
         return {'status': 'invalid WaterML file'}
 
-def unzip_waterml(request, res_id,src,res_id2,xml_id):
+def unzip_waterml(request, res_id,src,xml_id):
     # try:
-        print src
+
         file_number=0
         temp_dir = get_workspace()
         file_data =None
-        file_type ='waterml'
+        file_type =None
         error=''
-        data_file=''
+        file_path=''
         if not os.path.exists(temp_dir+"/id"):
             os.makedirs(temp_dir+"/id")
 
@@ -580,45 +581,54 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                 hs = controllers.get_oauth_hs(request)
             else:
                 hs = controllers.getOAuthHS(request)
-            file_path = get_workspace() + '/id'
-            hs.getResource(res_id, destination=file_path, unzip=True)
-            root_dir = file_path + '/' + res_id
+            file_path_id = get_workspace() + '/id'
+            hs.getResource(res_id, destination=file_path_id, unzip=True)
+            root_dir = file_path_id + '/' + res_id
             data_dir = root_dir + '/' + res_id + '/data/contents/'
             for subdir, dirs, files in os.walk(root_dir):
                 for file in files:
-                    data_file = data_dir + file
+                    path = data_dir + file
+                    print file
                     if  'wml_1_' in file:
 
-                        with open(data_file, 'r') as f:
+                        file_type = 'waterml'
+                        with open(path, 'r') as f:
                             # print f.read()
+                            print file_path
+                            print "PPPPPPPPPPPPPPPPPPPPP"
                             file_data = f.read()
                             f.close()
-                            file_temp_name = temp_dir + '/id/' + res_id + '.xml'
-                            file_temp = open(file_temp_name, 'wb')
+                            file_path = temp_dir + '/id/' + res_id + '.xml'
+                            file_temp = open(file_path, 'wb')
                             file_temp.write(file_data)
                             file_temp.close()
-                    if '.json.refts' in file:
+                    elif '.json.refts' in file:
 
-                        with open(data_file, 'r') as f:
-                            file_data = f.read()
-                            file_number = parse_ts_layer(file_data)
-                    if '.sqlite' in file:
+                        file_type = '.json.refts'
+                        file_number = parse_ts_layer(path)
+                    elif '.sqlite' in file:
+                        file_path = path
                         file_type = 'sqlite'
-                        # with open(data_file, 'r') as f:
-
+            if file_type==None:
+                error="No supported file type found. This app supports resource types HIS " \
+                      "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
+            print file_path
 
         elif "xmlrest" in src: #Data from USGS and AHPS Gaugeviewer WML
-            url_zip = res_id2
-            res = urllib.unquote(res_id2).decode()
+            file_type = 'waterml'
+
+            res = urllib.unquote(res_id).decode()
+
             r = requests.get(res, verify=False)
             file_data = r.content
-            print file_data
-            file_temp_name = temp_dir + '/id/'+xml_id+'.xml'
-            file_temp = open(file_temp_name, 'wb')
+
+            file_path = temp_dir + '/id/'+xml_id+'.xml'
+            file_temp = open(file_path, 'wb')
             file_temp.write(file_data)
             file_temp.close()
         elif src=='cuahsi':
              # get the URL of the remote zipped WaterML resource
+            file_type = 'waterml'
             url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
             try:
                 r = requests.get(url_zip, verify=False)
@@ -627,13 +637,12 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                 try:
                     for file in file_list:
                         file_data = z.read(file)
-                        file_temp_name = temp_dir + '/id/' + res_id + '.xml'
+                        file_path = temp_dir + '/id/' + res_id + '.xml'
                         # file_temp = open(file_temp_name, 'wb')
-                        with open(file_temp_name, 'wb') as f:
+                        with open(file_path, 'wb') as f:
                             f.write(file_data)
                             # file_temp.close()
                 # error handling
-
                 # checks to see if data is an xml
                 except etree.XMLSyntaxError as e:
                     print "Error:Not XML"
@@ -657,17 +666,17 @@ def unzip_waterml(request, res_id,src,res_id2,xml_id):
                     error_message = "Bad Zip File"
                     error_report(error_message)
                     print "Bad Zip file"
-        return {'file_number':file_number,"file_type":file_type,'error':error,'file_path':data_file}
+        print file_path
+        return {'file_number':file_number,"file_type":file_type,'error':error,'file_path':file_path}
     # except:
     #     print "There was an error loading your file"
     #     return "There was an error loading your file"
 # finds the waterML file path in the workspace folder
-def waterml_file_path(res_id,xml_rest,xml_id):
+def waterml_file_path(res_id,xml_id):
     base_path = get_workspace()
-    if xml_rest == True:
-        file_path = base_path + "/id/"+xml_id #+ res_id
-    else:
-        file_path = base_path + "/id/"+ res_id
+
+    file_path = base_path + "/id/"+xml_id #+ res_id
+
     if not file_path.endswith('.xml'):
         file_path += '.xml'
     return file_path
@@ -677,8 +686,8 @@ def error_report(text):
     temp_dir = temp_dir[:-24]
     file_temp_name = temp_dir + '/error_report.txt'
     file_temp = open(file_temp_name, 'a')
-    time = datetime.now()
-    time2 = time.strftime('%Y-%m-%d %H:%M')
+    # time = datetime.now()
+    time2 = strftime("%Y-%m-%d %H:%M:%S", gmtime())
     file_temp.write(time2+": "+text+"\n")
     file_temp.close()
 def viewer_counter(request):
@@ -712,9 +721,15 @@ def viewer_counter(request):
             file_temp.close()
     else:
         user1=''
-def parse_ts_layer(data):
+def parse_ts_layer(path):
     counter = 0
+    print ('HIIIIIIIIIIIIIIIIIIIII')
     error=''
+    response=None
+
+    with open(path, 'r') as f:
+        data = f.read()
+
     data = data.encode(encoding ='UTF-8')
     data = data.replace("'",'"')
     json_data = json.loads(data)
@@ -727,7 +742,11 @@ def parse_ts_layer(data):
         site_code = sub['siteCode']
         variable_code = sub['variableCode']
         start_date = sub['beginDate']
+        start_date = ''
+        # end_date = ''
         end_date = sub['endDate']
+        # end_date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        auth_token = ''
         if ref_type =='WOF':
             if service_type =='SOAP':
                 print url
@@ -740,23 +759,29 @@ def parse_ts_layer(data):
                 # variable_code = 'NWISUV:00060'
                 # start_date ='2016-06-03T00:00:00+00:00'
                 # end_date = '2016-10-26T00:00:00+00:00'
-                auth_token = ''
+
                 client = connect_wsdl_url(url)
                 # print client
                 # print "client!!!!!!!!!!!!!!!!!!!!!"
-
+                # sites = client.service.GetSiteInfo([site_code])
+                # print sites
                 try:
-                    response1 = client.service.GetValues(location= site_code, variable=variable_code, startDate = start_date, endDate= end_date,authoToken='')
+                    response = client.service.GetValues(site_code, variable_code,start_date,end_date,auth_token)
                 except:
                     error = "unable to connect to HydroSever"
+                # print response
+                print "AAAAAAAAAAAAAAA"
                 temp_dir = get_workspace()
                 file_path = temp_dir + '/id/' + 'timeserieslayer'+str(counter) + '.xml'
-                response1 = response1.encode('utf-8')
+                try:
+                    response = response.encode('utf-8')
+                except:
+                    response = response
                 # print response1
                 # print "Response"
                 # response1 = unicode(response1.strip(codecs.BOM_UTF8), 'utf-8')
                 with open(file_path, 'w') as outfile:
-                    outfile.write(response1)
+                    outfile.write(response)
                 print "done"
             if(service_type=='REST'):
                 waterml_url = url+'/GetValueObject'
@@ -778,7 +803,7 @@ def connect_wsdl_url(wsdl_url):
     return client
 def parse_odm2(file_path,result_num):
     #assumes only one time series in the database!!!!!!!!!!
-    print "hi"
+
     master_times=[]
     master_values=collections.OrderedDict()
     master_times = collections.OrderedDict()
@@ -835,7 +860,7 @@ def parse_odm2(file_path,result_num):
 
         timesupport=time[0]
         datatype=time[2]
-    print var_unit
+
     # c.execute('SELECT Variables.VariableNameCV,Units.UnitsName '
     #           'FROM Results,Variables,Units ')
     #
@@ -845,7 +870,7 @@ def parse_odm2(file_path,result_num):
 
     #Seperate timeseries by result id . Build dictionary of meta data for each result and then loop through values and assign to apporpiate dictionary
     #Methods
-    print "AAAAAAAAAAAAAAAAAAAAAA"
+
     c.execute('SELECT Results.ResultID,Methods.MethodID,Methods.MethodName, SamplingFeatures.SamplingFeatureName,Actions.ActionTypeCV '
               'FROM Results,FeatureActions,Actions,Methods, SamplingFeatures '+
               'WHERE Results.ResultID='+result_num+' '
@@ -870,7 +895,7 @@ def parse_odm2(file_path,result_num):
     # c.execute('Select *')
     organizations = c.fetchall()
     for meth,qual,org in zip(methods,qualityControl,organizations):
-        print meth,qual,org
+
         result_id=str(meth[0])
         m_code=meth[1]
         m_des= meth[2]
@@ -887,7 +912,7 @@ def parse_odm2(file_path,result_num):
         # print ele[0]
 
         # result_id.update(ele[0])
-        print "BBBBBBBBBBBBBBBBBB"
+
 
         meta_dic['method'].update({m_code:m_des})
 
