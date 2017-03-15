@@ -59,18 +59,11 @@ def chart_data(request, res_id, src):
     xml_id = None
     xml_rest = False
     temp_dir = utilities.get_workspace()
-    temp_dir = utilities.get_workspace()
-
-
     if "xmlrest" in src:#id from USGS Gauge Viewer app
-
         res_id = request.POST.get('url_xml')
-
         xml_id =  str(uuid.uuid4())#creates a unique id for the time series
-
     file_meta = utilities.unzip_waterml(request, res_id, src,xml_id)
     # if we don't have the xml file, downloads and unzips it
-
     file_number = int(file_meta['file_number'])
     file_path = file_meta['file_path']
     file_type = file_meta['file_type']
