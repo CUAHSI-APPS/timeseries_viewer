@@ -64,7 +64,7 @@ var chart_options = {
 };
 
 // shows an error message in the chart title
-function show_error( error_message) {
+function show_error(error_message) {
     $('#loading').hide();
     console.log(error_message);
     $('#error-message').text(error_message);

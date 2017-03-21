@@ -47,7 +47,7 @@ def get_version(root):
             wml_version = '2.0'
             break
         if '{http://www.cuahsi.org/waterML/1.1/}timeSeriesResponse' \
-        or '{http://www.cuahsi.org/waterML/1.0/}timeSeriesResponse' in element.tag:
+                or '{http://www.cuahsi.org/waterML/1.0/}timeSeriesResponse' in element.tag:
             wml_version = '1'
             break
 
@@ -87,6 +87,7 @@ def parse_1_0_and_1_1(root):
 
             # iterate through xml document and read all values
             for element in root.iter():
+
                 bracket_lock = -1
                 if '}' in element.tag:
                     # print element.tag
@@ -189,7 +190,7 @@ def parse_1_0_and_1_1(root):
                                     m_des = subele.text
                             meta_dic['quality'].update({m_code:m_des})
                             meta_dic['quality_code'].update({m_code1:m_code})
-                        # print meta_dic
+                            # print meta_dic
                     elif 'value' == tag:
                         # try:
                         #     n = element.attrib['dateTimeUTC']
@@ -219,7 +220,7 @@ def parse_1_0_and_1_1(root):
                         except:
                             method1=''
                         if method =='' and method1 != '':
-                                method = method1
+                            method = method1
                         try:
                             source = element.attrib['sourceCode']
                         except:
@@ -380,52 +381,52 @@ def parse_2_0(root):#waterml 2 has not been implemented in the viewer at this ti
             # smallest_value = 0
             for element in root.iter():
                 if 'MeasurementTVP' in element.tag:
-                        for e in element:
-                            try:
-                                n = element.attrib['dateTimeUTC']
-                            except:
-                                n =element.attrib['dateTime']
-                            try:
-                                quality= element.attrib['qualityControlLevelCode']
-                            except:
-                                quality1 =''
-                            try:
-                                method = element.attrib['methodCode']
-                            except:
-                                method=''
-                            try:
-                                source = element.attrib['sourceCode']
-                            except:
-                                source=''
-                            dic = quality +'aa'+method+'aa'+source
-                            if dic not in meth_qual:
-                                meth_qual.append(dic)
-                                master_values.update({dic:[]})
-                                master_times.update({dic:[]})
-                                master_boxplot.update({dic:[]})
-                                master_stat.update({dic:[]})
-                                master_data_values.update({dic:[]})
+                    for e in element:
+                        try:
+                            n = element.attrib['dateTimeUTC']
+                        except:
+                            n =element.attrib['dateTime']
+                        try:
+                            quality= element.attrib['qualityControlLevelCode']
+                        except:
+                            quality1 =''
+                        try:
+                            method = element.attrib['methodCode']
+                        except:
+                            method=''
+                        try:
+                            source = element.attrib['sourceCode']
+                        except:
+                            source=''
+                        dic = quality +'aa'+method+'aa'+source
+                        if dic not in meth_qual:
+                            meth_qual.append(dic)
+                            master_values.update({dic:[]})
+                            master_times.update({dic:[]})
+                            master_boxplot.update({dic:[]})
+                            master_stat.update({dic:[]})
+                            master_data_values.update({dic:[]})
 
-                            v = element.text
-                            if v == nodata:
-                                value = None
-                                x_value.append(n)
-                                y_value.append(value)
-                                v =None
+                        v = element.text
+                        if v == nodata:
+                            value = None
+                            x_value.append(n)
+                            y_value.append(value)
+                            v =None
 
-                            else:
-                                v = float(element.text)
-                                x_value.append(n)
-                                y_value.append(v)
-                                master_data_values[dic].append(v) #records only none null values for running statistics
-                            master_values[dic].append(v)
-                            master_times[dic].append(n)
+                        else:
+                            v = float(element.text)
+                            x_value.append(n)
+                            y_value.append(v)
+                            master_data_values[dic].append(v) #records only none null values for running statistics
+                        master_values[dic].append(v)
+                        master_times[dic].append(n)
 
 
-                                # if 'time' in e.tag:
-                                #     keys.append(e.text)
-                                # if 'value' in e.tag:
-                                #     vals.append(e.text)
+                        # if 'time' in e.tag:
+                        #     keys.append(e.text)
+                        # if 'value' in e.tag:
+                        #     vals.append(e.text)
                 if 'uom' in element.tag:
                     units = element.text
                 if 'MonitoringPoint' in element.tag:
@@ -448,13 +449,11 @@ def parse_2_0(root):#waterml 2 has not been implemented in the viewer at this ti
                             for a in e.attrib:
                                 if 'title' in a:
                                     method=e.attrib[a]
-
+                print element.tag
                 if 'organization' in element.tag:
                     organization = element.text
-
                 if 'definition' in element.tag:
                     quality = element.text
-
                 if 'methodDescription' in element.tag:
                     method = element.text
                 if 'dataType' in element.tag:
@@ -559,115 +558,115 @@ def Original_Checker(xml_file):
 def read_error_file(xml_file):
     try:
         f = open(xml_file)
-        return {'status': f.readline()}
+        return f.readline()
     except:
         error_report('invalid WaterML file')
-        return {'status': 'invalid WaterML file'}
+        return 'invalid WaterML file'
 
 def unzip_waterml(request, res_id,src,xml_id):
     # try:
 
-        file_number=0
-        temp_dir = get_workspace()
-        file_data =None
-        file_type =None
-        error=''
-        file_path=''
-        if not os.path.exists(temp_dir+"/id"):
-            os.makedirs(temp_dir+"/id")
+    file_number=0
+    temp_dir = get_workspace()
+    file_data =None
+    file_type =None
+    error=''
+    file_path=''
+    if not os.path.exists(temp_dir+"/id"):
+        os.makedirs(temp_dir+"/id")
 
-        if 'hydroshare' in src:
-            if controllers.use_hs_client_helper:
-                hs = controllers.get_oauth_hs(request)
-            else:
-                hs = controllers.getOAuthHS(request)
-            file_path_id = get_workspace() + '/id'
-            hs.getResource(res_id, destination=file_path_id, unzip=True)
-            root_dir = file_path_id + '/' + res_id
-            data_dir = root_dir + '/' + res_id + '/data/contents/'
-            for subdir, dirs, files in os.walk(root_dir):
-                for file in files:
-                    path = data_dir + file
-                    print file
-                    if  'wml_1_' in file:
+    if 'hydroshare' in src:
+        if controllers.use_hs_client_helper:
+            hs = controllers.get_oauth_hs(request)
+        else:
+            hs = controllers.getOAuthHS(request)
+        file_path_id = get_workspace() + '/id'
+        hs.getResource(res_id, destination=file_path_id, unzip=True)
+        root_dir = file_path_id + '/' + res_id
+        data_dir = root_dir + '/' + res_id + '/data/contents/'
+        for subdir, dirs, files in os.walk(root_dir):
+            for file in files:
+                path = data_dir + file
+                print file
+                if  'wml_1_' in file:
 
-                        file_type = 'waterml'
-                        with open(path, 'r') as f:
-                            # print f.read()
-                            print file_path
-                            print "PPPPPPPPPPPPPPPPPPPPP"
-                            file_data = f.read()
-                            f.close()
-                            file_path = temp_dir + '/id/' + res_id + '.xml'
-                            file_temp = open(file_path, 'wb')
-                            file_temp.write(file_data)
-                            file_temp.close()
-                    elif '.json.refts' in file:
-
-                        file_type = '.json.refts'
-                        file_number = parse_ts_layer(path)
-                    elif '.sqlite' in file:
-                        file_path = path
-                        file_type = 'sqlite'
-            if file_type==None:
-                error="No supported file type found. This app supports resource types HIS " \
-                      "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
-            print file_path
-
-        elif "xmlrest" in src: #Data from USGS and AHPS Gaugeviewer WML
-            file_type = 'waterml'
-
-            res = urllib.unquote(res_id).decode()
-
-            r = requests.get(res, verify=False)
-            file_data = r.content
-
-            file_path = temp_dir + '/id/'+xml_id+'.xml'
-            file_temp = open(file_path, 'wb')
-            file_temp.write(file_data)
-            file_temp.close()
-        elif src=='cuahsi':
-             # get the URL of the remote zipped WaterML resource
-            file_type = 'waterml'
-            url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
-            try:
-                r = requests.get(url_zip, verify=False)
-                z = zipfile.ZipFile(StringIO.StringIO(r.content))
-                file_list = z.namelist()
-                try:
-                    for file in file_list:
-                        file_data = z.read(file)
+                    file_type = 'waterml'
+                    with open(path, 'r') as f:
+                        # print f.read()
+                        print file_path
+                        print "PPPPPPPPPPPPPPPPPPPPP"
+                        file_data = f.read()
+                        f.close()
                         file_path = temp_dir + '/id/' + res_id + '.xml'
-                        # file_temp = open(file_temp_name, 'wb')
-                        with open(file_path, 'wb') as f:
-                            f.write(file_data)
-                            # file_temp.close()
-                # error handling
-                # checks to see if data is an xml
-                except etree.XMLSyntaxError as e:
-                    print "Error:Not XML"
-                    error_report("Error:Not XML")
-                    return False
+                        file_temp = open(file_path, 'wb')
+                        file_temp.write(file_data)
+                        file_temp.close()
+                elif '.json.refts' in file:
 
-                # checks to see if Url is valid
-                except ValueError, e:
-                    error_report("Error:invalid Url")
-                    print "Error:invalid Url"
-                    return False
-
-                # checks to see if xml is formatted correctly
-                except TypeError, e:
-                    error_report("Error:string indices must be integers not str")
-                    print "Error:string indices must be integers not str"
-                    return False
-
-            # check if the zip file is valid
-            except zipfile.BadZipfile as e:
-                    error_message = "Bad Zip File"
-                    error_report(error_message)
-                    print "Bad Zip file"
+                    file_type = '.json.refts'
+                    file_number = parse_ts_layer(path)
+                elif '.sqlite' in file:
+                    file_path = path
+                    file_type = 'sqlite'
+        if file_type==None:
+            error="No supported file type found. This app supports resource types HIS " \
+                  "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
         print file_path
-        return {'file_number':file_number,"file_type":file_type,'error':error,'file_path':file_path}
+
+    elif "xmlrest" in src: #Data from USGS and AHPS Gaugeviewer WML
+        file_type = 'waterml'
+
+        res = urllib.unquote(res_id).decode()
+
+        r = requests.get(res, verify=False)
+        file_data = r.content
+
+        file_path = temp_dir + '/id/'+xml_id+'.xml'
+        file_temp = open(file_path, 'wb')
+        file_temp.write(file_data)
+        file_temp.close()
+    elif src=='cuahsi':
+        # get the URL of the remote zipped WaterML resource
+        file_type = 'waterml'
+        url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/'+res_id+'/zip'
+        try:
+            r = requests.get(url_zip, verify=False)
+            z = zipfile.ZipFile(StringIO.StringIO(r.content))
+            file_list = z.namelist()
+            try:
+                for file in file_list:
+                    file_data = z.read(file)
+                    file_path = temp_dir + '/id/' + res_id + '.xml'
+                    # file_temp = open(file_temp_name, 'wb')
+                    with open(file_path, 'wb') as f:
+                        f.write(file_data)
+                        # file_temp.close()
+            # error handling
+            # checks to see if data is an xml
+            except etree.XMLSyntaxError as e:
+                print "Error:Not XML"
+                error_report("Error:Not XML")
+                return False
+
+            # checks to see if Url is valid
+            except ValueError, e:
+                error_report("Error:invalid Url")
+                print "Error:invalid Url"
+                return False
+
+            # checks to see if xml is formatted correctly
+            except TypeError, e:
+                error_report("Error:string indices must be integers not str")
+                print "Error:string indices must be integers not str"
+                return False
+
+        # check if the zip file is valid
+        except zipfile.BadZipfile as e:
+            error_message = "Bad Zip File"
+            error_report(error_message)
+            print "Bad Zip file"
+    print file_path
+    return {'file_number':file_number,"file_type":file_type,'error':error,'file_path':file_path}
     # except:
     #     print "There was an error loading your file"
     #     return "There was an error loading your file"
@@ -742,7 +741,7 @@ def parse_ts_layer(path):
         site_code = sub['siteCode']
         variable_code = sub['variableCode']
         start_date = sub['beginDate']
-        start_date = ''
+        # start_date = ''
         # end_date = ''
         end_date = sub['endDate']
         # end_date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
@@ -843,7 +842,7 @@ def parse_odm2(file_path,result_num):
     c.execute('SELECT Variables.VariableNameCV,Units.UnitsName,Results.SampledMediumCV,Variables.NoDataValue '
               'FROM Results,Variables,Units '
               'WHERE Results.ResultID='+result_num+' '
-              'AND Results.UnitsID = Units.UnitsID AND Results.VariableID = Variables.VariableID')
+                                                   'AND Results.UnitsID = Units.UnitsID AND Results.VariableID = Variables.VariableID')
     var_unit = c.fetchall()
     for unit in var_unit:
         variable_name = unit[0]
@@ -853,7 +852,7 @@ def parse_odm2(file_path,result_num):
     c.execute('SELECT  TimeSeriesResults.IntendedTimeSpacing, Units.UnitsName,TimeSeriesResults.AggregationStatisticCV '
               'FROM TimeSeriesResults, Units '
               'WHERE TimeSeriesResults.ResultID ='+result_num+' '
-              'AND TimeSeriesResults.IntendedTimeSpacingUnitsID = Units.UnitsID')
+                                                              'AND TimeSeriesResults.IntendedTimeSpacingUnitsID = Units.UnitsID')
     time_support = c.fetchall()
     for time in time_support:
         timeunit = time[1]
@@ -874,7 +873,7 @@ def parse_odm2(file_path,result_num):
     c.execute('SELECT Results.ResultID,Methods.MethodID,Methods.MethodName, SamplingFeatures.SamplingFeatureName,Actions.ActionTypeCV '
               'FROM Results,FeatureActions,Actions,Methods, SamplingFeatures '+
               'WHERE Results.ResultID='+result_num+' '
-              'AND Results.FeatureActionID=FeatureActions.FeatureActionID '+
+                                                   'AND Results.FeatureActionID=FeatureActions.FeatureActionID '+
               'AND ((FeatureActions.ActionID=Actions.ActionID '
               'AND Actions.MethodID=Methods.MethodID) OR(FeatureActions.SamplingFeatureID = SamplingFeatures.SamplingFeatureID)) ')
     methods = c.fetchall()#Returns Result id method id and method description for each result
@@ -882,12 +881,12 @@ def parse_odm2(file_path,result_num):
     c.execute('SELECT ProcessingLevels.ProcessingLevelCode, ProcessingLevels.Explanation '
               'FROM Results, ProcessingLevels '+
               'WHERE Results.ResultID='+result_num+' '
-              'AND Results.ProcessingLevelID = ProcessingLevels.ProcessingLevelID')
+                                                   'AND Results.ProcessingLevelID = ProcessingLevels.ProcessingLevelID')
     qualityControl = c.fetchall()
     c.execute('SELECT Organizations.OrganizationID,Organizations.OrganizationName,Organizations.OrganizationName '
               'FROM Organizations,Affiliations,ActionBy,Actions,FeatureActions,Results '+
               'WHERE Results.ResultID='+result_num+' '
-              'AND Results.FeatureActionID=FeatureActions.FeatureActionID '+
+                                                   'AND Results.FeatureActionID=FeatureActions.FeatureActionID '+
               'AND FeatureActions.ActionID=Actions.ActionID '+
               'AND Actions.ActionID=ActionBy.ActionID '+
               'AND ActionBy.AffiliationID = Affiliations.AffiliationID '+
@@ -983,27 +982,27 @@ def parse_odm2(file_path,result_num):
 
     conn.close()
     return {
-                'site_name': site_name,
-                'variable_name': variable_name,
-                'units': units,
-                'meta_dic':meta_dic,
+        'site_name': site_name,
+        'variable_name': variable_name,
+        'units': units,
+        'meta_dic':meta_dic,
 
-                'organization': organization,
-                'quality': quality,
-                'method': method,
-                'status': 'success',
-                'datatype' :datatype,
-                'valuetype' :valuetype,
-                'samplemedium':samplemedium,
-                'timeunit':timeunit,
-                'sourcedescription' :sourcedescription,
-                'timesupport' : timesupport,
-                'master_counter':master_counter,
+        'organization': organization,
+        'quality': quality,
+        'method': method,
+        'status': 'success',
+        'datatype' :datatype,
+        'valuetype' :valuetype,
+        'samplemedium':samplemedium,
+        'timeunit':timeunit,
+        'sourcedescription' :sourcedescription,
+        'timesupport' : timesupport,
+        'master_counter':master_counter,
 
-                'master_values':master_values,
-                'master_times':master_times,
-                'master_boxplot':master_boxplot,
-                'master_stat':master_stat,
-                'master_data_values':master_data_values
+        'master_values':master_values,
+        'master_times':master_times,
+        'master_boxplot':master_boxplot,
+        'master_stat':master_stat,
+        'master_data_values':master_data_values
 
-            }
+    }

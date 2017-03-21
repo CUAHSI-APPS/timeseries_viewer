@@ -76,10 +76,8 @@ def chart_data(request, res_id, src):
             print "end of chart data"
         elif file_type=='.json.refts':
             for i in range(0,file_number):
-
                 file_path = temp_dir+'/id/timeserieslayer'+str(i)+'.xml'
                 data_for_chart.append(utilities.Original_Checker(file_path))
-
         elif file_type=='sqlite':
             print file_path
             conn = sqlite3.connect(file_path)
@@ -93,7 +91,8 @@ def chart_data(request, res_id, src):
                 data_for_chart.append(utilities.parse_odm2(file_path,str_series))
         # print data_for_chart
 
-
+    if isinstance(data_for_chart[0],basestring)==True:
+        error = data_for_chart[0]
     # print data_for_chart
     return JsonResponse({'data':data_for_chart,'error':error})
 # home page controller
