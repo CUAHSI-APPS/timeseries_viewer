@@ -1035,12 +1035,20 @@ function gridlines(ymax,ymin){
         interval = (maxview - minview) / 11
         minview = (Math.ceil((minview / interval)) * interval)
     }
-    console.log(maxview)
-    console.log(minview)
-    console.log(interval)
+    //console.log(maxview)
+    //console.log(minview)
+    //console.log(interval)
 
     if (maxview <ymax || minview>ymin){
        interval = Math.ceil(maxview - minview) / 11
     }
+    //if (5 < Math.abs(maxview)){
+    ////    maxview = Math.round(maxview*100)/100
+    ////    minview = Math.round(minview*100)/100
+    //    interval = Math.round(interval*100)/100
+    //}
+    console.log(maxview)
+    console.log(minview)
+    console.log(interval)
     return {'maxview':maxview,'minview':minview,'interval':interval}
 }

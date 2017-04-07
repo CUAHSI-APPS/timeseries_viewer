@@ -581,7 +581,27 @@ def unzip_waterml(request, res_id,src,xml_id):
         else:
             hs = controllers.getOAuthHS(request)
         file_path_id = get_workspace() + '/id'
-        hs.getResource(res_id, destination=file_path_id, unzip=True)
+        status='running'
+        delay = 0
+        while(status =='running' or delay<10):
+                print "looping"
+
+                if (delay>10):
+                    error ='Request timed out'
+                    break
+                elif(status =='done'):
+                    error =''
+                    break
+                else:
+                    print 'get resource'
+                    try:
+                        hs.getResource(res_id, destination=file_path_id, unzip=True)
+                        status = 'done'
+                    except:
+                        error='error'
+                        status = 'running'
+                        time.sleep(2)
+        # hs.getResource(res_id, destination=file_path_id, unzip=True)
         root_dir = file_path_id + '/' + res_id
         data_dir = root_dir + '/' + res_id + '/data/contents/'
         for subdir, dirs, files in os.walk(root_dir):
@@ -753,23 +773,31 @@ def parse_ts_layer(path):
                 print variable_code
                 print start_date
                 print end_date
-                # print client
-                # site_code = 'NWISUV:10164500'
-                # variable_code = 'NWISUV:00060'
-                # start_date ='2016-06-03T00:00:00+00:00'
-                # end_date = '2016-10-26T00:00:00+00:00'
+                if 'nasa' in url:
+                    headers = {'content-type': 'text/xml'}
+                    body = """<?xml version="1.0" encoding="utf-8"?>
+                        <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                          <soap:Body>
+                            <GetValuesObject xmlns="http://www.cuahsi.org/his/1.0/ws/">
+                              <location>"""+site_code+"""</location>
+                              <variable>"""+variable_code+"""</variable>
+                              <startDate>"""+start_date+"""</startDate>
+                              <endDate>"""+end_date+"""</endDate>
+                              <authToken>
+                              </authToken>
+                            </GetValuesObject>
+                          </soap:Body>
+                        </soap:Envelope>"""
+                    response = requests.post(url,data=body,headers=headers)
+                    response = response.content
+                else:
+                    client = connect_wsdl_url(url)
+                    try:
+                        response = client.service.GetValues(site_code, variable_code,start_date,end_date,auth_token)
+                    except:
+                        error = "unable to connect to HydroSever"
+                    # print response
 
-                client = connect_wsdl_url(url)
-                # print client
-                # print "client!!!!!!!!!!!!!!!!!!!!!"
-                # sites = client.service.GetSiteInfo([site_code])
-                # print sites
-                try:
-                    response = client.service.GetValues(site_code, variable_code,start_date,end_date,auth_token)
-                except:
-                    error = "unable to connect to HydroSever"
-                # print response
-                print "AAAAAAAAAAAAAAA"
                 temp_dir = get_workspace()
                 file_path = temp_dir + '/id/' + 'timeserieslayer'+str(counter) + '.xml'
                 try:
