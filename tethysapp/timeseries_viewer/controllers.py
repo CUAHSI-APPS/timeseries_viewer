@@ -17,16 +17,16 @@ from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 
 # -- coding: utf-8--
 
-# import logging
-# logger = logging.getLogger(__name__)
-use_hs_client_helper = False
-# try:
-#     from tethys_services.backends.hs_restclient_helper import get_oauth_hs
-# except Exception as ex:
-#     use_hs_client_helper = True
-#     logger.error(
-#         "tethys_services.backends.hs_restclient_helper import get_oauth_hs: " +
-#         ex.message)
+import logging
+logger = logging.getLogger(__name__)
+use_hs_client_helper = True
+try:
+    from tethys_services.backends.hs_restclient_helper import get_oauth_hs
+except Exception as ex:
+    use_hs_client_helper = False
+    logger.error(
+        "tethys_services.backends.hs_restclient_helper import get_oauth_hs: " +
+        ex.message)
 
 # helper controller for fetching the WaterML file
 def temp_waterml(request, id):
