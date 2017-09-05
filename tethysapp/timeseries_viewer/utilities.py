@@ -1,3 +1,6 @@
+# coding=utf-8
+#
+# Created by Matthew Bayles, 2016
 from lxml import etree
 import numpy
 import requests
@@ -28,17 +31,54 @@ from xml.sax._exceptions import SAXParseException
 import requests
 import sqlite3
 import datetime
+from django.conf import settings
+from hs_restclient import HydroShare, HydroShareAuthOAuth2, HydroShareNotAuthorized, HydroShareNotFound
+import hs_restclient as hs_r
+from django.conf import settings
 from time import gmtime, strftime
+from tethys_services.backends.hs_restclient_helper import get_oauth_hs
+# from tethys_services.backends.hydroshare_beta import HydroShareBetaOAuth2 as beta_oautho
 
 
 def get_app_base_uri(request):
+    """
+    Convert UTM coordinates to WGS 84
+
+    Parameters
+    __________
+    easting : str
+        Easting of the coordinate to convert.
+    northing : str
+        Northing of the coordinate to convert.
+    zone : str
+        UTM zone the coordinate to convert.
+
+    Returns
+    _______
+    list
+        Coordinates in WGS84 coordinate system.
+
+    Notes
+    _____
+    This function is originally from a stackoverflow discussion [1]_.
+
+    References
+    __________
+    .. [1]“How to convert from UTM to LatLng in python or Javascript.”
+       <https://stackoverflow.com/questions/343865/
+       how-to-convert-from-utm-to-latlng-in-python-or-javascript>
+       (July. 5, 2017).
+
+    """
     base_url = request.build_absolute_uri()
     if "?" in base_url:
         base_url = base_url.split("?")[0]
     return base_url
 
+
 def get_workspace():
     return TimeSeriesViewer.get_app_workspace().path
+
 
 def get_version(root):
     wml_version = None
@@ -52,6 +92,7 @@ def get_version(root):
             break
 
     return wml_version
+
 
 def parse_1_0_and_1_1(root):
 
@@ -328,6 +369,7 @@ def parse_1_0_and_1_1(root):
             'status': data_error
         }
 
+
 def parse_2_0(root):#waterml 2 has not been implemented in the viewer at this time
     print "running parse_2"
     root_tag = root.tag.lower()
@@ -533,7 +575,6 @@ def parse_2_0(root):#waterml 2 has not been implemented in the viewer at this ti
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
 
 
-
 def Original_Checker(xml_file):
 
 
@@ -555,6 +596,7 @@ def Original_Checker(xml_file):
         error_report("xml parse error")
         return read_error_file(xml_file)
 
+
 def read_error_file(xml_file):
     try:
         f = open(xml_file)
@@ -563,44 +605,65 @@ def read_error_file(xml_file):
         error_report('invalid WaterML file')
         return 'invalid WaterML file'
 
-def unzip_waterml(request, res_id,src,xml_id):
-    # try:
 
+def unzip_waterml(request,res_id,src,xml_id):
     file_number=0
     temp_dir = get_workspace()
     file_data =None
     file_type =None
     error=''
     file_path=''
-    if not os.path.exists(temp_dir+"/id"):
-        os.makedirs(temp_dir+"/id")
-
+    # if not os.path.exists(temp_dir+"/id"):
+    #     os.makedirs(temp_dir+"/id")
     if 'hydroshare' in src:
+        # Get file location of python scripts
+        cwd = os.path.realpath(
+            os.path.join(os.getcwd(), os.path.dirname(__file__)))
+        print cwd
+        # if controllers.use_hs_client_helper:
+        #     print 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'
+        #     hs = controllers.get_oauth_hs(request)
+        # else:
+
         if controllers.use_hs_client_helper:
+            print "hydroshare controller"
             hs = controllers.get_oauth_hs(request)
         else:
-            hs = controllers.getOAuthHS(request)
-        file_path_id = get_workspace() + '/id'
+            print "utilties hydroshare"
+            hs = getOAuthHS(request)
+            # hs = get_oauth_hs(request)
+        # hs = getOAuthHS(request)
+        print hs.getUserInfo()
+        print 'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUSer'
+        # file_path_id = get_workspace() + '/id'
+        file_path_id = get_workspace()
         status='running'
         delay = 0
+        beta = requests.get('https://beta.hydroshare.org/django_irods/download/bags/0b6a9d74fa5549e88b55838a98aa3c57.zip')
         while(status =='running' or delay<10):
-                print "looping"
+            print "looping"
 
-                if (delay>10):
-                    error ='Request timed out'
-                    break
-                elif(status =='done'):
-                    error =''
-                    break
-                else:
-                    print 'get resource'
-                    try:
-                        hs.getResource(res_id, destination=file_path_id, unzip=True)
-                        status = 'done'
-                    except:
-                        error='error'
-                        status = 'running'
-                        time.sleep(2)
+            if (delay>10):
+                error ='Request timed out'
+                break
+            elif(status =='done'):
+                error =''
+                break
+            else:
+                print 'get resource'
+                try:
+                    hs.getResource(res_id, destination=file_path_id, unzip=True)
+                    status = 'done'
+                # except HydroShareNotAuthorized:
+                #     print "not authorized"
+                except Exception as e:
+                    print e
+                    print type(e).__name__
+                    print e.__class__.__name__
+                    error='error'
+                    status = 'running'
+                    time.sleep(2)
+                    delay = delay + 1
         # hs.getResource(res_id, destination=file_path_id, unzip=True)
         root_dir = file_path_id + '/' + res_id
         data_dir = root_dir + '/' + res_id + '/data/contents/'
@@ -617,12 +680,12 @@ def unzip_waterml(request, res_id,src,xml_id):
                         print "PPPPPPPPPPPPPPPPPPPPP"
                         file_data = f.read()
                         f.close()
-                        file_path = temp_dir + '/id/' + res_id + '.xml'
+                        # file_path = temp_dir + '/id/' + res_id + '.xml'
+                        file_path = temp_dir + res_id + '.xml'
                         file_temp = open(file_path, 'wb')
                         file_temp.write(file_data)
                         file_temp.close()
                 elif '.json.refts' in file:
-
                     file_type = '.json.refts'
                     file_number = parse_ts_layer(path)
                 elif '.sqlite' in file:
@@ -641,7 +704,8 @@ def unzip_waterml(request, res_id,src,xml_id):
         r = requests.get(res, verify=False)
         file_data = r.content
 
-        file_path = temp_dir + '/id/'+xml_id+'.xml'
+        # file_path = temp_dir + '/id/'+xml_id+'.xml'
+        file_path = temp_dir +xml_id + '.xml'
         file_temp = open(file_path, 'wb')
         file_temp.write(file_data)
         file_temp.close()
@@ -656,7 +720,8 @@ def unzip_waterml(request, res_id,src,xml_id):
             try:
                 for file in file_list:
                     file_data = z.read(file)
-                    file_path = temp_dir + '/id/' + res_id + '.xml'
+                    # file_path = temp_dir + '/id/' + res_id + '.xml'
+                    file_path = temp_dir + res_id + '.xml'
                     # file_temp = open(file_temp_name, 'wb')
                     with open(file_path, 'wb') as f:
                         f.write(file_data)
@@ -690,15 +755,18 @@ def unzip_waterml(request, res_id,src,xml_id):
     # except:
     #     print "There was an error loading your file"
     #     return "There was an error loading your file"
-# finds the waterML file path in the workspace folder
+
+
 def waterml_file_path(res_id,xml_id):
     base_path = get_workspace()
 
-    file_path = base_path + "/id/"+xml_id #+ res_id
+    # file_path = base_path + "/id/"+xml_id #+ res_id
+    file_path = base_path +xml_id #+ res_id
 
     if not file_path.endswith('.xml'):
         file_path += '.xml'
     return file_path
+
 
 def error_report(text):
     temp_dir = get_workspace()
@@ -709,13 +777,17 @@ def error_report(text):
     time2 = strftime("%Y-%m-%d %H:%M:%S", gmtime())
     file_temp.write(time2+": "+text+"\n")
     file_temp.close()
+
+
 def viewer_counter(request):
     temp_dir = get_workspace()
     try:
         if controllers.use_hs_client_helper:
+            print "hydroshare controller"
             hs = controllers.get_oauth_hs(request)
         else:
-            hs = controllers.getOAuthHS(request)
+            print "utilties hydroshare"
+            hs = getOAuthHS(request)
 
         user =  hs.getUserInfo()
         user1 = user['username']
@@ -740,6 +812,8 @@ def viewer_counter(request):
             file_temp.close()
     else:
         user1=''
+
+
 def parse_ts_layer(path):
     counter = 0
     print ('HIIIIIIIIIIIIIIIIIIIII')
@@ -799,7 +873,8 @@ def parse_ts_layer(path):
                     # print response
 
                 temp_dir = get_workspace()
-                file_path = temp_dir + '/id/' + 'timeserieslayer'+str(counter) + '.xml'
+                # file_path = temp_dir + '/id/' + 'timeserieslayer'+str(counter) + '.xml'
+                file_path = temp_dir  + 'timeserieslayer'+str(counter) + '.xml'
                 try:
                     response = response.encode('utf-8')
                 except:
@@ -816,6 +891,8 @@ def parse_ts_layer(path):
                 html = response.read()
             counter = counter +1
     return counter
+
+
 def connect_wsdl_url(wsdl_url):
     try:
         client = Client(wsdl_url)
@@ -828,9 +905,9 @@ def connect_wsdl_url(wsdl_url):
     except:
         raise Exception("Unexpected error")
     return client
-def parse_odm2(file_path,result_num):
-    #assumes only one time series in the database!!!!!!!!!!
 
+
+def parse_odm2(file_path,result_num):
     master_times=[]
     master_values=collections.OrderedDict()
     master_times = collections.OrderedDict()
@@ -882,6 +959,8 @@ def parse_odm2(file_path,result_num):
               'WHERE TimeSeriesResults.ResultID ='+result_num+' '
                                                               'AND TimeSeriesResults.IntendedTimeSpacingUnitsID = Units.UnitsID')
     time_support = c.fetchall()
+    print var_unit
+    print result_num
     for time in time_support:
         timeunit = time[1]
 
@@ -901,7 +980,7 @@ def parse_odm2(file_path,result_num):
     c.execute('SELECT Results.ResultID,Methods.MethodID,Methods.MethodName, SamplingFeatures.SamplingFeatureName,Actions.ActionTypeCV '
               'FROM Results,FeatureActions,Actions,Methods, SamplingFeatures '+
               'WHERE Results.ResultID='+result_num+' '
-                                                   'AND Results.FeatureActionID=FeatureActions.FeatureActionID '+
+              'AND Results.FeatureActionID=FeatureActions.FeatureActionID '+
               'AND ((FeatureActions.ActionID=Actions.ActionID '
               'AND Actions.MethodID=Methods.MethodID) OR(FeatureActions.SamplingFeatureID = SamplingFeatures.SamplingFeatureID)) ')
     methods = c.fetchall()#Returns Result id method id and method description for each result
@@ -1034,3 +1113,59 @@ def parse_odm2(file_path,result_num):
         'master_data_values':master_data_values
 
     }
+
+def getOAuthHS(request):
+    # hs_instance_name = "www"
+    hs_instance_name = "beta"
+    client_id = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_KEY", None)
+    print client_id
+    print "CCCCCCCCCCCCCCCCCCLient id"
+    client_secret = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_SECRET", None)
+    # this line will throw out from django.core.exceptions.ObjectDoesNotExist if current user is not signed in via HydroShare OAuth
+    token = request.user.social_auth.get(provider='hydroshare').extra_data['token_dict']
+    hs_hostname = "{0}.hydroshare.org".format(hs_instance_name)
+    # hs_hostname = "{0}.hydroshare.org".format(hs_instance_name)
+    auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
+    hs = HydroShare(auth=auth, hostname=hs_hostname)
+    return hs
+
+def get_oauth_hs(request):
+    hs = None
+    error_msg_head = "Failed to initialize hs object: "
+
+    try:
+        # loop through all social_auth_obj associated with this user to find "hydroshare" login
+        for social_auth_obj in request.user.social_auth.all():
+
+            #
+            # strategy = load_strategy()
+            # print strategy
+            # print 'SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT'
+            # backend_instance = social_auth_obj.get_backend_instance(strategy)
+            # backend_name = backend_instance.name
+
+            # find hydroshare backend
+            # if "hydroshare" in backend_name.lower():
+            user_id = social_auth_obj.extra_data['id']
+            auth_server_hostname = backend_instance.auth_server_hostname
+            print "getting autho"
+            print auth_server_hostname
+            client_id = getattr(settings, "SOCIAL_AUTH_{0}_KEY".format(backend_name.upper()), 'None')
+            client_secret = getattr(settings, "SOCIAL_AUTH_{0}_SECRET".format(backend_name.upper()), 'None')
+
+            if hs is None:
+                # refresh token if expired
+                refresh_user_token(social_auth_obj)
+
+                auth = hs_r.HydroShareAuthOAuth2(client_id, client_secret, token=social_auth_obj.extra_data)
+                hs = hs_r.HydroShare(auth=auth, hostname=auth_server_hostname)
+            else:
+                raise Exception("Found another hydroshare oauth instance: {0} @ {1}".format(user_id, auth_server_hostname))
+
+        if hs is None:
+            raise Exception("Not logged in through HydroShare")
+
+        return hs
+    except Exception as ex:
+        print "error"
+        print ex

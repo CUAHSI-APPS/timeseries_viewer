@@ -53,5 +53,5 @@ def list_apps(request):
             'icon': 'https://appsdev.hydroshare.org/static/hydroshare_resource_creator/images/tool.svg',
             }
 
-    return JsonResponse({"apps":[app1, app2, app3, app4]})
+    return JsonResponse({"apps": [app1, app2, app3, app4]})
     # return JsonResponse({"apps":[app1]})

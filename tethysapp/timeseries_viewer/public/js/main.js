@@ -11,8 +11,6 @@ var y2min=0
 //tool tip for the quality control column
 var quality_title=null
 var number = 0
-
-
 var unit3 = ''
 var res = null
 // here we set up the configuration of the CanvasJS chart
@@ -62,155 +60,9 @@ var chart_options = {
         includeZero: false,
     }
 };
-
-// shows an error message in the chart title
-function show_error(error_message) {
-    $('#loading').hide();
-    console.log(error_message);
-    $('#error-message').text(error_message);
-}
-
-function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms,src,xml_rest_id) {
-
-    xtime.length = 0
-    xval = ''
-    yvalu = ''
-    master_id =[]
-    length_master= 0
-
-    current_url = location.href;
-    index = current_url.indexOf("timeseries-viewer");
-    base_url = current_url.substring(0, index);
-
-
-    if (src =='xmlrest'){
-
-        xml_rest_id = res_id
-        res_id ='xmlrest'
-
-    }
-    var csrf_token = getCookie('csrftoken');
-    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/' + src + '/';
-    $.ajax({
-        type:"POST",
-        headers:{'X-CSRFToken':csrf_token},
-        dataType: 'json',
-        //timeout: 5000,
-        data:{'url_xml':xml_rest_id},
-        url: data_url,
-        success: function (json) {
-            console.log(json)
-            var dseries =[]
-            error = json.error
-            if (error != ''){show_error(error)}
-            else {
-                var chart = $("#chartContainer").CanvasJSChart()
-                json = json.data
-                len = json.length
-                for (series in json) {
-                    plot_data(chart, res_id, end_of_resources, unit_off, id_qms, json[series], len)
-                }
-            }
-        },
-        error: function () {
-            show_error("Error loading time series from " + res_id);
-        }
-    });
-}
-function roundUp(x){
-    var negative = false;
-    if(x < 0) {
-        negative = true;
-        x *= -1;
-    }
-    var y = Math.pow(10, x.toString().length-1);
-    x = (x/y);
-    x = Math.ceil(x);
-    x = x*y;
-    if(negative)
-    {
-        x *= -1;
-    }
-    return x;
-}
-function roundDown(x){
-    var negative = false;
-    if(x<10 && x>=0){
-        x = 0
-
-        return x
-    }
-    else if(x <1 && x>=-1){
-        x=1
-        negative = true
-    }
-    else if(x < 0) {
-        if(x<0 &&x >= -10){
-            x = -10
-            return x
-        }
-        else{
-            negative = true;
-            x *= -1
-        }
-        var y = Math.pow(10, x.toString().length-1);
-        x = (x/y);
-        x = Math.ceil(x);
-        x = x*y*-1;
-
-        return x
-    }
-    var y = Math.pow(10, x.toString().length-1);
-    x = (x/y);
-    x = Math.floor(x);
-    x = x*y;
-
-    if(negative){
-        x *= -1;
-        return x;
-    }
-    else{
-        return x;
-    }
-}
-
-function myFunc(id, name) {
-    var chart1 = $("#chartContainer").CanvasJSChart()
-    var selected_box = document.getElementById(id)
-
-    var chk_unit = document.getElementById(id).name;
-    var series = chart1.options.data[id].visible
-    res = selected_box.getAttribute("data-resid")
-
-    //units = units.replace(/\s+/g, '==')
-    if (series == true) {
-        chart1.options.data[id].visible = false
-        chart1.render();
-    } else if (series == false) {
-        //first_unit =''
-        if (chk_unit != unit1 && chk_unit != unit2) {
-            unit1_display =unit1.replace(/==/g, ' ')
-            unit2_display =unit2.replace(/==/g, ' ')
-            var test1 = 'Please select a unit type to hide.<br>' +
-                '<input type="radio" id ="r1" name ="units" value=' + unit1 + ' checked>' + unit1_display + '<br>' +
-                '<input type="radio" id ="r2" name ="units" value=' + unit2 + '>' + unit2_display + '<br>' +
-                '<button class="btn btn-danger" id="change_unit" onclick ="multipletime()" >submit</button>'
-            $('#' + id).attr('checked', false);
-            $('#unit_selector_info').html("")
-            $('#unit_selector_info').append(test1)
-            unit3 = chk_unit
-            var popupDiv = $('#unit_selector');
-            popupDiv.modal('show');
-
-        }
-        else {
-            chart1.options.data[id].visible = true
-            chart1.render();
-        }
-    }
-}
-
 var popupDiv = $('#welcome-popup');
+
+
 $(document).ready(function (callback) {
     console.log("ready")
     var src = find_query_parameter("SourceId");
@@ -354,6 +206,162 @@ $(document).ready(function (callback) {
     // change the app title
     document.title = 'Data Series Viewer';
 })
+
+
+// shows an error message in the chart title
+function show_error(error_message) {
+    $('#loading').hide();
+    console.log(error_message);
+    $('#error-message').text(error_message);
+}
+
+
+function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms,src,xml_rest_id) {
+
+    xtime.length = 0
+    xval = ''
+    yvalu = ''
+    master_id =[]
+    length_master= 0
+
+    current_url = location.href;
+    index = current_url.indexOf("timeseries-viewer");
+    base_url = current_url.substring(0, index);
+
+
+    if (src =='xmlrest'){
+
+        xml_rest_id = res_id
+        res_id ='xmlrest'
+
+    }
+    var csrf_token = getCookie('csrftoken');
+    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/' + src + '/';
+    $.ajax({
+        type:"POST",
+        headers:{'X-CSRFToken':csrf_token},
+        dataType: 'json',
+        //timeout: 5000,
+        data:{'url_xml':xml_rest_id},
+        url: data_url,
+        success: function (json) {
+            console.log(json)
+            var dseries =[]
+            error = json.error
+            if (error != ''){show_error(error)}
+            else {
+                var chart = $("#chartContainer").CanvasJSChart()
+                json = json.data
+                len = json.length
+                for (series in json) {
+                    plot_data(chart, res_id, end_of_resources, unit_off, id_qms, json[series], len)
+                }
+            }
+        },
+        error: function () {
+            show_error("Error loading time series from " + res_id);
+        }
+    });
+}
+
+
+function roundUp(x){
+    var negative = false;
+    if(x < 0) {
+        negative = true;
+        x *= -1;
+    }
+    var y = Math.pow(10, x.toString().length-1);
+    x = (x/y);
+    x = Math.ceil(x);
+    x = x*y;
+    if(negative)
+    {
+        x *= -1;
+    }
+    return x;
+}
+
+
+function roundDown(x){
+    var negative = false;
+    if(x<10 && x>=0){
+        x = 0
+
+        return x
+    }
+    else if(x <1 && x>=-1){
+        x=1
+        negative = true
+    }
+    else if(x < 0) {
+        if(x<0 &&x >= -10){
+            x = -10
+            return x
+        }
+        else{
+            negative = true;
+            x *= -1
+        }
+        var y = Math.pow(10, x.toString().length-1);
+        x = (x/y);
+        x = Math.ceil(x);
+        x = x*y*-1;
+
+        return x
+    }
+    var y = Math.pow(10, x.toString().length-1);
+    x = (x/y);
+    x = Math.floor(x);
+    x = x*y;
+
+    if(negative){
+        x *= -1;
+        return x;
+    }
+    else{
+        return x;
+    }
+}
+
+
+function myFunc(id, name) {
+    var chart1 = $("#chartContainer").CanvasJSChart()
+    var selected_box = document.getElementById(id)
+
+    var chk_unit = document.getElementById(id).name;
+    var series = chart1.options.data[id].visible
+    res = selected_box.getAttribute("data-resid")
+
+    //units = units.replace(/\s+/g, '==')
+    if (series == true) {
+        chart1.options.data[id].visible = false
+        chart1.render();
+    } else if (series == false) {
+        //first_unit =''
+        if (chk_unit != unit1 && chk_unit != unit2) {
+            unit1_display =unit1.replace(/==/g, ' ')
+            unit2_display =unit2.replace(/==/g, ' ')
+            var test1 = 'Please select a unit type to hide.<br>' +
+                '<input type="radio" id ="r1" name ="units" value=' + unit1 + ' checked>' + unit1_display + '<br>' +
+                '<input type="radio" id ="r2" name ="units" value=' + unit2 + '>' + unit2_display + '<br>' +
+                '<button class="btn btn-danger" id="change_unit" onclick ="multipletime()" >submit</button>'
+            $('#' + id).attr('checked', false);
+            $('#unit_selector_info').html("")
+            $('#unit_selector_info').append(test1)
+            unit3 = chk_unit
+            var popupDiv = $('#unit_selector');
+            popupDiv.modal('show');
+
+        }
+        else {
+            chart1.options.data[id].visible = true
+            chart1.render();
+        }
+    }
+}
+
+
 /* Formatting function for row details - modify as you need */
 function format(d) {
     // `d` is the original data object for the row
@@ -404,6 +412,7 @@ function format(d) {
     //'<input type="checkbox" checked data-toggle="toggle">
 }
 
+
 function box(number) {
     var name = '#container' + number
     $(name).highcharts({
@@ -440,6 +449,8 @@ function box(number) {
         },
     });
 };
+
+
 function finishloading(callback) {
     $(window).resize()
     $('#stat_div').show();
@@ -452,6 +463,7 @@ function finishloading(callback) {
 
 
 }
+
 
 function addingseries(unit_off) {
     var src = find_query_parameter("src");
@@ -528,6 +540,8 @@ function addingseries(unit_off) {
         add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms,src);
     }
 }
+
+
 function multipletime() {
     var popupDiv = $('#unit_selector');
     var chart = $("#chartContainer").CanvasJSChart()
@@ -554,6 +568,8 @@ function multipletime() {
         .draw();
     addingseries(unit_off);
 }
+
+
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie != '') {
@@ -570,6 +586,7 @@ function getCookie(name) {
     return cookieValue;
 }
 
+
 function trim_input(string){
     string = string.replace(']','')
     string = string.replace('[','')
@@ -580,6 +597,8 @@ function trim_input(string){
     string =string.split(',')
     return string
 }
+
+
 function find_query_parameter(name) {
     url = location.href;
     values=[]
@@ -597,6 +616,8 @@ function find_query_parameter(name) {
     }
     return values
 }
+
+
 function scatter_line(id){
     var chart1 = $("#chartContainer").CanvasJSChart()
     data = chart1.options.data
@@ -614,6 +635,8 @@ function scatter_line(id){
     }
     chart1.render()
 }
+
+
 function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
     json = data
     var status = json.status;
@@ -993,6 +1016,8 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
         finishloading();
     }
 }
+
+
 function gridlines(ymax,ymin){
     console.log(ymax)
     console.log(ymin)
