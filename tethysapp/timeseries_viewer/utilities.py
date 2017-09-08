@@ -1,3 +1,4 @@
+__author__ = 'matthew'
 # coding=utf-8
 #
 # Created by Matthew Bayles, 2016
@@ -38,6 +39,7 @@ import hs_restclient as hs_r
 from django.conf import settings
 from time import gmtime, strftime
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
+
 # from tethys_services.backends.hydroshare_beta import HydroShareBetaOAuth2 as beta_oautho
 
 
@@ -378,8 +380,7 @@ def parse_1_0_and_1_1(root):
         }
 
 
-def parse_2_0(
-        root):  # waterml 2 has not been implemented in the viewer at this time
+def parse_2_0(root):  # waterml 2 has not been implemented in the viewer at this time
     print "running parse_2"
     root_tag = root.tag.lower()
     boxplot = []
@@ -722,7 +723,9 @@ def unzip_waterml(request, res_id, src, xml_id):
     elif src == 'cuahsi':
         # get the URL of the remote zipped WaterML resource
         file_type = 'waterml'
-        url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
+        # url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
+        url_zip = 'http://qa-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
+        # url_zip = 'http://data.cuahsi.org/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
         try:
             r = requests.get(url_zip, verify=False)
             z = zipfile.ZipFile(StringIO.StringIO(r.content))
@@ -859,6 +862,7 @@ def parse_ts_layer(path):
                 print start_date
                 print end_date
                 if 'nasa' in url:
+                    start_date = '2017-01-02T01:00:00+00:00'
                     headers = {'content-type': 'text/xml'}
                     body = """<?xml version="1.0" encoding="utf-8"?>
                         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -868,18 +872,40 @@ def parse_ts_layer(path):
                               <variable>""" + variable_code + """</variable>
                               <startDate>""" + start_date + """</startDate>
                               <endDate>""" + end_date + """</endDate>
-                              <authToken>
-                              </authToken>
+                              <authToken>None</authToken>
                             </GetValuesObject>
                           </soap:Body>
                         </soap:Envelope>"""
                     print body
+                    body = body.encode('utf-8')
+                    response = requests.post(url, data=body, headers=headers)
+                    response = response.content
+                elif 'ghcn' in url:
+                    headers = {'content-type': 'text/xml'}
+                    start_date = '2000-01-02T01:00:00+00:00'
+                    # site_code = ':USW00094143'
+                    # variable_code = ':8'
+
+                    body = """<?xml version="1.0" encoding="utf-8"?>
+                        <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                          <soap:Body>
+                            <GetValues xmlns="http://www.cuahsi.org/his/1.1/ws/">
+                              <location>""" + site_code + """</location>
+                              <variable>""" + variable_code + """</variable>
+                              <startDate>""" + start_date + """</startDate>
+                              <endDate>""" + end_date + """</endDate>
+                              <authToken></authToken>
+                            </GetValues>
+                          </soap:Body>
+                        </soap:Envelope>"""
+                    print body
+                    body = body.encode('utf-8')
                     response = requests.post(url, data=body, headers=headers)
                     response = response.content
                 else:
                     client = connect_wsdl_url(url)
                     try:
-                        response = client.service.GetValuesObject(site_code,
+                        response = client.service.GetValues(site_code,
                                                                   variable_code,
                                                                   start_date,
                                                                   end_date,
@@ -887,20 +913,20 @@ def parse_ts_layer(path):
                     except:
                         error = "unable to connect to HydroSever"
                         # print response
-                print response
                 temp_dir = get_workspace()
                 # file_path = temp_dir + '/id/' + 'timeserieslayer'+str(counter) + '.xml'
-                file_path = temp_dir + '/timeserieslayer' + str(
-                    counter) + '.xml'
+                file_path = temp_dir + '/timeserieslayer' + str(counter) + '.xml'
                 try:
                     response = response.encode('utf-8')
                 except:
                     response = response
-                # print response1
-                # print "Response"
+                # print "Response".
+                print 'response'
+                print response
                 # response1 = unicode(response1.strip(codecs.BOM_UTF8), 'utf-8')
                 with open(file_path, 'w') as outfile:
                     outfile.write(response)
+                    # outfile.write("Dfadfs")
                 print "done"
             if (service_type == 'REST'):
                 waterml_url = url + '/GetValueObject'

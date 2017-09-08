@@ -811,7 +811,12 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
             test = []
             for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
             {
-                var date_value = m_yval[i].replace(/-/g,"/")
+                // TODO Look at moving date parsing back to Python as JS has
+                // date handling
+                var date_value = m_yval[i].replace("T","  ")
+                date_value = date_value.replace("Z","")
+                date_value = date_value.replace(/-/g,"/")
+                console.log(date_value)
                 temp_date = new Date(date_value)
                 test.push(temp_date)
                 actual_date = temp_date.getTimezoneOffset()*1000*60+temp_date.getTime()
