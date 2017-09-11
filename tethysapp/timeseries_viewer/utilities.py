@@ -44,35 +44,7 @@ from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 
 
 def get_app_base_uri(request):
-    """
-    Convert UTM coordinates to WGS 84
 
-    Parameters
-    __________
-    easting : str
-        Easting of the coordinate to convert.
-    northing : str
-        Northing of the coordinate to convert.
-    zone : str
-        UTM zone the coordinate to convert.
-
-    Returns
-    _______
-    list
-        Coordinates in WGS84 coordinate system.
-
-    Notes
-    _____
-    This function is originally from a stackoverflow discussion [1]_.
-
-    References
-    __________
-    .. [1]“How to convert from UTM to LatLng in python or Javascript.”
-       <https://stackoverflow.com/questions/343865/
-       how-to-convert-from-utm-to-latlng-in-python-or-javascript>
-       (July. 5, 2017).
-
-    """
     base_url = request.build_absolute_uri()
     if "?" in base_url:
         base_url = base_url.split("?")[0]
