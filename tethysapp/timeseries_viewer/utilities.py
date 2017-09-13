@@ -4,26 +4,14 @@ __author__ = 'matthew'
 # Created by Matthew Bayles, 2016
 from lxml import etree
 import numpy
-import requests
-import time
-from datetime import timedelta
-from dateutil import parser
-from django.http import HttpResponse
 import urllib2
 import urllib
 from .app import TimeSeriesViewer
-import csv
-import zipfile
 import StringIO
 import time
 import zipfile
 import os
-import dateutil.parser
-from datetime import datetime
-import pandas as pd
-from hs_restclient import HydroShare
 import controllers
-import operator
 import collections
 import json
 from suds.transport import TransportError
@@ -31,8 +19,7 @@ from suds.client import Client
 from xml.sax._exceptions import SAXParseException
 import requests
 import sqlite3
-import datetime
-from django.conf import settings
+import uuid
 from hs_restclient import HydroShare, HydroShareAuthOAuth2, \
     HydroShareNotAuthorized, HydroShareNotFound
 import hs_restclient as hs_r
@@ -589,10 +576,9 @@ def read_error_file(xml_file):
         return 'invalid WaterML file'
 
 
-def unzip_waterml(request, res_id, src, xml_id):
+def unzip_waterml(request, res_id, src):
     file_number = 0
     temp_dir = get_workspace()
-    file_data = None
     file_type = None
     error = ''
     file_path = ''
@@ -678,17 +664,17 @@ def unzip_waterml(request, res_id, src, xml_id):
             error = "No supported file type found. This app supports resource types HIS " \
                     "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
         print file_path
-
-    elif "xmlrest" in src:  # Data from USGS and AHPS Gaugeviewer WML
+    # Data from USGS and AHPS Gaugeviewer WML
+    elif "xmlrest" in src:
         file_type = 'waterml'
-
+        res_id = request.POST.get('url_xml')
+        # Creates a unique id for the time series
+        xml_id = str(uuid.uuid4())
         res = urllib.unquote(res_id).decode()
-
         r = requests.get(res, verify=False)
         file_data = r.content
-
         # file_path = temp_dir + '/id/'+xml_id+'.xml'
-        file_path = temp_dir + xml_id + '.xml'
+        file_path = temp_dir + '/' + xml_id + '.xml'
         file_temp = open(file_path, 'wb')
         file_temp.write(file_data)
         file_temp.close()
@@ -706,7 +692,7 @@ def unzip_waterml(request, res_id, src, xml_id):
                 for file in file_list:
                     file_data = z.read(file)
                     # file_path = temp_dir + '/id/' + res_id + '.xml'
-                    file_path = temp_dir + res_id + '.xml'
+                    file_path = temp_dir + '/' +res_id + '.xml'
                     # file_temp = open(file_temp_name, 'wb')
                     with open(file_path, 'wb') as f:
                         f.write(file_data)
@@ -736,11 +722,38 @@ def unzip_waterml(request, res_id, src, xml_id):
             error_report(error_message)
             print "Bad Zip file"
     print file_path
-    return {'file_number': file_number, "file_type": file_type, 'error': error,
-            'file_path': file_path}
-    # except:
-    #     print "There was an error loading your file"
-    #     return "There was an error loading your file"
+    data_for_chart = []
+    # if we don't have the xml file, download and unzip it
+    # file_number = int(file_meta['file_number'])
+    # file_path = file_meta['file_path']
+    # file_type = file_meta['file_type']
+    # error = file_meta['error']
+    if error == '':
+        if file_type == 'waterml':
+            # file_path = utilities.waterml_file_path(res_id,xml_id)
+            data_for_chart.append(Original_Checker(file_path))
+        elif file_type == '.json.refts':
+            for i in range(0, file_number):
+                # file_path = temp_dir+'/id/timeserieslayer'+str(i)+'.xml'
+                file_path = temp_dir+'/timeserieslayer'+str(i)+'.xml'
+                data_for_chart.append(Original_Checker(file_path))
+        elif file_type == 'sqlite':
+            print file_path
+            conn = sqlite3.connect(file_path)
+            c = conn.cursor()
+            c.execute('SELECT Results.ResultID FROM Results')
+            num_series = c.fetchall()
+            conn.close()
+            for series in num_series:
+                str_series = str(series[0])
+                data_for_chart.append(parse_odm2(file_path, str_series))
+    if isinstance(data_for_chart[0],basestring)==True:
+        error = data_for_chart[0]
+
+    return {'data':data_for_chart, 'error':error}
+    # return {'file_number': file_number, "file_type": file_type,
+    # 'error': error,
+    #         'file_path': file_path}
 
 
 def waterml_file_path(res_id, xml_id):
@@ -814,7 +827,10 @@ def parse_ts_layer(path):
     json_data = json.loads(data)
     json_data = json_data["timeSeriesReferenceFile"]
     layer = json_data['referencedTimeSeries']
+    test_counter = 0
     for sub in layer:
+        test_counter = test_counter + 1
+        print test_counter
         ref_type = sub['requestInfo']['refType']
         service_type = sub['requestInfo']['serviceType']
         url = sub['requestInfo']['url']
@@ -834,7 +850,8 @@ def parse_ts_layer(path):
                 print start_date
                 print end_date
                 if 'nasa' in url:
-                    start_date = '2017-01-02T01:00:00+00:00'
+                    print "custom nasa"
+                    start_date = '2016-01-02T01:00:05+00:00'
                     headers = {'content-type': 'text/xml'}
                     body = """<?xml version="1.0" encoding="utf-8"?>
                         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -844,7 +861,7 @@ def parse_ts_layer(path):
                               <variable>""" + variable_code + """</variable>
                               <startDate>""" + start_date + """</startDate>
                               <endDate>""" + end_date + """</endDate>
-                              <authToken>None</authToken>
+                              <authToken></authToken>
                             </GetValuesObject>
                           </soap:Body>
                         </soap:Envelope>"""
@@ -852,29 +869,34 @@ def parse_ts_layer(path):
                     body = body.encode('utf-8')
                     response = requests.post(url, data=body, headers=headers)
                     response = response.content
-                elif 'ghcn' in url:
-                    headers = {'content-type': 'text/xml'}
-                    start_date = '2000-01-02T01:00:00+00:00'
-                    # site_code = ':USW00094143'
-                    # variable_code = ':8'
 
-                    body = """<?xml version="1.0" encoding="utf-8"?>
-                        <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-                          <soap:Body>
-                            <GetValues xmlns="http://www.cuahsi.org/his/1.1/ws/">
-                              <location>""" + site_code + """</location>
-                              <variable>""" + variable_code + """</variable>
-                              <startDate>""" + start_date + """</startDate>
-                              <endDate>""" + end_date + """</endDate>
-                              <authToken></authToken>
-                            </GetValues>
-                          </soap:Body>
-                        </soap:Envelope>"""
-                    print body
-                    body = body.encode('utf-8')
-                    response = requests.post(url, data=body, headers=headers)
-                    response = response.content
+                    # time_series = root.findtext('.//timeSeriesResponse')
+                # elif 'ghcn' in url:
+                #     headers = {'content-type': 'text/xml'}
+                #     start_date = '2000-01-02T01:00:00+00:00'
+                #     variable_code = 'GHCN:PRCP'
+                #     # site_code = ':USW00094143'
+                #     # variable_code = ':8'
+                #
+                #     body = """<?xml version="1.0" encoding="utf-8"?>
+                #         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+                #           <soap:Body>
+                #             <GetValues xmlns="http://www.cuahsi.org/his/1.1/ws/">
+                #               <location>""" + site_code + """</location>
+                #               <variable>""" + variable_code + """</variable>
+                #               <startDate>""" + start_date + """</startDate>
+                #               <endDate>""" + end_date + """</endDate>
+                #               <authToken></authToken>
+                #             </GetValues>
+                #           </soap:Body>
+                #         </soap:Envelope>"""
+                #     print body
+                #     body = body.encode('utf-8')
+                #     response = requests.post(url, data=body, headers=headers)
+                #     response = response.content
                 else:
+                    print "suds client being used"
+                    # variable_code = 'GHCN:PRCP'
                     client = connect_wsdl_url(url)
                     try:
                         response = client.service.GetValues(site_code,
@@ -893,8 +915,6 @@ def parse_ts_layer(path):
                 except:
                     response = response
                 # print "Response".
-                print 'response'
-                print response
                 # response1 = unicode(response1.strip(codecs.BOM_UTF8), 'utf-8')
                 with open(file_path, 'w') as outfile:
                     outfile.write(response)

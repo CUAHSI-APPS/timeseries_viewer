@@ -157,6 +157,7 @@ $(document).ready(function (callback) {
         ],
         "order": [[1, 'asc']]
     });
+
     //Add event listener for opening and closing details
     $('#data_table tbody').on('click', 'td.details-control', function () {
         var tr = $(this).closest('tr');
@@ -816,7 +817,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
                 var date_value = m_yval[i].replace("T","  ")
                 date_value = date_value.replace("Z","")
                 date_value = date_value.replace(/-/g,"/")
-                console.log(date_value)
+                //console.log(date_value)
                 temp_date = new Date(date_value)
                 test.push(temp_date)
                 actual_date = temp_date.getTimezoneOffset()*1000*60+temp_date.getTime()
@@ -1006,7 +1007,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
     {
         if (title == 1) {
             //chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
-            chart.options.title.text = "CUAHSI Data Series Viewer*"
+            chart.options.title.texft = "CUAHSI Data Series Viewer*"
             chart.render();
         }
         else {

@@ -15,6 +15,8 @@ class TimeSeriesViewer(TethysAppBase):
     description = 'View time series from CUAHSI HydroClient'
 
     def url_maps(self):
+        print self.root_url
+        print "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaps"
         """
         Add controllers
         """

@@ -9,7 +9,7 @@ CUAHSI Time Series Viewer
 {% block app_content_wrapper_override %}
 <!-- Modal  -->
 <!--<button id = 'hello'  type="button" class="btn btn-primary">Primary</button>-->
-<div class="modal fade" id="welcome-popup" role="dialog">
+<div class="modal fade" id="help-modal" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -38,7 +38,8 @@ CUAHSI Time Series Viewer
                 <div id="byu-logo-container">
                     <img src="{% static 'timeseries_viewer/images/byu-medallion.png' %}"/><span><i>Developed at the BYU Hydroinformatics Lab</i></span>
                 </div>
-                <button type="button" class="btn btn-default" id="close-popup" data-dismiss="modal">Close</button>
+                <a href="https://github.com/CUAHSI/timeseries_viewer" type="button" class="btn btn-default" target="_blank" >Source Code</a>
+                <button type="button" class="btn btn-default" id="close-popup" data-dismiss="modal" >Close</button>
             </div>
         </div>
     </div>
@@ -78,9 +79,14 @@ CUAHSI Time Series Viewer
 <div id = 'chart' style='height:600px;width:100% '>
     <div id="chartContainer"></div>
 </div>
+
+
 <!--<button class='btn btn-danger' id='reset' >Reset</button>-->
 
 <div id = "stat_div" >
+    <button type="button" class="btn btn-info "  data-toggle="modal" data-target="#help-modal" style="float: right; position:relative">
+        <span id = 'get_data_span' data-toggle="tooltip" data-placement="bottom" title = "Get Data for New Selection" class="glyphicon glyphicon-question-sign"></span>
+    </button>
     <!--<div>*All times are displayed in local time</div>-->
     <table id="data_table" class="display" cellspacing="0" width="100%">
         <thead>
@@ -104,8 +110,7 @@ CUAHSI Time Series Viewer
 
 
 <div id = loading>
-    <!--http://cssload.net/-->
-    <!--<img src="/static/timeseries_viewer/images/main-loading-anim.gif" />-->
+
     <div class="cssload-loader">
         <div class="cssload-dot"></div>
         <div class="cssload-dot"></div>
@@ -114,18 +119,7 @@ CUAHSI Time Series Viewer
         <div class="cssload-dot"></div>
     </div>
 </div>
-<!--<div id ="cuahsi_data"  style="display:none">-->
-<!--&lt;!&ndash;<div id ="cuahsi_data"  >&ndash;&gt;-->
-    <!--<button type="button" class="btn btn-default" id="btn_submit_cuahsi"onClick ="launchByuHydroshareApp()" >submit</button>-->
 
-    <!--<div id="source">{{source}}</div>-->
-    <!--<div id="cuahsi_ids">{{cuahsi_ids}}</div>-->
-    <!--<div id ="quality">{{quality}}</div>-->
-    <!--<div id="method">{{method}}</div>-->
-    <!--<div id="sourceid">{{sourceid}}</div>-->
-
-
-<!--</div>-->
 
 {% endblock %}
 {% block app_actions %}
