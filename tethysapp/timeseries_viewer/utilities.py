@@ -26,8 +26,8 @@ import hs_restclient as hs_r
 from django.conf import settings
 from time import gmtime, strftime
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
+from multiprocessing.pool import ThreadPool
 
-# from tethys_services.backends.hydroshare_beta import HydroShareBetaOAuth2 as beta_oautho
 
 
 def get_app_base_uri(request):
@@ -57,6 +57,8 @@ def get_version(root):
 
 
 def parse_1_0_and_1_1(root):
+    print "parsing data"
+    print time.ctime()
     root_tag = root.tag.lower()
     boxplot = []
     master_values = collections.OrderedDict()
@@ -83,6 +85,49 @@ def parse_1_0_and_1_1(root):
     datatype = None
     valuetype = None
     samplemedium = None
+
+    # Testing area
+
+
+    # time_series = root.findall(
+    #             './/{http://www.cuahsi.org/waterML/1.1/}timeSeries')
+    #
+    # print time_series
+    #
+    # for series in time_series:
+    #     x = []
+    #     y = []
+    #     values = series.findall(
+    #         './/{http://www.cuahsi.org/waterML/1.1/}value')
+    #     statistic = series.findtext(
+    #         './/{http://www.cuahsi.org/waterML/1.1/}option')
+    #     for element in values:
+    #         try:
+    #             date = element.attrib['dateTime']
+    #             # remove extra 'T' in timestampe so that date is proper
+    #             # format for plotly graph
+    #             dates = date.replace('T', ' ')
+    #             x.append(dates)
+    #             v = element.text
+    #             # Sometimes data does not precisely match the no data
+    #             # value
+    #             if nodata in v or v < 0 or v in nodata:
+    #                 value = None
+    #                 y.append(value)
+    #             else:
+    #                 v = float(v)
+    #                 y.append(float(v))
+    #         except:
+    #             pass
+    #     if variable is None:
+    #         variable = ''
+    #     if 'Gage' in variable:
+    #         variable = 'Gauge'
+    #         yaxis = 'Gauge Height'
+
+
+    # End testing area
+
     try:
         if 'timeseriesresponse' in root_tag or 'timeseries' in root_tag or "envelope" in root_tag or 'timeSeriesResponse' in root_tag:
 
@@ -296,6 +341,9 @@ def parse_1_0_and_1_1(root):
                 master_boxplot[item].append(median)
                 master_boxplot[item].append(quar3)
                 master_boxplot[item].append(max1)
+            print "done parsing"
+            print time.ctime()
+
             return {
                 'site_name': site_name,
                 'variable_name': variable_name,
@@ -576,7 +624,14 @@ def read_error_file(xml_file):
         return 'invalid WaterML file'
 
 
-def unzip_waterml(request, res_id, src):
+def unzip_waterml(data_package):
+    print "unzip"
+    request = data_package[2]
+    res_id = data_package[0]
+    # res_id = 'cuahsi-wdc-2017-09-12-62098897'
+    src = data_package[1]
+    # src = 'cuahsi'
+
     file_number = 0
     temp_dir = get_workspace()
     file_type = None
@@ -679,6 +734,7 @@ def unzip_waterml(request, res_id, src):
         file_temp.write(file_data)
         file_temp.close()
     elif src == 'cuahsi':
+
         # get the URL of the remote zipped WaterML resource
         file_type = 'waterml'
         # url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
@@ -722,12 +778,24 @@ def unzip_waterml(request, res_id, src):
             error_report(error_message)
             print "Bad Zip file"
     print file_path
+    print 'file path about to start parsing'
     data_for_chart = []
     # if we don't have the xml file, download and unzip it
     # file_number = int(file_meta['file_number'])
     # file_path = file_meta['file_path']
     # file_type = file_meta['file_type']
     # error = file_meta['error']
+
+
+
+
+
+
+
+
+
+
+
     if error == '':
         if file_type == 'waterml':
             # file_path = utilities.waterml_file_path(res_id,xml_id)

@@ -6,13 +6,13 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 import os
-import requests
 import utilities
-import uuid
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
-import sqlite3
 from wsgiref.util import FileWrapper
+from multiprocessing.pool import ThreadPool, Pool
+import functools
+
 use_hs_client_helper = True
 # Backwards compatibility with older versions of Tethys
 try:
@@ -68,7 +68,24 @@ def chart_data(request, res_id, src):
     #     res_id = request.POST.get('url_xml')
     #     # Creates a unique id for the time series
     #     xml_id = str(uuid.uuid4())
-    file_meta = utilities.unzip_waterml(request, res_id, src)
+    # res_ids = request.POST.getlist('res_ids[]')
+    data_package = []
+    res_ids = request.POST.getlist('res_ids[]')
+    for res_id in res_ids:
+        data_package.append([res_id, src, request])
+    print data_package
+    p = ThreadPool(10)
+    print "Thread Pool!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    # data_for_chart = p.map(functools.partial(test111, r='asdfjhdjs'), g)
+    file_meta = p.map(utilities.unzip_waterml, data_package)
+    print "Have data"
+    # print file_meta
+    # data_for_chart = p.map(test111, "l")
+    # with Pool(processes=3) as pool:
+    #     results = pool.map(functools.partial(test111, b='Sons'), g)
+    #
+    # print (data_for_chart)
+    # file_meta = utilities.unzip_waterml([request, res_id, src])
     # if we don't have the xml file, download and unzip it
     # file_number = int(file_meta['file_number'])
     # file_path = file_meta['file_path']
@@ -98,8 +115,14 @@ def chart_data(request, res_id, src):
     #     error = data_for_chart[0]
     # # print data_for_chart
     # return JsonResponse({'data':data_for_chart,'error':error})
-    return JsonResponse(file_meta)
+    return JsonResponse(dict(data =file_meta))
+def merge_names_unpack(args):
+    return test111(*args)
 
+def test111(x):
+    print x
+    print "testing function"
+    return x
 
 # seperate handler for request originating from hydroshare.org
 @csrf_exempt

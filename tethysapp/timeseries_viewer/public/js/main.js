@@ -1,7 +1,7 @@
 var data = [];
 var unit_tracker = [];
-var unit1 = null
-var unit2 = null;
+var unit1 = ''
+var unit2 = '';
 var resid_on = null;
 //ymax and ymin store the maximum y value for each axis.
 var ymax =0
@@ -65,19 +65,33 @@ var popupDiv = $('#welcome-popup');
 
 $(document).ready(function (callback) {
     console.log("ready")
-    var src = find_query_parameter("SourceId");
-    var wu = find_query_parameter("WofUri");
-    var source =find_query_parameter("Source");
-    if (source[0] == "cuahsi"){
-        src='cuahsi'
-    }
-    else{
-        var src1 = find_query_parameter("src");
-
-        if (src1 =='hydroshare'){src = src1}
-        else if (src1 =='xmlrest'){src=src1}
-        else{src =null}
-    }
+    //var src = find_query_parameter("SourceId");
+    //var wu = find_query_parameter("WofUri");
+    //var source =find_query_parameter("Source");
+    //if (source[0] == "cuahsi"){
+    //    src='cuahsi'
+    //}
+    //else{
+    //    var src1 = find_query_parameter("src");
+    //
+    //    if (src1 =='hydroshare'){src = src1}
+    //    else if (src1 =='xmlrest'){src=src1}
+    //    else{src =null}
+    //}
+    CanvasJS.addColorSet("greenShades",
+        [//colorSet Array
+            "#ec3131",
+            "#2cc52e",
+            "#313eec",
+            "#dd25d5",
+            "#0d0c0d",
+            "#31cbec",
+            "#fb8915",
+            "#ffb8e7",
+            "#fbfd07",
+            "#660099",
+        ])
+    $("#chartContainer").CanvasJSChart(chart_options);
     var table = $('#data_table').DataTable({
         "createdRow": function (row, data, dataIndex) {
 
@@ -217,8 +231,9 @@ function show_error(error_message) {
 }
 
 
-function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms,src,xml_rest_id) {
-
+function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms,src,res_ids) {
+    console.log(res_ids)
+    var xml_rest_id = null
     xtime.length = 0
     xval = ''
     yvalu = ''
@@ -229,7 +244,8 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms,sr
     index = current_url.indexOf("timeseries-viewer");
     base_url = current_url.substring(0, index);
 
-
+    console.log(res_ids)
+    console.log("resfasfhdhsjfdsjfjdslk")
     if (src =='xmlrest'){
 
         xml_rest_id = res_id
@@ -243,20 +259,26 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms,sr
         headers:{'X-CSRFToken':csrf_token},
         dataType: 'json',
         //timeout: 5000,
-        data:{'url_xml':xml_rest_id},
+        data:{'url_xml':xml_rest_id, 'res_ids':res_ids},
         url: data_url,
         success: function (json) {
-            console.log(json)
-            var dseries =[]
-            error = json.error
+            json_data = json.data
+            console.log(json_data)
+            //error = json_data.error
+            error = ""
             if (error != ''){show_error(error)}
             else {
                 var chart = $("#chartContainer").CanvasJSChart()
-                json = json.data
-                len = json.length
-                for (series in json) {
-                    plot_data(chart, res_id, end_of_resources, unit_off, id_qms, json[series], len)
+                for (time_series in json_data){
+                    json_time_series = json_data[time_series].data
+                    len = json_time_series.length
+                    for (series in json_time_series) {
+                        console.log(json_time_series[series])
+                        plot_data(chart, res_id, end_of_resources, unit_off, id_qms, json_time_series[series], len)
+                    }
+
                 }
+
             }
         },
         error: function () {
@@ -475,25 +497,12 @@ function addingseries(unit_off) {
     var counter = 0
     var res_id =null
     var xml_rest_id=null
-    CanvasJS.addColorSet("greenShades",
-        [//colorSet Array
-            "#ec3131",
-            "#2cc52e",
-            "#313eec",
-            "#dd25d5",
-            "#0d0c0d",
-            "#31cbec",
-            "#fb8915",
-            "#ffb8e7",
-            "#fbfd07",
-            "#660099",
-        ])
-    $("#chartContainer").CanvasJSChart(chart_options);
 
+    console.log(source)
     if (source[0] == 'cuahsi'){
         src='cuahsi'
     }
-    else if (source[0]=''){window.location ='http://data.cuahsi.org/#'}
+    else if (source[0]==''){window.location ='http://data.cuahsi.org/#'}
 
     if (src =='cuahsi'){
         res_id=find_query_parameter('WofUri')
@@ -518,7 +527,7 @@ function addingseries(unit_off) {
         unit_off = ''
     }
     series_counter = res_id.length
-
+    console.log(res_id)
     for (var id in res_id){
         xtime = []
         if( src =='cuahsi'){
@@ -538,8 +547,10 @@ function addingseries(unit_off) {
         }
         counter = counter + 1
         if (counter ==series_counter){end_of_resources =true}
-        add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms,src);
+        console.log(res_id)
+
     }
+    add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms,src,res_id);
 }
 
 
