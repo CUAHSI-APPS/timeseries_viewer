@@ -57,6 +57,8 @@ def get_version(root):
 
 
 def parse_1_0_and_1_1(root):
+    print 'begin parse'
+    print time.ctime()
     root_tag = root.tag.lower()
     boxplot = []
     master_values = collections.OrderedDict()
@@ -296,6 +298,8 @@ def parse_1_0_and_1_1(root):
                 master_boxplot[item].append(median)
                 master_boxplot[item].append(quar3)
                 master_boxplot[item].append(max1)
+                print 'end parse'
+                print time.ctime()
             return {
                 'site_name': site_name,
                 'variable_name': variable_name,

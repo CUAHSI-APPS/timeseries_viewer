@@ -69,6 +69,10 @@ def chart_data(request, res_id, src):
     #     # Creates a unique id for the time series
     #     xml_id = str(uuid.uuid4())
     file_meta = utilities.unzip_waterml(request, res_id, src)
+
+    print  __name__
+    print "name of process"
+    # print file_meta
     # if we don't have the xml file, download and unzip it
     # file_number = int(file_meta['file_number'])
     # file_path = file_meta['file_path']
