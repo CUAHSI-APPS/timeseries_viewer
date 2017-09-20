@@ -848,11 +848,7 @@ def parse_ts_layer(path):
         auth_token = ''
         if ref_type == 'WOF':
             if service_type == 'SOAP':
-                print url
-                print site_code
-                print variable_code
-                print start_date
-                print end_date
+               
                 if 'nasa' in url:
                     print "custom nasa"
                     start_date = '2016-01-02T01:00:05+00:00'
