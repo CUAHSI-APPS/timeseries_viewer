@@ -10,7 +10,7 @@ app_class = 'timeseries_viewer.app:TimeSeriesViewer'
 app_package_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tethysapp', app_package)
 
 ### Python Dependencies ###
-dependencies = ['lxml', 'suds', 'zipfile', 'time']
+dependencies = ['lxml', 'suds', 'zipfile', 'time', 'ciso8601']
 
 setup(
     name=release_package,

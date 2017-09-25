@@ -1,4 +1,3 @@
-__author__ = 'matthew'
 # coding=utf-8
 #
 # Created by Matthew Bayles, 2016
@@ -20,14 +19,14 @@ from xml.sax._exceptions import SAXParseException
 import requests
 import sqlite3
 import uuid
+import ciso8601
 from hs_restclient import HydroShare, HydroShareAuthOAuth2, \
     HydroShareNotAuthorized, HydroShareNotFound
 import hs_restclient as hs_r
 from django.conf import settings
 from time import gmtime, strftime
+from time import mktime as mktime
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
-
-# from tethys_services.backends.hydroshare_beta import HydroShareBetaOAuth2 as beta_oautho
 
 
 def get_app_base_uri(request):
@@ -205,6 +204,13 @@ def parse_1_0_and_1_1(root):
                         # except:
                         #     n =element.attrib['dateTime']
                         n = element.attrib['dateTime']
+                        # print n
+                        n = ciso8601.parse_datetime(n)
+                        n=n.timetuple()
+                        n = time.mktime(n)
+                        # print n
+                        # print type(n)
+                        # print ts
                         # if 'Z' in n:
                         #     n = n.replace('Z','')
                         #     print "there is a z"
@@ -241,7 +247,6 @@ def parse_1_0_and_1_1(root):
                             source = source1
                         dic = quality + 'aa' + method + 'aa' + source
                         dic = dic.replace(" ", "")
-
                         if dic not in meth_qual:
                             meth_qual.append(dic)
                             master_values.update({dic: []})
@@ -261,8 +266,8 @@ def parse_1_0_and_1_1(root):
                             v = float(element.text)
                             # x_value.append(n)
                             # y_value.append(v)
-                            master_data_values[dic].append(
-                                v)  # records only none null values for running statistics
+                            # records only none null values for running statistics
+                            master_data_values[dic].append(v)
                         master_values[dic].append(v)
                         master_times[dic].append(n)
 
@@ -300,7 +305,8 @@ def parse_1_0_and_1_1(root):
                 master_boxplot[item].append(max1)
                 print 'end parse'
                 print time.ctime()
-            return {
+                error =''
+            return [{
                 'site_name': site_name,
                 'variable_name': variable_name,
                 'units': units,
@@ -323,24 +329,21 @@ def parse_1_0_and_1_1(root):
                 'master_boxplot': master_boxplot,
                 'master_stat': master_stat,
                 'master_data_values': master_data_values
-            }
+            },
+                    error]
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
             error_report(
                 "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series")
             print parse_error
-            return {
-                'status': parse_error
-            }
+            return [None,parse_error]
     except Exception, e:
         data_error = "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
         error_report(
             "Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
         print data_error
         print e
-        return {
-            'status': data_error
-        }
+        return [None,data_error]
 
 
 def parse_2_0(root):  # waterml 2 has not been implemented in the viewer at this time
@@ -627,8 +630,11 @@ def unzip_waterml(request, res_id, src):
                     hs.getResource(res_id, destination=file_path_id,
                                    unzip=True)
                     status = 'done'
-                # except HydroShareNotAuthorized:
-                #     print "not authorized"
+                except HydroShareNotAuthorized as e:
+                    print "not authorized"
+                    error = 'Current user does not have permission to view this resource'
+                    # error = str(e)
+                    break
                 except Exception as e:
                     print e
                     print type(e).__name__
@@ -637,37 +643,39 @@ def unzip_waterml(request, res_id, src):
                     status = 'running'
                     time.sleep(2)
                     delay = delay + 1
-        # hs.getResource(res_id, destination=file_path_id, unzip=True)
-        root_dir = file_path_id + '/' + res_id
-        data_dir = root_dir + '/' + res_id + '/data/contents/'
-        for subdir, dirs, files in os.walk(root_dir):
-            for file in files:
-                path = data_dir + file
-                print file
-                if 'wml_1_' in file:
 
-                    file_type = 'waterml'
-                    with open(path, 'r') as f:
-                        # print f.read()
-                        print file_path
-                        print "PPPPPPPPPPPPPPPPPPPPP"
-                        file_data = f.read()
-                        f.close()
-                        # file_path = temp_dir + '/id/' + res_id + '.xml'
-                        file_path = temp_dir + res_id + '.xml'
-                        file_temp = open(file_path, 'wb')
-                        file_temp.write(file_data)
-                        file_temp.close()
-                elif '.json.refts' in file:
-                    file_type = '.json.refts'
-                    file_number = parse_ts_layer(path)
-                elif '.sqlite' in file:
-                    file_path = path
-                    file_type = 'sqlite'
-        if file_type == None:
-            error = "No supported file type found. This app supports resource types HIS " \
-                    "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
-        print file_path
+        # hs.getResource(res_id, destination=file_path_id, unzip=True)
+        if error == '':
+            root_dir = file_path_id + '/' + res_id
+            data_dir = root_dir + '/' + res_id + '/data/contents/'
+            for subdir, dirs, files in os.walk(root_dir):
+                for file in files:
+                    path = data_dir + file
+                    print file
+                    if 'wml_1_' in file:
+
+                        file_type = 'waterml'
+                        with open(path, 'r') as f:
+                            # print f.read()
+                            print file_path
+                            print "PPPPPPPPPPPPPPPPPPPPP"
+                            file_data = f.read()
+                            f.close()
+                            # file_path = temp_dir + '/id/' + res_id + '.xml'
+                            file_path = temp_dir + res_id + '.xml'
+                            file_temp = open(file_path, 'wb')
+                            file_temp.write(file_data)
+                            file_temp.close()
+                    elif '.json.refts' in file:
+                        file_type = '.json.refts'
+                        file_number = parse_ts_layer(path)
+                    elif '.sqlite' in file:
+                        file_path = path
+                        file_type = 'sqlite'
+            if file_type == None:
+                error = "No supported file type found. This app supports resource types HIS " \
+                        "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
+            print file_path
     # Data from USGS and AHPS Gaugeviewer WML
     elif "xmlrest" in src:
         file_type = 'waterml'
@@ -735,12 +743,14 @@ def unzip_waterml(request, res_id, src):
     if error == '':
         if file_type == 'waterml':
             # file_path = utilities.waterml_file_path(res_id,xml_id)
-            data_for_chart.append(Original_Checker(file_path))
+            data_for_chart.append(Original_Checker(file_path)[0])
+            error = Original_Checker(file_path)[1]
         elif file_type == '.json.refts':
             for i in range(0, file_number):
                 # file_path = temp_dir+'/id/timeserieslayer'+str(i)+'.xml'
                 file_path = temp_dir+'/timeserieslayer'+str(i)+'.xml'
-                data_for_chart.append(Original_Checker(file_path))
+                data_for_chart.append(Original_Checker(file_path)[0])
+                error = Original_Checker(file_path)[1]
         elif file_type == 'sqlite':
             print file_path
             conn = sqlite3.connect(file_path)
@@ -751,9 +761,10 @@ def unzip_waterml(request, res_id, src):
             for series in num_series:
                 str_series = str(series[0])
                 data_for_chart.append(parse_odm2(file_path, str_series))
-    if isinstance(data_for_chart[0],basestring)==True:
-        error = data_for_chart[0]
-
+    if error == '':
+        if isinstance(data_for_chart[0],basestring)==True:
+            error = data_for_chart[0]
+    print error
     return {'data':data_for_chart, 'error':error}
     # return {'file_number': file_number, "file_type": file_type,
     # 'error': error,
@@ -819,38 +830,27 @@ def viewer_counter(request):
 
 def parse_ts_layer(path):
     counter = 0
-    print ('HIIIIIIIIIIIIIIIIIIIII')
     error = ''
     response = None
-
     with open(path, 'r') as f:
         data = f.read()
-
     data = data.encode(encoding='UTF-8')
     data = data.replace("'", '"')
     json_data = json.loads(data)
     json_data = json_data["timeSeriesReferenceFile"]
     layer = json_data['referencedTimeSeries']
-    test_counter = 0
     for sub in layer:
-        test_counter = test_counter + 1
-        print test_counter
         ref_type = sub['requestInfo']['refType']
         service_type = sub['requestInfo']['serviceType']
         url = sub['requestInfo']['url']
         site_code = sub['site']['siteCode']
         variable_code = sub['variable']['variableCode']
         start_date = sub['beginDate']
-        # start_date = ''
-        # end_date = ''
         end_date = sub['endDate']
-        # end_date = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         auth_token = ''
         if ref_type == 'WOF':
             if service_type == 'SOAP':
-               
                 if 'nasa' in url:
-                    print "custom nasa"
                     start_date = '2016-01-02T01:00:05+00:00'
                     headers = {'content-type': 'text/xml'}
                     body = """<?xml version="1.0" encoding="utf-8"?>
@@ -865,38 +865,10 @@ def parse_ts_layer(path):
                             </GetValuesObject>
                           </soap:Body>
                         </soap:Envelope>"""
-                    print body
                     body = body.encode('utf-8')
                     response = requests.post(url, data=body, headers=headers)
                     response = response.content
-
-                    # time_series = root.findtext('.//timeSeriesResponse')
-                # elif 'ghcn' in url:
-                #     headers = {'content-type': 'text/xml'}
-                #     start_date = '2000-01-02T01:00:00+00:00'
-                #     variable_code = 'GHCN:PRCP'
-                #     # site_code = ':USW00094143'
-                #     # variable_code = ':8'
-                #
-                #     body = """<?xml version="1.0" encoding="utf-8"?>
-                #         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-                #           <soap:Body>
-                #             <GetValues xmlns="http://www.cuahsi.org/his/1.1/ws/">
-                #               <location>""" + site_code + """</location>
-                #               <variable>""" + variable_code + """</variable>
-                #               <startDate>""" + start_date + """</startDate>
-                #               <endDate>""" + end_date + """</endDate>
-                #               <authToken></authToken>
-                #             </GetValues>
-                #           </soap:Body>
-                #         </soap:Envelope>"""
-                #     print body
-                #     body = body.encode('utf-8')
-                #     response = requests.post(url, data=body, headers=headers)
-                #     response = response.content
                 else:
-                    print "suds client being used"
-                    # variable_code = 'GHCN:PRCP'
                     client = connect_wsdl_url(url)
                     try:
                         response = client.service.GetValues(site_code,
@@ -906,19 +878,14 @@ def parse_ts_layer(path):
                                                                   auth_token)
                     except:
                         error = "unable to connect to HydroSever"
-                        # print response
                 temp_dir = get_workspace()
-                # file_path = temp_dir + '/id/' + 'timeserieslayer'+str(counter) + '.xml'
                 file_path = temp_dir + '/timeserieslayer' + str(counter) + '.xml'
                 try:
                     response = response.encode('utf-8')
                 except:
                     response = response
-                # print "Response".
-                # response1 = unicode(response1.strip(codecs.BOM_UTF8), 'utf-8')
                 with open(file_path, 'w') as outfile:
                     outfile.write(response)
-                    # outfile.write("Dfadfs")
                 print "done"
             if (service_type == 'REST'):
                 waterml_url = url + '/GetValueObject'
@@ -973,16 +940,9 @@ def parse_odm2(file_path, result_num):
     nodatavalue = None
     conn = sqlite3.connect(file_path)
     c = conn.cursor()
-    # c.execute('SELECT Variables.VariableNameCV,Units.UnitsName,Units.UnitsID '
-    #           'FROM Results,Variables,Units '
-    #           'WHERE Results.ResultID='+result_num+' '
-    #           'AND ((Results.VariableID = Variables.VariableID) OR (Results.UnitsID = Units.UnitsID))')
-    # var_unit = c.fetchall()
-
-
-
     c.execute(
-        'SELECT Variables.VariableNameCV,Units.UnitsName,Results.SampledMediumCV,Variables.NoDataValue '
+        'SELECT Variables.VariableNameCV,Units.UnitsName,'
+        'Results.SampledMediumCV,Variables.NoDataValue '
         'FROM Results,Variables,Units '
         'WHERE Results.ResultID=' + result_num + ' '
                                                  'AND Results.UnitsID = Units.UnitsID AND Results.VariableID = Variables.VariableID')
@@ -998,24 +958,11 @@ def parse_odm2(file_path, result_num):
         'WHERE TimeSeriesResults.ResultID =' + result_num + ' '
                                                             'AND TimeSeriesResults.IntendedTimeSpacingUnitsID = Units.UnitsID')
     time_support = c.fetchall()
-    print var_unit
-    print result_num
     for time in time_support:
         timeunit = time[1]
 
         timesupport = time[0]
         datatype = time[2]
-
-    # c.execute('SELECT Variables.VariableNameCV,Units.UnitsName '
-    #           'FROM Results,Variables,Units ')
-    #
-    # var_unit = c.fetchall()
-    # print var_unit
-
-
-    # Seperate timeseries by result id . Build dictionary of meta data for each result and then loop through values and assign to apporpiate dictionary
-    # Methods
-
     c.execute(
         'SELECT Results.ResultID,Methods.MethodID,Methods.MethodName, SamplingFeatures.SamplingFeatureName,Actions.ActionTypeCV '
         'FROM Results,FeatureActions,Actions,Methods, SamplingFeatures ' +
@@ -1056,12 +1003,6 @@ def parse_odm2(file_path, result_num):
         s_code = org[0]
         o_org = org[1]
         s_des = org[2]
-
-        # print ele[0]
-
-        # result_id.update(ele[0])
-
-
         meta_dic['method'].update({m_code: m_des})
 
         meta_dic['quality_code'].update({q_code: q_code})
@@ -1089,13 +1030,16 @@ def parse_odm2(file_path, result_num):
         if int(result_num) == res_id:
             v = ele[2]
             n = ele[1]
+            n = ciso8601.parse_datetime(str(n))
+            n = n.timetuple()
+            n = mktime(n)
             # if v == nodata:
             if v == nodatavalue:
                 v = None
             else:
                 v = float(v)
-                master_data_values[dic].append(
-                    v)  # records only none null values for running statistics
+                # records only none null values for running statistics
+                master_data_values[dic].append(v)
             master_values[dic].append(v)
             master_times[dic].append(n)
 
@@ -1137,7 +1081,6 @@ def parse_odm2(file_path, result_num):
         'variable_name': variable_name,
         'units': units,
         'meta_dic': meta_dic,
-
         'organization': organization,
         'quality': quality,
         'method': method,
@@ -1149,13 +1092,11 @@ def parse_odm2(file_path, result_num):
         'sourcedescription': sourcedescription,
         'timesupport': timesupport,
         'master_counter': master_counter,
-
         'master_values': master_values,
         'master_times': master_times,
         'master_boxplot': master_boxplot,
         'master_stat': master_stat,
         'master_data_values': master_data_values
-
     }
 
 
@@ -1163,14 +1104,11 @@ def getOAuthHS(request):
     # hs_instance_name = "www"
     hs_instance_name = "beta"
     client_id = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_KEY", None)
-    print client_id
-    print "CCCCCCCCCCCCCCCCCCLient id"
     client_secret = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_SECRET", None)
     # this line will throw out from django.core.exceptions.ObjectDoesNotExist if current user is not signed in via HydroShare OAuth
     token = request.user.social_auth.get(provider='hydroshare').extra_data[
         'token_dict']
     hs_hostname = "{0}.hydroshare.org".format(hs_instance_name)
-    # hs_hostname = "{0}.hydroshare.org".format(hs_instance_name)
     auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
     hs = HydroShare(auth=auth, hostname=hs_hostname)
     return hs
