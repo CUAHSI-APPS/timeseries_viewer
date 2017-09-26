@@ -631,15 +631,22 @@ def unzip_waterml(request, res_id, src):
                                    unzip=True)
                     status = 'done'
                 except HydroShareNotAuthorized as e:
-                    print "not authorized"
+                    print "Not authorized"
                     error = 'Current user does not have permission to view this resource'
                     # error = str(e)
                     break
+                except HydroShareNotFound as e:
+                    print "Resource not found"
+                    error = 'Resource was not found. Please try again in a few moments'
+                    # error = str(e)
+                    time.sleep(2)
+                    delay = delay + 1
+                    
                 except Exception as e:
                     print e
                     print type(e).__name__
                     print e.__class__.__name__
-                    error = 'error'
+                    error = str(e)
                     status = 'running'
                     time.sleep(2)
                     delay = delay + 1
