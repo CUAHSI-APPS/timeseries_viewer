@@ -618,7 +618,7 @@ def unzip_waterml(request, res_id, src):
         while (status == 'running' or delay < 10):
             print "looping"
 
-            if (delay > 10):
+            if (delay > 15):
                 error = 'Request timed out'
                 break
             elif (status == 'done'):
@@ -666,7 +666,7 @@ def unzip_waterml(request, res_id, src):
                             file_temp = open(file_path, 'wb')
                             file_temp.write(file_data)
                             file_temp.close()
-                    elif '.json.refts' in file:
+                    elif '.refts.json' in file:
                         file_type = '.json.refts'
                         file_number = parse_ts_layer(path)
                     elif '.sqlite' in file:
