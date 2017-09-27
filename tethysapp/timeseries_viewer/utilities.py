@@ -56,8 +56,8 @@ def get_version(root):
 
 
 def parse_1_0_and_1_1(root):
-    print 'begin parse'
-    print time.ctime()
+    # print 'begin parse'
+    # print time.ctime()
     root_tag = root.tag.lower()
     boxplot = []
     master_values = collections.OrderedDict()
@@ -303,8 +303,8 @@ def parse_1_0_and_1_1(root):
                 master_boxplot[item].append(median)
                 master_boxplot[item].append(quar3)
                 master_boxplot[item].append(max1)
-                print 'end parse'
-                print time.ctime()
+                # print 'end parse'
+                # print time.ctime()
                 error =''
             return [{
                 'site_name': site_name,
@@ -595,37 +595,30 @@ def unzip_waterml(request, res_id, src):
         # Get file location of python scripts
         cwd = os.path.realpath(
             os.path.join(os.getcwd(), os.path.dirname(__file__)))
-        print cwd
         # if controllers.use_hs_client_helper:
         #     print 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'
         #     hs = controllers.get_oauth_hs(request)
         # else:
 
         if controllers.use_hs_client_helper:
-            print "hydroshare controller"
             hs = controllers.get_oauth_hs(request)
         else:
-            print "utilties hydroshare"
             hs = getOAuthHS(request)
             # hs = get_oauth_hs(request)
         # hs = getOAuthHS(request)
-        print hs.getUserInfo()
-        print 'UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUSer'
         # file_path_id = get_workspace() + '/id'
         file_path_id = get_workspace()
         status = 'running'
         delay = 0
         while (status == 'running' or delay < 10):
-            print "looping"
 
             if (delay > 15):
-                error = 'Request timed out'
+                error = 'Request timed out. ' + error
                 break
             elif (status == 'done'):
                 error = ''
                 break
             else:
-                print 'get resource'
                 try:
                     hs.getResource(res_id, destination=file_path_id,
                                    unzip=True)
@@ -641,7 +634,7 @@ def unzip_waterml(request, res_id, src):
                     # error = str(e)
                     time.sleep(2)
                     delay = delay + 1
-                    
+
                 except Exception as e:
                     print e
                     print type(e).__name__
@@ -658,14 +651,9 @@ def unzip_waterml(request, res_id, src):
             for subdir, dirs, files in os.walk(root_dir):
                 for file in files:
                     path = data_dir + file
-                    print file
                     if 'wml_1_' in file:
-
                         file_type = 'waterml'
                         with open(path, 'r') as f:
-                            # print f.read()
-                            print file_path
-                            print "PPPPPPPPPPPPPPPPPPPPP"
                             file_data = f.read()
                             f.close()
                             # file_path = temp_dir + '/id/' + res_id + '.xml'
@@ -682,7 +670,7 @@ def unzip_waterml(request, res_id, src):
             if file_type == None:
                 error = "No supported file type found. This app supports resource types HIS " \
                         "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
-            print file_path
+
     # Data from USGS and AHPS Gaugeviewer WML
     elif "xmlrest" in src:
         file_type = 'waterml'
@@ -740,7 +728,7 @@ def unzip_waterml(request, res_id, src):
             error_message = "Bad Zip File"
             error_report(error_message)
             print "Bad Zip file"
-    print file_path
+
     data_for_chart = []
     # if we don't have the xml file, download and unzip it
     # file_number = int(file_meta['file_number'])
@@ -759,7 +747,7 @@ def unzip_waterml(request, res_id, src):
                 data_for_chart.append(Original_Checker(file_path)[0])
                 error = Original_Checker(file_path)[1]
         elif file_type == 'sqlite':
-            print file_path
+
             conn = sqlite3.connect(file_path)
             c = conn.cursor()
             c.execute('SELECT Results.ResultID FROM Results')
@@ -804,10 +792,10 @@ def viewer_counter(request):
     temp_dir = get_workspace()
     try:
         if controllers.use_hs_client_helper:
-            print "hydroshare controller"
+
             hs = controllers.get_oauth_hs(request)
         else:
-            print "utilties hydroshare"
+
             hs = getOAuthHS(request)
 
         user = hs.getUserInfo()
@@ -893,7 +881,7 @@ def parse_ts_layer(path):
                     response = response
                 with open(file_path, 'w') as outfile:
                     outfile.write(response)
-                print "done"
+
             if (service_type == 'REST'):
                 waterml_url = url + '/GetValueObject'
                 response = urllib2.urlopen(waterml_url)
@@ -1031,7 +1019,7 @@ def parse_odm2(file_path, result_num):
     c.execute(
         'SELECT ResultID,ValueDateTime,DataValue FROM TimeSeriesResultValues')
     data = c.fetchall()
-    print "end of dic setup"
+
     for ele in data:
         res_id = ele[0]
         if int(result_num) == res_id:
