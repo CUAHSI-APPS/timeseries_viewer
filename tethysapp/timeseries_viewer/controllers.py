@@ -133,7 +133,7 @@ def view_counter(request):
 @staff_member_required
 def error_report(request):
     print request.user
-
+    content = None
     temp_dir = utilities.get_workspace()
     file_path = temp_dir + '/timeseries_viewer_error_report.txt'
     if not os.path.exists(temp_dir+"/timeseries_viewer_error_report.txt"):
@@ -143,7 +143,10 @@ def error_report(request):
     else:
         file_temp = open(file_path, 'r')
         content = file_temp.read()
-        content = ast.literal_eval(content)
+        try:
+            content = ast.literal_eval(content)
+        except:
+            content = content
         print type(content)
         print content[0]
         print content[1]
