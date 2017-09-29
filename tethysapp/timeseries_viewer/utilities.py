@@ -694,7 +694,6 @@ def unzip_waterml(request, res_id, src):
         # url_zip = 'http://qa-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
         url_zip = 'http://data.cuahsi.org/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
         try:
-            d = 1/0
             r = requests.get(url_zip, verify=False)
             z = zipfile.ZipFile(StringIO.StringIO(r.content))
             file_list = z.namelist()
