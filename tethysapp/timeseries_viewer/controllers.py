@@ -134,6 +134,7 @@ def view_counter(request):
 def error_report(request):
     print request.user
     content = None
+    e = None
     temp_dir = utilities.get_workspace()
     file_path = temp_dir + '/timeseries_viewer_error_report.txt'
     if not os.path.exists(temp_dir+"/timeseries_viewer_error_report.txt"):
@@ -145,11 +146,12 @@ def error_report(request):
         content = file_temp.read()
         try:
             content = ast.literal_eval(content)
-        except:
+        except Exception as e:
+
             content = content
         print type(content)
         print content[0]
         print content[1]
 
-    return JsonResponse({"Error Reports": content})
+    return JsonResponse({"Error Reports": content, "Formatting Error":e})
     # return JsonResponse(content)
