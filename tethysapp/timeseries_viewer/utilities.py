@@ -694,6 +694,7 @@ def unzip_waterml(request, res_id, src):
         # url_zip = 'http://qa-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
         url_zip = 'http://data.cuahsi.org/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
         try:
+            d = 1/0
             r = requests.get(url_zip, verify=False)
             z = zipfile.ZipFile(StringIO.StringIO(r.content))
             file_list = z.namelist()
@@ -783,6 +784,7 @@ def error_report(text, res_id):
     file_temp_name = temp_dir + '/timeseries_viewer_error_report.txt'
     if not os.path.exists(file_temp_name):
         file_temp = open(file_temp_name, 'a')
+        file_temp.write('Error Reports: ')
         file_temp.close()
     with  open(file_temp_name, 'a') as file_temp:
         # time = datetime.now()

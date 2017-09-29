@@ -138,20 +138,16 @@ def error_report(request):
     file_path = temp_dir + '/timeseries_viewer_error_report.txt'
     if not os.path.exists(temp_dir+"/timeseries_viewer_error_report.txt"):
         file_temp = open(file_path, 'a')
+        file_temp.write('')
         file_temp.close()
         content = ''
-    else:
-        file_temp = open(file_path, 'r')
-        content = file_temp.read()
-        try:
-            content = ast.literal_eval(content)
-        except Exception as e:
 
-            content = content
-        print type(content)
-        print content[0]
-        print content[1]
-    print e
-    e = str(e)
-    return JsonResponse({"Error Reports": content, "Formatting Error":e})
+    file_temp = open(file_path, 'r')
+    content = file_temp.read()
+        # try:
+        #     content = ast.literal_eval(content)
+        # except Exception as e:
+
+            # content = content
+    return HttpResponse(content)
     # return JsonResponse(content)
