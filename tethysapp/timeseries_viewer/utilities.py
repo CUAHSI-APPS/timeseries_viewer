@@ -333,14 +333,14 @@ def parse_1_0_and_1_1(root):
                     error]
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
-            error_report(
-                "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series")
+            # error_report(
+            #     "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series")
             print parse_error
             return [None,parse_error]
     except Exception, e:
         data_error = "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
-        error_report(
-            "Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
+        # error_report(
+        #     "Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
         print data_error
         print e
         return [None,data_error]
@@ -542,13 +542,13 @@ def parse_2_0(root):  # waterml 2 has not been implemented in the viewer at this
                     }
         else:
             print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"
-            error_report(
-                "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series")
+            # error_report(
+            #     "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series")
             return "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"
     except:
         print "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
-        error_report(
-            "Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
+        # error_report(
+        #     "Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
 
 
@@ -566,11 +566,11 @@ def Original_Checker(xml_file):
             return parse_2_0(root)
     except ValueError, e:
         print e
-        error_report("xml parse error")
+
         return read_error_file(xml_file)
     except Exception as e:
         print e
-        error_report("xml parse error")
+
         return read_error_file(xml_file)
 
 
@@ -579,8 +579,8 @@ def read_error_file(xml_file):
         f = open(xml_file)
         return f.readline()
     except:
-        error_report('invalid WaterML file')
-        return 'invalid WaterML file'
+
+        return [None,'invalid WaterML file']
 
 
 def unzip_waterml(request, res_id, src):
@@ -646,31 +646,33 @@ def unzip_waterml(request, res_id, src):
 
         # hs.getResource(res_id, destination=file_path_id, unzip=True)
         if error == '':
-            root_dir = file_path_id + '/' + res_id
-            data_dir = root_dir + '/' + res_id + '/data/contents/'
-            for subdir, dirs, files in os.walk(root_dir):
-                for file in files:
-                    path = data_dir + file
-                    if 'wml_1_' in file:
-                        file_type = 'waterml'
-                        with open(path, 'r') as f:
-                            file_data = f.read()
-                            f.close()
-                            # file_path = temp_dir + '/id/' + res_id + '.xml'
-                            file_path = temp_dir + res_id + '.xml'
-                            file_temp = open(file_path, 'wb')
-                            file_temp.write(file_data)
-                            file_temp.close()
-                    elif '.refts.json' in file:
-                        file_type = '.json.refts'
-                        file_number = parse_ts_layer(path)
-                    elif '.sqlite' in file:
-                        file_path = path
-                        file_type = 'sqlite'
-            if file_type == None:
-                error = "No supported file type found. This app supports resource types HIS " \
-                        "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
-
+            try:
+                root_dir = file_path_id + '/' + res_id
+                data_dir = root_dir + '/' + res_id + '/data/contents/'
+                for subdir, dirs, files in os.walk(root_dir):
+                    for file in files:
+                        path = data_dir + file
+                        if 'wml_1_' in file:
+                            file_type = 'waterml'
+                            with open(path, 'r') as f:
+                                file_data = f.read()
+                                f.close()
+                                # file_path = temp_dir + '/id/' + res_id + '.xml'
+                                file_path = temp_dir + res_id + '.xml'
+                                file_temp = open(file_path, 'wb')
+                                file_temp.write(file_data)
+                                file_temp.close()
+                        elif '.refts.json' in file:
+                            file_type = '.json.refts'
+                            file_number = parse_ts_layer(path)
+                        elif '.sqlite' in file:
+                            file_path = path
+                            file_type = 'sqlite'
+                if file_type == None:
+                    error = "No supported file type found. This app supports resource types HIS " \
+                            "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
+            except Exception as e:
+                error = str(e)
     # Data from USGS and AHPS Gaugeviewer WML
     elif "xmlrest" in src:
         file_type = 'waterml'
@@ -689,8 +691,8 @@ def unzip_waterml(request, res_id, src):
         # get the URL of the remote zipped WaterML resource
         file_type = 'waterml'
         # url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
-        url_zip = 'http://qa-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
-        # url_zip = 'http://data.cuahsi.org/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
+        # url_zip = 'http://qa-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
+        url_zip = 'http://data.cuahsi.org/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
         try:
             r = requests.get(url_zip, verify=False)
             z = zipfile.ZipFile(StringIO.StringIO(r.content))
@@ -708,26 +710,23 @@ def unzip_waterml(request, res_id, src):
             # checks to see if data is an xml
             except etree.XMLSyntaxError as e:
                 print "Error:Not XML"
-                error_report("Error:Not XML")
-                return False
-
+                error = "Error:Not XML"
             # checks to see if Url is valid
             except ValueError, e:
-                error_report("Error:invalid Url")
                 print "Error:invalid Url"
-                return False
-
+                error = "Error:invalid Url"
             # checks to see if xml is formatted correctly
             except TypeError, e:
-                error_report("Error:string indices must be integers not str")
+                error = "Error:string indices must be integers not str"
                 print "Error:string indices must be integers not str"
-                return False
-
         # check if the zip file is valid
         except zipfile.BadZipfile as e:
-            error_message = "Bad Zip File"
-            error_report(error_message)
-            print "Bad Zip file"
+            error = "Bad Zip File"
+            print error
+
+        except Exception as e:
+            print error
+            error = str(e)
 
     data_for_chart = []
     # if we don't have the xml file, download and unzip it
@@ -735,6 +734,7 @@ def unzip_waterml(request, res_id, src):
     # file_path = file_meta['file_path']
     # file_type = file_meta['file_type']
     # error = file_meta['error']
+
     if error == '':
         if file_type == 'waterml':
             # file_path = utilities.waterml_file_path(res_id,xml_id)
@@ -756,10 +756,11 @@ def unzip_waterml(request, res_id, src):
             for series in num_series:
                 str_series = str(series[0])
                 data_for_chart.append(parse_odm2(file_path, str_series))
-    if error == '':
+
         if isinstance(data_for_chart[0],basestring)==True:
             error = data_for_chart[0]
-    print error
+    if error is not '':
+        error_report(error, res_id)
     return {'data':data_for_chart, 'error':error}
     # return {'file_number': file_number, "file_type": file_type,
     # 'error': error,
@@ -777,50 +778,44 @@ def waterml_file_path(res_id, xml_id):
     return file_path
 
 
-def error_report(text):
+def error_report(text, res_id):
     temp_dir = get_workspace()
-    temp_dir = temp_dir[:-24]
-    file_temp_name = temp_dir + '/error_report.txt'
-    file_temp = open(file_temp_name, 'a')
-    # time = datetime.now()
-    time2 = strftime("%Y-%m-%d %H:%M:%S", gmtime())
-    file_temp.write(time2 + ": " + text + "\n")
-    file_temp.close()
+    file_temp_name = temp_dir + '/timeseries_viewer_error_report.txt'
+    if not os.path.exists(file_temp_name):
+        file_temp = open(file_temp_name, 'a')
+        file_temp.close()
+    with  open(file_temp_name, 'a') as file_temp:
+        # time = datetime.now()
+        time2 = strftime("%Y-%m-%d %H:%M:%S", gmtime())
+        data = dict(Date_Time_UTC=time2, Error_text=text, Resource_ID=res_id)
+        json.dump(data, file_temp)
+        file_temp.write(',')
 
 
-def viewer_counter(request):
+def view_counter(request):
     temp_dir = get_workspace()
-    try:
-        if controllers.use_hs_client_helper:
-
-            hs = controllers.get_oauth_hs(request)
-        else:
-
-            hs = getOAuthHS(request)
-
-        user = hs.getUserInfo()
-        user1 = user['username']
-    except:
-        user1 = ""
-    if user1 != 'mbayles2':
-        temp_dir = temp_dir[:-24]
-        file_temp_name = temp_dir + '/view_counter.txt'
-        if not os.path.exists(temp_dir + "/view_counter.txt"):
-            file_temp = open(file_temp_name, 'a')
-            first = '1'
-            file_temp.write(first)
-            file_temp.close()
-        else:
-            file_temp = open(file_temp_name, 'r+')
-            content = file_temp.read()
-            number = int(content)
-            number = number + 1
-            number = str(number)
-            file_temp.seek(0)
-            file_temp.write(number)
-            file_temp.close()
-    else:
-        user1 = ''
+    file_temp_name = temp_dir + '/timeseries_viewer_view_counter.txt'
+    if not os.path.exists(file_temp_name):
+        file_temp = open(file_temp_name, 'w')
+        file_temp.write('0')
+        file_temp.close()
+    with open(file_temp_name, 'r+') as file_temp:
+        if 'mbayles2' not in str(request.user):
+            # file_temp_name = temp_dir + '/timeseries_viewer_view_counter.txt'
+            if not os.path.exists(temp_dir + "/timeseries_viewer_view_counter.txt"):
+                # file_temp = open(file_temp_name, 'a')
+                first = '1'
+                file_temp.write(first)
+                # file_temp.close()
+            else:
+                # file_temp = open(file_temp_name, 'r+')
+                content = file_temp.read()
+                number = int(content)
+                number = number + 1
+                number = str(number)
+                file_temp.seek(0)
+                file_temp.write(number)
+                # file_temp.close()
 
 
 def parse_ts_layer(path):

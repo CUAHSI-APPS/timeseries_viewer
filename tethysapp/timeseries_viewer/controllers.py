@@ -4,7 +4,8 @@
 from django.http import JsonResponse
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.admin.views.decorators import staff_member_required
 import os
 import requests
 import utilities
@@ -13,6 +14,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 import sqlite3
 from wsgiref.util import FileWrapper
+import ast as ast
+import json
 use_hs_client_helper = True
 # Backwards compatibility with older versions of Tethys
 try:
@@ -33,8 +36,10 @@ def temp_waterml(request, id):
 
 def home(request):
     """Home controller if page is launched from HydroShare"""
+    utilities.view_counter(request)
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
+
 
 def test():
     print "d"
@@ -107,28 +112,41 @@ def chart_data(request, res_id, src):
 @login_required()
 def hydroshare(request):
     """Home controller if page is launched from HydroShare"""
+    utilities.view_counter(request)
+
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
 
 
 def view_counter(request):
     temp_dir = utilities.get_workspace()
-    file_path = temp_dir[:-24] + 'view_counter.txt'
+    file_path = temp_dir + '/timeseries_viewer_view_counter.txt'
+    if not os.path.exists(file_path):
+        file_temp = open(file_path, 'w')
+        file_temp.write('0')
+        file_temp.close()
     file_temp = open(file_path, 'r')
     content = file_temp.read()
     return JsonResponse({"Number of Viewers":content})
 
-
+# @user_passes_test(lambda u: u.is_superuser)
+@staff_member_required
 def error_report(request):
-    print os.path.realpath('controllers.py')
+    print request.user
+
     temp_dir = utilities.get_workspace()
-    temp_dir = temp_dir[:-24]
-    file_path = temp_dir + '/error_report.txt'
-    if not os.path.exists(temp_dir+"/error_report.txt"):
+    file_path = temp_dir + '/timeseries_viewer_error_report.txt'
+    if not os.path.exists(temp_dir+"/timeseries_viewer_error_report.txt"):
         file_temp = open(file_path, 'a')
         file_temp.close()
         content = ''
     else:
         file_temp = open(file_path, 'r')
         content = file_temp.read()
+        content = ast.literal_eval(content)
+        print type(content)
+        print content[0]
+        print content[1]
+
     return JsonResponse({"Error Reports": content})
+    # return JsonResponse(content)

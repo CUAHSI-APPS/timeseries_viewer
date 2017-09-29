@@ -119,7 +119,12 @@ CUAHSI Time Series Viewer
         <div class="cssload-dot"></div>
     </div>
 </div>
-
+<!--{% if request.user.is_superuser %}-->
+    <!--...-->
+    <!--<button>...</button>-->
+    <!--...-->
+<!--{% else %}-->
+<!--{%endif%}-->
 
 {% endblock %}
 {% block app_actions %}
