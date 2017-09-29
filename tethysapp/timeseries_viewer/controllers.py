@@ -132,7 +132,6 @@ def view_counter(request):
 # @user_passes_test(lambda u: u.is_superuser)
 @staff_member_required
 def error_report(request):
-    print request.user
     content = None
     e = None
     temp_dir = utilities.get_workspace()
@@ -152,6 +151,7 @@ def error_report(request):
         print type(content)
         print content[0]
         print content[1]
-
+    print e
+    e = str(e)
     return JsonResponse({"Error Reports": content, "Formatting Error":e})
     # return JsonResponse(content)
