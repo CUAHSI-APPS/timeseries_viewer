@@ -690,9 +690,13 @@ def unzip_waterml(request, res_id, src):
     elif src == 'cuahsi':
         # get the URL of the remote zipped WaterML resource
         file_type = 'waterml'
+        app_host =request.META['HTTP_HOST']
+        if 'appsdev.hydroshare' in app_host:
+        # if '127.0.0' in app_host:
         # url_zip = 'http://qa-webclient-solr.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
-        # url_zip = 'http://qa-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
-        url_zip = 'http://data.cuahsi.org/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
+            url_zip = 'http://qa-hiswebclient.azurewebsites.net/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
+        else:
+            url_zip = 'http://data.cuahsi.org/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
         try:
             r = requests.get(url_zip, verify=False)
             z = zipfile.ZipFile(StringIO.StringIO(r.content))
@@ -801,7 +805,7 @@ def view_counter(request):
         file_temp.write('0')
         file_temp.close()
     with open(file_temp_name, 'r+') as file_temp:
-        if 'mbayles2' not in str(request.user):
+        if 'mbayles' not in str(request.user):
             # file_temp_name = temp_dir + '/timeseries_viewer_view_counter.txt'
             if not os.path.exists(temp_dir + "/timeseries_viewer_view_counter.txt"):
                 # file_temp = open(file_temp_name, 'a')
