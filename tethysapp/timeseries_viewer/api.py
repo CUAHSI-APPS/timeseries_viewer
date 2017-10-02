@@ -57,4 +57,11 @@ def list_apps(request):
     if 'appsdev.hydroshare' in app_host:
         return JsonResponse({"apps": [app1, app2, app3, app4]})
     else:
+        app1 = {'name': 'Data Series Viewer',
+        # 'url': 'https://appsdev.hydroshare.org/apps/timeseries-viewer',
+        'url': 'http://apps.hydroshare.org/apps/timeseries-viewer',
+        'description': 'View graph and descriptive statistics for selected time series',
+        'min_series': 1,
+        'max_series': 5,
+        'icon': 'https://appsdev.hydroshare.org/static/timeseries_viewer/images/viewer_icon2.gif'}
         return JsonResponse({"apps":[app1]})

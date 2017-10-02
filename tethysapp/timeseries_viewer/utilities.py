@@ -765,7 +765,7 @@ def unzip_waterml(request, res_id, src):
             error = data_for_chart[0]
     if error is not '':
         error_report(error, res_id)
-    return {'data':data_for_chart, 'error':error}
+    return {'data': data_for_chart, 'error': error}
     # return {'file_number': file_number, "file_type": file_type,
     # 'error': error,
     #         'file_path': file_path}
