@@ -157,6 +157,7 @@ $(document).ready(function (callback) {
         ],
         "order": [[1, 'asc']]
     });
+
     //Add event listener for opening and closing details
     $('#data_table tbody').on('click', 'td.details-control', function () {
         var tr = $(this).closest('tr');
@@ -230,10 +231,8 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms,sr
 
 
     if (src =='xmlrest'){
-
         xml_rest_id = res_id
         res_id ='xmlrest'
-
     }
     var csrf_token = getCookie('csrftoken');
     data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/' + src + '/';
@@ -245,9 +244,10 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms,sr
         data:{'url_xml':xml_rest_id},
         url: data_url,
         success: function (json) {
-            console.log(json)
+            //console.log(json)
             var dseries =[]
             error = json.error
+            //console.log(json.error)
             if (error != ''){show_error(error)}
             else {
                 var chart = $("#chartContainer").CanvasJSChart()
@@ -702,39 +702,8 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
 
             id_qms_a = ''
         }
-
-        //else {
-        //    meta1 = val.split("aa");
-        //
-        //    if (id_qms != 'not_cuahsi') {
-        //
-        //        if (id_qms_a_split[0] == '') {
-        //            meta1[0] = ''
-        //        }
-        //        if (id_qms_a_split[1] == '') {
-        //            meta1[1] = ''
-        //        }
-        //        if (id_qms_a_split[2] == '') {
-        //            meta1[2] = ''
-        //        }
-        //    }
-        //    if (meta_dic['quality_code'][meta1[0]] == undefined) {
-        //        meta1[0] = ''
-        //        //id_qms_a_split[0]=''
-        //    }
-        //    else {
-        //        meta1[0] = meta_dic['quality_code'][meta1[0]]
-        //    }
-        //    id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
-        //    val1 = meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2]
-        //    id_qms_a_split = id_qms.split('aa')
-        //}
-        //console.log(counter)
-        //console.log(val1)
-        //console.log(id_qms_a)
-        //console.log(val1[counter])
-        //console.log(val)
         if (id_qms_a == val1[counter] || id_qms_a == 'not_cuahsi') {
+            //console.log(json)
             m_xval = []
             m_yval = []
             length_master = length_master + 1
@@ -811,13 +780,18 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
             test = []
             for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
             {
-                var date_value = m_yval[i].replace(/-/g,"/")
-                temp_date = new Date(date_value)
-                test.push(temp_date)
-                actual_date = temp_date.getTimezoneOffset()*1000*60+temp_date.getTime()
+                var date_value = m_yval[i]
+                var actual_date = date_value
+                //var date_value = m_yval[i].replace("T","  ")
+                //date_value = date_value.replace("Z","")
+                //date_value = date_value.replace(/-/g,"/")
+                //console.log(date_value)
+                //temp_date = new Date(date_value)
+                //test.push(temp_date)
+                //actual_date = temp_date.getTimezoneOffset()*1000*60+temp_date.getTime()
                 xtime.push({x:actual_date , y: m_xval[i]})
             }
-            console.log(actual_date)
+            //console.log(actual_date)
             data1 = xtime
             if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
             {
@@ -1001,7 +975,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
     {
         if (title == 1) {
             //chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
-            chart.options.title.text = "CUAHSI Data Series Viewer*"
+            chart.options.title.texft = "CUAHSI Data Series Viewer*"
             chart.render();
         }
         else {
@@ -1021,8 +995,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
 
 
 function gridlines(ymax,ymin){
-    console.log(ymax)
-    console.log(ymin)
+
 
     maxview = roundUp(Math.ceil(ymax))
     maxview = maxview + 0.1 * maxview
@@ -1031,12 +1004,9 @@ function gridlines(ymax,ymin){
     minview = minview + minview * .1
 
     interval = Math.ceil(maxview - minview) / 11
-    console.log(maxview)
-    console.log(minview)
-    console.log(interval)
+
 
     if (minview < 0) {
-        console.log(minview/interval)
         neg_interval = Math.ceil(-1*(minview/interval))
         //pos1_interval = Math.ceil(maxview/interval)
         pos_interval = 11-neg_interval
@@ -1052,11 +1022,7 @@ function gridlines(ymax,ymin){
 
         maxview = pos_interval*interval
         minview = -1*neg_interval*interval
-        console.log(maxview)
-        console.log(minview)
-        //while(maxview <ymax){
-        //
-        //}
+
     }
     else {
         interval = (maxview - minview) / 11
@@ -1074,8 +1040,6 @@ function gridlines(ymax,ymin){
     ////    minview = Math.round(minview*100)/100
     //    interval = Math.round(interval*100)/100
     //}
-    console.log(maxview)
-    console.log(minview)
-    console.log(interval)
+
     return {'maxview':maxview,'minview':minview,'interval':interval}
 }
