@@ -28,20 +28,26 @@ from time import gmtime, strftime
 from time import mktime as mktime
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 
-
-def get_app_base_uri(request):
-
-    base_url = request.build_absolute_uri()
-    if "?" in base_url:
-        base_url = base_url.split("?")[0]
-    return base_url
-
-
 def get_workspace():
+    """Get path to Tethys Workspace"""
+
     return TimeSeriesViewer.get_app_workspace().path
 
 
 def get_version(root):
+    """
+    Get version of waterml file
+
+    Parameters
+    __________
+    root: lxml object
+        The contents of an xml file that have been parsed using the etree
+        method in the lxml library
+    Returns
+    _______
+    string
+        A string representation of the waterml version
+    """
     wml_version = None
     for element in root.iter():
         if '{http://www.opengis.net/waterml/2.0}Collection' in element.tag:
@@ -56,6 +62,39 @@ def get_version(root):
 
 
 def parse_1_0_and_1_1(root):
+    """
+    Get version of waterml file
+
+    Parameters
+    __________
+    root: lxml object
+        The contents of an xml file that have been parsed using the etree
+        method in the lxml library
+    Returns
+    _______
+    site_name
+    variable_name
+    units
+    meta_dic
+    organization'
+    quality
+    method
+    status
+    datatype
+    valuetype
+    samplemedium
+    timeunit
+    sourcedescription
+    timesupport
+    master_counter
+    master_values
+    master_times
+    master_boxplot
+    master_stat'
+    master_data_values
+    """
+    print type(root)
+    print '!!!!!!!!!!!!'
     # print 'begin parse'
     # print time.ctime()
     root_tag = root.tag.lower()
@@ -311,10 +350,9 @@ def parse_1_0_and_1_1(root):
                 'variable_name': variable_name,
                 'units': units,
                 'meta_dic': meta_dic,
-
-                'organization': organization,
-                'quality': quality,
-                'method': method,
+                # 'organization': organization,
+                # 'quality': quality,
+                # 'method': method,
                 'status': 'success',
                 'datatype': datatype,
                 'valuetype': valuetype,
@@ -322,13 +360,12 @@ def parse_1_0_and_1_1(root):
                 'timeunit': timeunit,
                 'sourcedescription': sourcedescription,
                 'timesupport': timesupport,
-                'master_counter': master_counter,
-
+                # 'master_counter': master_counter,
                 'master_values': master_values,
                 'master_times': master_times,
                 'master_boxplot': master_boxplot,
                 'master_stat': master_stat,
-                'master_data_values': master_data_values
+                # 'master_data_values': master_data_values
             },
                     error]
         else:
@@ -824,6 +861,7 @@ def view_counter(request):
 
 
 def parse_ts_layer(path):
+    print 'parsing !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     counter = 0
     error = ''
     response = None
@@ -832,9 +870,15 @@ def parse_ts_layer(path):
     data = data.encode(encoding='UTF-8')
     data = data.replace("'", '"')
     json_data = json.loads(data)
+    print json_data
+    print '@@@@@@@@@@@@@@@@@@@'
     json_data = json_data["timeSeriesReferenceFile"]
     layer = json_data['referencedTimeSeries']
+    print layer
+    print "11111111111111111111111  "
     for sub in layer:
+        print sub
+        print "####################"
         ref_type = sub['requestInfo']['refType']
         service_type = sub['requestInfo']['serviceType']
         url = sub['requestInfo']['url']
@@ -843,8 +887,12 @@ def parse_ts_layer(path):
         start_date = sub['beginDate']
         end_date = sub['endDate']
         auth_token = ''
+        print ref_type
+        print "!!!!!!!!!!!!!!!!!!!"
         if ref_type == 'WOF':
+            print 'wof'
             if service_type == 'SOAP':
+                print 'soap'
                 if 'nasa' in url:
                     start_date = '2016-01-02T01:00:05+00:00'
                     headers = {'content-type': 'text/xml'}
@@ -864,6 +912,7 @@ def parse_ts_layer(path):
                     response = requests.post(url, data=body, headers=headers)
                     response = response.content
                 else:
+                    print 'connecting to soap'
                     client = connect_wsdl_url(url)
                     try:
                         response = client.service.GetValues(site_code,
@@ -873,6 +922,7 @@ def parse_ts_layer(path):
                                                                   auth_token)
                     except:
                         error = "unable to connect to HydroSever"
+                        print error
                 temp_dir = get_workspace()
                 file_path = temp_dir + '/timeserieslayer' + str(counter) + '.xml'
                 try:
@@ -881,7 +931,6 @@ def parse_ts_layer(path):
                     response = response
                 with open(file_path, 'w') as outfile:
                     outfile.write(response)
-
             if (service_type == 'REST'):
                 waterml_url = url + '/GetValueObject'
                 response = urllib2.urlopen(waterml_url)
