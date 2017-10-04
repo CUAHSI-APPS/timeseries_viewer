@@ -640,7 +640,7 @@ function scatter_line(id){
 
 function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
     json = data
-    console.log(json)
+    //console.log(json)
     var status = json.status;
     if (status !== 'success') //displays error
     {
@@ -780,10 +780,13 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
             yaxis = 0 //tracks which dataset set goes on which axis
             var y_title = null;//tracks which variable to use for the yaxis title
             test = []
+            var temp_date = new Date()
+            var utc_offset = temp_date.getTimezoneOffset()*1000*60
             for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
             {
                 var date_value = m_yval[i]
-                var actual_date = date_value*1000
+
+                var actual_date = (date_value*1000+utc_offset)
                 //var date_value = m_yval[i].replace("T","  ")
                 //date_value = date_value.replace("Z","")
                 //date_value = date_value.replace(/-/g,"/")
