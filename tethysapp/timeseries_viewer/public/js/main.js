@@ -252,6 +252,7 @@ function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms,sr
             else {
                 var chart = $("#chartContainer").CanvasJSChart()
                 json = json.data
+                console.log(json)
                 len = json.length
                 for (series in json) {
                     plot_data(chart, res_id, end_of_resources, unit_off, id_qms, json[series], len)
@@ -639,6 +640,7 @@ function scatter_line(id){
 
 function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
     json = data
+    console.log(json)
     var status = json.status;
     if (status !== 'success') //displays error
     {
@@ -648,7 +650,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
     }
     var units = json.units;
     var master_values = json.master_values;
-    var master_counter = json.master_counter;
+    //var master_counter = json.master_counter;
     var master_times = json.master_times;
     var meta_dic = json.meta_dic;
     var master_boxplot = json.master_boxplot
@@ -704,25 +706,25 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
         }
         if (id_qms_a == val1[counter] || id_qms_a == 'not_cuahsi') {
             //console.log(json)
-            m_xval = []
-            m_yval = []
-            length_master = length_master + 1
+            var m_xval = []
+            var m_yval = []
+            var length_master = length_master + 1
             master_id.push(val)
-            meta = val.split("aa");
-            code = meta_dic['quality_code'][meta[0]]
-            quality = meta_dic['quality'][code]
-            quality_code = [meta[0]]
-            method = meta_dic['method'][meta[1]]
-            sourcedescription = meta_dic['source'][meta[2]]
-            organization = meta_dic['organization'][meta[2]]
-            m_yval = master_times[val]
-            boxplot = master_boxplot[val]
-            mean = master_stat[val][0]
-            median = master_stat[val][1]
-            max = master_stat[val][2]
-            min = master_stat[val][3]
-            m_xval = master_values[val]
-            count = m_xval.length
+            var meta = val.split("aa");
+            var code = meta_dic['quality_code'][meta[0]]
+            var quality = meta_dic['quality'][code]
+            var quality_code = [meta[0]]
+            var method = meta_dic['method'][meta[1]]
+            var sourcedescription = meta_dic['source'][meta[2]]
+            var organization = meta_dic['organization'][meta[2]]
+            var m_yval = master_times[val]
+            var boxplot = master_boxplot[val]
+            var mean = master_stat[val][0]
+            var median = master_stat[val][1]
+            var max = master_stat[val][2]
+            var min = master_stat[val][3]
+            var m_xval = master_values[val]
+            var count = m_xval.length
             var site_name = json.site_name
             var variable_name = json.variable_name
             var unit = json.units
@@ -781,7 +783,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
             for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
             {
                 var date_value = m_yval[i]
-                var actual_date = date_value
+                var actual_date = date_value*1000
                 //var date_value = m_yval[i].replace("T","  ")
                 //date_value = date_value.replace("Z","")
                 //date_value = date_value.replace(/-/g,"/")
