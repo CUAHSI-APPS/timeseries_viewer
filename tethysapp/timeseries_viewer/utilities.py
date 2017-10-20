@@ -861,7 +861,7 @@ def view_counter(request):
 
 
 def parse_ts_layer(path):
-    print 'parsing !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+    
     counter = 0
     error = ''
     response = None
@@ -870,15 +870,12 @@ def parse_ts_layer(path):
     data = data.encode(encoding='UTF-8')
     data = data.replace("'", '"')
     json_data = json.loads(data)
-    print json_data
-    print '@@@@@@@@@@@@@@@@@@@'
+    
     json_data = json_data["timeSeriesReferenceFile"]
     layer = json_data['referencedTimeSeries']
-    print layer
-    print "11111111111111111111111  "
+   
     for sub in layer:
-        print sub
-        print "####################"
+       
         ref_type = sub['requestInfo']['refType']
         service_type = sub['requestInfo']['serviceType']
         url = sub['requestInfo']['url']
@@ -894,7 +891,7 @@ def parse_ts_layer(path):
             if service_type == 'SOAP':
                 print 'soap'
                 if 'nasa' in url:
-                    start_date = '2016-01-02T01:00:05+00:00'
+                    
                     headers = {'content-type': 'text/xml'}
                     body = """<?xml version="1.0" encoding="utf-8"?>
                         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
