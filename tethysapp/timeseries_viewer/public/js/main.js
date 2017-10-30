@@ -14,6 +14,45 @@ var number = 0
 var unit3 = ''
 var res = null
 // here we set up the configuration of the CanvasJS chart
+// 269 maximally distinct colors
+var color_selection = [ "#FF4A46", "#008941", "#006FA6", "#A30059","#000000", "#FFFF00", "#1CE6FF", "#FF34FF",
+        "#FFDBE5", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87",
+        "#5A0007", "#809693", "#FEFFE6", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
+        "#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#B903AA", "#D16100",
+        "#DDEFFF", "#000035", "#7B4F4B", "#A1C299", "#300018", "#0AA6D8", "#013349", "#00846F",
+        "#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2", "#C2FF99", "#001E09",
+        "#00489C", "#6F0062", "#0CBD66", "#EEC3FF", "#456D75", "#B77B68", "#7A87A1", "#788D66",
+        "#885578", "#FAD09F", "#FF8A9A", "#D157A0", "#BEC459", "#456648", "#0086ED", "#886F4C",
+
+        "#34362D", "#B4A8BD", "#00A6AA", "#452C2C", "#636375", "#A3C8C9", "#FF913F", "#938A81",
+        "#575329", "#00FECF", "#B05B6F", "#8CD0FF", "#3B9700", "#04F757", "#C8A1A1", "#1E6E00",
+        "#7900D7", "#A77500", "#6367A9", "#A05837", "#6B002C", "#772600", "#D790FF", "#9B9700",
+        "#549E79", "#FFF69F", "#201625", "#72418F", "#BC23FF", "#99ADC0", "#3A2465", "#922329",
+        "#5B4534", "#FDE8DC", "#404E55", "#0089A3", "#CB7E98", "#A4E804", "#324E72", "#6A3A4C",
+        "#83AB58", "#001C1E", "#D1F7CE", "#004B28", "#C8D0F6", "#A3A489", "#806C66", "#222800",
+        "#BF5650", "#E83000", "#66796D", "#DA007C", "#FF1A59", "#8ADBB4", "#1E0200", "#5B4E51",
+        "#C895C5", "#320033", "#FF6832", "#66E1D3", "#CFCDAC", "#D0AC94", "#7ED379", "#012C58",
+
+        "#7A7BFF", "#D68E01", "#353339", "#78AFA1", "#FEB2C6", "#75797C", "#837393", "#943A4D",
+        "#B5F4FF", "#D2DCD5", "#9556BD", "#6A714A", "#001325", "#02525F", "#0AA3F7", "#E98176",
+        "#DBD5DD", "#5EBCD1", "#3D4F44", "#7E6405", "#02684E", "#962B75", "#8D8546", "#9695C5",
+        "#E773CE", "#D86A78", "#3E89BE", "#CA834E", "#518A87", "#5B113C", "#55813B", "#E704C4",
+        "#00005F", "#A97399", "#4B8160", "#59738A", "#FF5DA7", "#F7C9BF", "#643127", "#513A01",
+        "#6B94AA", "#51A058", "#A45B02", "#1D1702", "#E20027", "#E7AB63", "#4C6001", "#9C6966",
+        "#64547B", "#97979E", "#006A66", "#391406", "#F4D749", "#0045D2", "#006C31", "#DDB6D0",
+        "#7C6571", "#9FB2A4", "#00D891", "#15A08A", "#BC65E9", "#FFFFFE", "#C6DC99", "#203B3C",
+
+        "#671190", "#6B3A64", "#F5E1FF", "#FFA0F2", "#CCAA35", "#374527", "#8BB400", "#797868",
+        "#C6005A", "#3B000A", "#C86240", "#29607C", "#402334", "#7D5A44", "#CCB87C", "#B88183",
+        "#AA5199", "#B5D6C3", "#A38469", "#9F94F0", "#A74571", "#B894A6", "#71BB8C", "#00B433",
+        "#789EC9", "#6D80BA", "#953F00", "#5EFF03", "#E4FFFC", "#1BE177", "#BCB1E5", "#76912F",
+        "#003109", "#0060CD", "#D20096", "#895563", "#29201D", "#5B3213", "#A76F42", "#89412E",
+        "#1A3A2A", "#494B5A", "#A88C85", "#F4ABAA", "#A3F3AB", "#00C6C8", "#EA8B66", "#958A9F",
+        "#BDC9D2", "#9FA064", "#BE4700", "#658188", "#83A485", "#453C23", "#47675D", "#3A3F00",
+        "#061203", "#DFFB71", "#868E7E", "#98D058", "#6C8F7D", "#D7BFC2", "#3C3E6E", "#D83D66",
+
+        "#2F5D9B", "#6C5E46", "#D25B88", "#5B656C", "#00B57F", "#545C46", "#866097", "#365D25",
+        "#252F99", "#00CCFF", "#674E60", "#FC009C", "#92896B"]
 var chart_options = {
     zoomEnabled: true,
     height: 600,
@@ -56,62 +95,63 @@ var chart_options = {
         fontSize: 15,
         labelFontSize: 10,
         titleWrap: true,
-        gridThickness:2,
+        //gridThickness:2,
+        gridThickness:0,
         includeZero: false,
     }
 };
 var popupDiv = $('#welcome-popup');
-
+var series_tracker = []
+var row_tracker = []
+var hs_res_list_loaded = false
 
 $(document).ready(function (callback) {
+
     console.log("ready")
-    var src = find_query_parameter("SourceId");
-    var wu = find_query_parameter("WofUri");
-    var source =find_query_parameter("Source");
-    if (source[0] == "cuahsi"){
-        src='cuahsi'
-    }
-    else{
-        var src1 = find_query_parameter("src");
+    // var src = find_query_parameter("SourceId");
+    // var wu = find_query_parameter("WofUri");
+    // var source =find_query_parameter("Source");
+    // if (source[0] == "cuahsi"){
+    //     src='cuahsi'
+    // }
+    // else{
+    //     var src1 = find_query_parameter("src");
+    //
+    //     if (src1 =='hydroshare'){src = src1}
+    //     else if (src1 =='xmlrest'){src=src1}
+    //     else{src =null}
+    // }
 
-        if (src1 =='hydroshare'){src = src1}
-        else if (src1 =='xmlrest'){src=src1}
-        else{src =null}
-    }
     var table = $('#data_table').DataTable({
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
         "createdRow": function (row, data, dataIndex) {
+            var col_counter = 0
+            columns =
+            this.api().columns().every( function () {
+                if (col_counter >1){
 
-            if (number == 0 || number%10 ==0) {
-                color1 = "#ec3131"
-            }
-            if (number == 1|| number%10 ==1) {
-                color1 = "#2cc52e"
-            }
-            if (number == 2|| number%10 ==2) {
-                color1 = "#313eec"
-            }
-            if (number == 3|| number%10 ==3) {
-                color1 = "#dd25d5"
-            }
-            if (number == 4|| number%10 ==4) {
-                color1 = "#0d0c0d"
-            }
-            if (number == 5|| number%10 ==5) {
-                color1 = "#31cbec"
-            }
-            if (number == 6|| number%10 ==6) {
-                color1 = "#fb8915"
-            }
-            if (number == 7|| number%10 ==7) {
-                color1 = "#ffb8e7"
-            }
-            if (number == 8|| number%10 ==8) {
-                color1 = "#fbfd07"
-            }
-            if (number == 9|| number%10 ==9) {
-                color1 = "#660099"
-            }
+                    var column = this;
+                    var select = $('<select style="width: 100% !important;"><option value="" selected >Show All: '+this.title()+'</option></select>')
+                        .appendTo( $(column.footer()).empty() )
+                        .on( 'change', function () {
+                            var val = $.fn.dataTable.util.escapeRegex(
+                                $(this).val()
+                            );
 
+                            column
+                                .search( val ? '^'+val+'$' : '', true, false )
+                                .draw();
+                        } );
+
+                    column.data().unique().sort().each( function ( d, j ) {
+                        select.append( '<option value="'+d+'">'+d+'</option>' )
+                    } );
+                }
+
+                col_counter = col_counter +1
+            } );
+
+            color1 = color_selection[dataIndex]
             $('td', row).eq(0).css("backgroundColor", color1)
             $('td', row).eq(1).each(function () {
                 var sTitle;
@@ -138,6 +178,7 @@ $(document).ready(function (callback) {
 
         "columns": [
             {
+                "name":"legend",
                 "className": "legend",
                 "data": "legend"
             },
@@ -195,74 +236,597 @@ $(document).ready(function (callback) {
         }
     });
 
+
+    var table1 = $('#hs_resource_table').DataTable({
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        "scrollY":true,
+        "createdRow": function (row, data, dataIndex) {
+            var col_counter = 0
+            columns =
+            this.api().columns().every( function () {
+                if (col_counter >1){
+
+                    var column = this;
+                    var select = $('<select style="width: 100% !important;"><option value="" selected >Show All: '+this.title()+'</option></select>')
+                        .appendTo( $(column.footer()).empty() )
+                        .on( 'change', function () {
+                            var val = $.fn.dataTable.util.escapeRegex(
+                                $(this).val()
+                            );
+
+                            column
+                                .search( val ? '^'+val+'$' : '', true, false )
+                                .draw();
+                        } );
+
+                    column.data().unique().sort().each( function ( d, j ) {
+                        select.append( '<option value="'+d+'">'+d+'</option>' )
+                    } );
+                }
+
+                col_counter = col_counter +1
+            } );
+
+            // color1 = color_selection[dataIndex]
+            // $('td', row).eq(0).css("backgroundColor", color1)
+            // $('td', row).eq(1).each(function () {
+            //     var sTitle;
+            //     sTitle = "Click here to see more data"
+            //     this.setAttribute('title', sTitle);
+            // });
+            // $('td', row).eq(6).each(function () {
+            //     ;
+            //     sTitle = {"data": "quality"},
+            //         this.setAttribute('title', quality_title);
+            // });
+            //console.log({"data": "quality"})
+            var table = $('#hs_resource_table').DataTable()
+            table.$('td').tooltip({
+                selector: '[data-toggle="tooltip"]',
+                container: 'body',
+                "delay": 0,
+                "track": true,
+                "fade": 100
+            });
+        },
+
+        data: data,
+
+        "columns": [
+             {
+                "name":"legend",
+                "className": "legend",
+                "data": "legend"
+            },
+            {"data": "title"},
+            {"data": "type"},
+            {"data": "author"},
+            {"data": "update"},
+            //{"data":"download"}
+        ],
+        "order": [[1, 'asc']]
+    });
+    document.title = 'Data Series Viewer';
     $('#loading').show();
-    addingseries();
+    $("#chart").hide();
     $('#stat_div').hide();
+    $('#multiple_units').hide();
+    addingseries();
     //$('#button').hide();
 
-    $('#multiple_units').hide();
-    $('#data_table_length').html("")
-    $('#data_table_filter').html("")
-    $("#chart").hide();
+
+    //$('#data_table_length').html("")
+    //$('#data_table_filter').html("")
+
     // change the app title
-    document.title = 'Data Series Viewer';
+
 })
 
+function addingseries(unit_off) {
+    var src = find_query_parameter("src");
+    var series_counter =0
+    var source = find_query_parameter('Source')
+    var end_of_resources = false
+    var chart = $("#chartContainer").CanvasJSChart()
+    var counter = 0
+    var res_id =null
+    var xml_rest_id=null
+    CanvasJS.addColorSet("greenShades",color_selection)
+    $("#chartContainer").CanvasJSChart(chart_options);
 
-// shows an error message in the chart title
-function show_error(error_message) {
-    $('#loading').hide();
-    console.log(error_message);
-    $('#error-message').text(error_message);
-}
+    if (source[0] == 'cuahsi'){
+        src='cuahsi'
+    }
+    else if (source[0]=''){window.location ='http://data.cuahsi.org/#'}
 
+    if (src =='cuahsi'){
+        res_id=find_query_parameter('WofUri')
+        var quality=find_query_parameter('QCLID')
+        var method=find_query_parameter('MethodId')
+        var sourceid = find_query_parameter('SourceId')
 
-function add_series_to_chart(chart, res_id, end_of_resources, unit_off,id_qms,src,xml_rest_id) {
-
-    xtime.length = 0
-    xval = ''
-    yvalu = ''
-    master_id =[]
-    length_master= 0
-
-    current_url = location.href;
-    index = current_url.indexOf("timeseries-viewer");
-    base_url = current_url.substring(0, index);
-
-
-    if (src =='xmlrest'){
+    }
+    else if(src=='hydroshare') {
+        res_id = find_query_parameter("res_id");
+    }
+    else if (src=='xmlrest'){
+        res_id = find_query_parameter("res_id");
+        res_id = res_id[0].split(',')
         xml_rest_id = res_id
         res_id ='xmlrest'
     }
-    var csrf_token = getCookie('csrftoken');
-    data_url = base_url + 'timeseries-viewer/chart_data/' + res_id + '/' + src + '/';
-    $.ajax({
-        type:"POST",
-        headers:{'X-CSRFToken':csrf_token},
-        dataType: 'json',
-        //timeout: 5000,
-        data:{'url_xml':xml_rest_id},
-        url: data_url,
-        success: function (json) {
+
+    if (unit_off == null) {
+        unit_off = ''
+    }
+    series_counter = res_id.length
+    for (var id in res_id){
+        if( src =='cuahsi'){
+            if(quality[id]=='null' || quality[id]=='None')
+            {quality1=''}
+            else{quality1 = quality[id]}
+            if(method[id]=='null' || method[id]=='None')
+            {method1=''}
+            else{method1 = method[id]}
+            if(sourceid[id]=='null' ||sourceid[id]=='None')
+            {sourceid1=''}
+            else{sourceid1 = sourceid[id]}
+            id_qms =  quality1 +'aa'+method1+'aa'+sourceid1
+        }
+        else{
+            id_qms="not_cuahsi"
+        }
+        counter = counter + 1
+        if (counter ==series_counter){end_of_resources =true}
+        // add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms,src);
+        length_master= 0
+        current_url = location.href;
+        index = current_url.indexOf("timeseries-viewer");
+        base_url = current_url.substring(0, index);
+
+
+
+        var csrf_token = getCookie('csrftoken');
+        data_url = base_url + 'timeseries-viewer/chart_data/' + res_id[id] + '/' + src + '/';
+        $.ajax({
+            type:"POST",
+            headers:{'X-CSRFToken':csrf_token},
+            dataType: 'json',
+            //timeout: 5000,
+            data:{'url_xml':xml_rest_id},
+            url: data_url,
+            success: function (json) {
+                //console.log(json)
+                var dseries =[]
+                error = json.error
+                //console.log(json.error)
+                if (error != ''){show_error(error)}
+                else {
+                    var chart = $("#chartContainer").CanvasJSChart()
+                    json = json.data
+                    console.log(json)
+                    len = json.length
+                    for (series in json) {
+                        console.log('start series')
+
+                        plot_data(chart, res_id[id], series_counter+len-1, unit_off, id_qms, json[series], len)
+                    }
+                }
+            },
+            error: function () {
+                show_error("Error loading time series from " + res_id);
+            }
+        });
+    }
+}
+
+
+function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
+    json = data
+    var xtime = []
+    //console.log(json)
+    var status = json.status;
+    if (status !== 'success') //displays error
+    {
+        show_error(chart, "Error loading time series from " + res_id + ": " + status)
+        $('#loading').hide();
+        return;
+    }
+
+    var master_values = json.master_values;
+    //var master_counter = json.master_counter;
+    var master_times = json.master_times;
+    var meta_dic = json.meta_dic;
+    var master_boxplot = json.master_boxplot
+    var master_stat = json.master_stat
+    var bad_meta = false
+    var bad_meta_counter = 0
+    var val1=[]
+
+    var counter =0
+    id_qms_a_split = id_qms.split('aa')//identifier based upon url parameters
+    var counter1 = 0
+    for (val in master_values)//this loop deals with any parameters that are not specified in the url query
+    {
+
+        meta1 = val.split("aa");// an identifier based upon data in file
+        if (id_qms != 'not_cuahsi')
+        {
+            if (id_qms_a_split[0] == '') {
+                meta1[0] = ''
+            }
+            if (id_qms_a_split[1] == '') {
+                meta1[1] = ''
+            }
+            if (id_qms_a_split[2] == '') {
+                meta1[2] = ''
+            }
+        }
+        if (meta_dic['quality_code'][meta1[0]] == undefined) {
+            meta1[0] = ''
+        }
+        else {
+            meta1[0] = meta_dic['quality_code'][meta1[0]]// replaces quality code with quality id
+        }
+        id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
+        val1.push(meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2])
+
+        if (val1[counter1] != id_qms_a) {
+            bad_meta_counter += 1
+        }
+        counter1 = counter1+1
+    }
+    if (bad_meta_counter == Object.keys(master_values).length) {
+        bad_meta = true
+    }
+
+    for (val in master_values) {
+        if (bad_meta == true) {
+            var arr=[]
+            for (entry in val1){arr.push('')}
+            val1 = arr
+
+            id_qms_a = ''
+        }
+        if (id_qms_a == val1[counter] || id_qms_a == 'not_cuahsi') {
             //console.log(json)
-            var dseries =[]
-            error = json.error
-            //console.log(json.error)
-            if (error != ''){show_error(error)}
-            else {
-                var chart = $("#chartContainer").CanvasJSChart()
-                json = json.data
-                console.log(json)
-                len = json.length
-                for (series in json) {
-                    plot_data(chart, res_id, end_of_resources, unit_off, id_qms, json[series], len)
+            var m_xval = []
+            var m_yval = []
+            var length_master = length_master + 1
+            var meta = val.split("aa");
+            var code = meta_dic['quality_code'][meta[0]]
+            var quality = meta_dic['quality'][code]
+            var quality_code = [meta[0]]
+            var method = meta_dic['method'][meta[1]]
+            var sourcedescription = meta_dic['source'][meta[2]]
+            var organization = meta_dic['organization'][meta[2]]
+            var m_yval = master_times[val]
+            var boxplot = master_boxplot[val]
+            var mean = master_stat[val][0]
+            var median = master_stat[val][1]
+            var max = master_stat[val][2]
+            var min = master_stat[val][3]
+            var m_xval = master_values[val]
+            var count = m_xval.length
+            var site_name = json.site_name
+            var variable_name = json.variable_name
+            var unit = json.units
+            var units = json.units;
+            var datatype = json.datatype
+            var valuetype = json.valuetype
+            var samplemedium = json.samplemedium
+            var timesupport = json.timesupport
+            var timeunit = json.timeunit
+            var boxplot_count = number
+            if (site_name == null) {
+                site_name = "N/A"
+            }
+            if (variable_name == null) {
+                variable_name = "N/A"
+            }
+            if (organization == null) {
+                organization = "N/A"
+            }
+            if (quality == null) {
+                quality = "N/A"
+            }
+            if (method == null) {
+                method = "N/A"
+            }
+            if (datatype == null) {
+                datatype = "N/A"
+            }
+            if (valuetype == null) {
+                valuetype = "N/A"
+            }
+            if (unit == null) {
+                unit = 'N/A'
+            }
+            if (timesupport == null) {
+                timesupport = "N/A"
+            }
+            if (timeunit == null || timeunit == ' ') {
+                timeunit = "N/A"
+            }
+            if (sourcedescription == null) {
+                sourcedescription = "N/A"
+            }
+            if (samplemedium == null) {
+                samplemedium = "N/A"
+            }
+            if (units != null) {
+                units = units.replace(/\s+/g, '==');//removes any spaces in the units
+            }
+            var unit_off_bool = false
+            var y_title = null;//tracks which variable to use for the yaxis title
+            var temp_date = new Date()
+            // console.log('!!!!!!!!!!!!!!!!!')
+            // console.log(temp_date)
+            // console.log(temp_date.getMilliseconds())
+            var utc_offset = temp_date.getTimezoneOffset()*1000*60
+            for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
+            {
+                var date_value = m_yval[i]
+                var actual_date = (date_value*1000+utc_offset)
+                xtime.push({x:actual_date , y: m_xval[i]})
+            }
+            data1 = xtime
+            if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
+            {
+                if (unit1 == null) {
+                    unit1 = units
+                    y_title = 0
+                }
+                else if (unit1 == units){
+                    y_title = 0
+
+                }
+                else if (unit1 != units)//checks the first unit type agaisnt the current unit
+                {
+                    if (unit2 == null) {
+                        y_title = 1
+                        unit2 = units //this tracks the second unit type if there is one
+                    }
+
+                    else if (unit2 == units){
+                        y_title = 1
+                    }
+                    else if (units != unit2) {
+                        y_title = 3
+                        console.log(units)
+                        unit_off_bool = true
+                    }
                 }
             }
-        },
-        error: function () {
-            show_error("Error loading time series from " + res_id);
+            else {
+                console.log(units)
+                console.log(unit_off)
+                if (units != unit_off) {
+                    if (units == unit1) {
+                        y_title = 0
+                        unit_off_bool = false
+                    }
+                    else if (units == unit2) {
+                        y_title = 1
+                        unit_off_bool = false
+                    }
+                    else{
+                        y_title = 3
+                        unit_off_bool = true
+                    }
+                }
+
+                else{
+                    y_title = 3
+                    unit_off_bool = true
+                }
+            }
+            if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
+                if (max > ymax) {
+                    ymax = max
+                }
+                if (min < ymin) {
+                    ymin = min
+                }
+                var newSeries =
+                {
+                    //type: "scatter",
+                    type: "line",
+                    axisYType: "primary",
+                    //axisYType:"secondary",
+                    xValueType: "dateTime",
+                    xValueFormatString: "MMM DD, YYYY: HH:mm",
+                    showInLegend: false,
+                    indexLabelFontSize: 1,
+                    visible: true,
+                    variable: units,
+                    name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+                    dataPoints: data1
+                };
+                chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
+                chart.options.axisY.titleWrap = true
+                // chart.options.data=[newSeries,newSeries];
+                // chart.options.data.push(newSeries);
+                //if (ymax == 0 && ymin == 0) {
+                //    ymax = 4.5, ymin = 0
+                //}
+                // grid_values = gridlines(ymax,ymin)
+                // chart.options.axisY.viewportMaximum = grid_values.maxview
+                // chart.options.axisY.maximum = grid_values.maxview
+                // chart.options.axisY.viewportMinimum = grid_values.minview
+                // chart.options.axisY.minimum = grid_values.minview
+                // chart.options.axisY.interval = grid_values.interval
+            }
+            else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
+                // unit_off_bool = true
+                if (max > y2max) {
+                    y2max = max
+                }
+                if (min < y2min) {
+                    y2min = min
+                }
+                var newSeries =
+                {
+                    type: "line",
+                    //axisYType:"primary",
+                    axisYType: "secondary",
+                    xValueType: "dateTime",
+                    xValueFormatString: "MMM DD, YYYY: HH:mm",
+                    showInLegend: false,
+                    indexLabelFontSize: 1,
+                    variable: units,
+                    visible: true,
+                    name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+                    dataPoints: data1
+                };
+                chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
+                chart.options.axisY2.titleWrap = true
+                // chart.options.data.push(newSeries);
+                //if (y2max == 0 && y2min == 0) {
+                //    y2max = 4.5, y2min = 0
+                //}
+                // grid_values = gridlines(y2max,y2min)
+                // chart.options.axisY2.viewportMaximum = grid_values.maxview
+                // chart.options.axisY2.viewportMinimum = grid_values.minview
+                // chart.options.axisY2.interval = grid_values.interval
+                // chart.options.axisY2.maximum = grid_values.maxview
+                // chart.options.axisY2.minimum = grid_values.minview
+            }
+            else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
+                var newSeries =
+                {
+                    type: "line",
+                    //axisYType:"primary",
+                    axisYType: "primary",
+                    xValueType: "dateTime",
+                    showInLegend: false,
+                    indexLabelFontSize: 1,
+                    visible: false,
+                    variable: units,
+                    name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+                    dataPoints: data1
+                };
+                // chart.options.data.push(newSeries);
+            }
+            console.log(y_title)
+            console.log(newSeries)
+            series_tracker.push(newSeries)
+
+            xtime = []
+
+            if ((unit1 != units && unit2 != units) || unit_off_bool == true)//this triggers if more than 2 different units are used
+            {
+                var legend = "<div style='text-align:center'><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
+                    + " type='checkbox' onClick ='series_visiblity_toggle(this.id,this.name);' unchecked>" + "</div>"
+                $('#multiple_units').html("")
+                $('#multiple_units').append('* Only two types of units are displayed at a time.');
+                title = 1
+                var chart = $("#chartContainer").CanvasJSChart()
+            }
+            else {
+                var legend = "<div style='text-align:center' '><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
+                    + " type='checkbox' onClick ='series_visiblity_toggle(this.id,this.name);' checked>" + "</div>"
+                var chart = $("#chartContainer").CanvasJSChart()
+                title=0
+            }
+
+            if (quality == "N/A") {
+                quality_title = "N/A"
+            }
+            else {
+                quality_title = quality //string representing the contents of the tooltip
+                if (quality.length > 20) {
+                    quality = '(' + quality_code + ') ' + quality.substring(0, quality.indexOf(' ') + 1) + '...'
+                }
+            }
+            var dataset = {
+                legend: legend,
+                number: number,
+                organization: organization,
+                name: site_name,
+                variable: variable_name,
+                unit: unit,
+                chk_units:units,
+                samplemedium: samplemedium,
+                count: count,
+                //download:download,
+                quality: quality,
+                method: method,
+                datatype: datatype,
+                valuetype: valuetype,
+                timesupport: timesupport,
+                timeunit: timeunit,
+                sourcedescription: sourcedescription,
+                mean: mean,
+                median: median,
+                max: max,
+                min: min,
+                boxplot: boxplot,
+                boxplot_count: boxplot_count
+            }
+            row_tracker.push(dataset)
+            console.log(row_tracker)
+            // var table = $('#data_table').DataTable();//defines the primary table
+            // table.row.add(dataset).draw();//adds data from the time series to the primary table
+            // chart.render();//updated chart with new values
+            // var temp_date = new Date()
+            // console.log(temp_date)
+            // console.log(temp_date.getMilliseconds())
+            // console.log('!!!!!!!!!!!!!!!!!')
+            number = number + 1;
+            console.log(number)
         }
-    });
+        counter =counter+1
+    }
+    //    end of looping through timeseries
+
+    if (end_of_resources == number )//checks to see if all the data is loaded before displaying
+    {
+        var table = $('#data_table').DataTable();//defines the primary table
+        // console.log(row_tracker)
+        for (row in row_tracker){
+            // console.log(row_tracker[row])
+            table.row.add(row_tracker[row]).draw();
+
+        }
+        console.log('adding data to chart')
+        chart.options.data = series_tracker
+        chart.options.axisY.titleFontSize = 15
+        chart.options.axisY2.titleFontSize = 15
+        chart.options.axisX.titleFontSize = 15
+
+        grid_values = gridlines(y2max,y2min)
+        chart.options.axisY2.viewportMaximum = grid_values.maxview
+        chart.options.axisY2.viewportMinimum = grid_values.minview
+        chart.options.axisY2.interval = grid_values.interval
+        chart.options.axisY2.maximum = grid_values.maxview
+        chart.options.axisY2.minimum = grid_values.minview
+
+        grid_values = gridlines(ymax,ymin)
+        chart.options.axisY.viewportMaximum = grid_values.maxview
+        chart.options.axisY.maximum = grid_values.maxview
+        chart.options.axisY.viewportMinimum = grid_values.minview
+        chart.options.axisY.minimum = grid_values.minview
+        chart.options.axisY.interval = grid_values.interval
+
+        if (title == 1) {
+            //chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
+            // chart.options.title.texft = "CUAHSI Data Series Viewer*"
+            // chart.render();
+        }
+        else {
+            //chart.setTitle({ text: "CUAHSI Data Series Viewer" });
+            chart.options.title.text = "CUAHSI Data Series Viewer"
+            chart.render();
+        }
+        $('#data_table tbody tr:eq(0) td:eq(1)').click()
+        $('#data_table tbody tr:eq(0) td:eq(1)').click()
+        for (i = 0; i < number; i++) {
+            $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
+            $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
+        }
+        finishloading();
+    }
 }
 
 
@@ -326,38 +890,87 @@ function roundDown(x){
 }
 
 
-function myFunc(id, name) {
+function series_visiblity_toggle(id, name) {
     var chart1 = $("#chartContainer").CanvasJSChart()
     var selected_box = document.getElementById(id)
-
     var chk_unit = document.getElementById(id).name;
-    var series = chart1.options.data[id].visible
-    res = selected_box.getAttribute("data-resid")
+    var table = $('#data_table').DataTable()
 
     //units = units.replace(/\s+/g, '==')
-    if (series == true) {
-        chart1.options.data[id].visible = false
-        chart1.render();
-    } else if (series == false) {
-        //first_unit =''
-        if (chk_unit != unit1 && chk_unit != unit2) {
-            unit1_display =unit1.replace(/==/g, ' ')
-            unit2_display =unit2.replace(/==/g, ' ')
-            var test1 = 'Please select a unit type to hide.<br>' +
-                '<input type="radio" id ="r1" name ="units" value=' + unit1 + ' checked>' + unit1_display + '<br>' +
-                '<input type="radio" id ="r2" name ="units" value=' + unit2 + '>' + unit2_display + '<br>' +
-                '<button class="btn btn-danger" id="change_unit" onclick ="multipletime()" >submit</button>'
-            $('#' + id).attr('checked', false);
-            $('#unit_selector_info').html("")
-            $('#unit_selector_info').append(test1)
-            unit3 = chk_unit
-            var popupDiv = $('#unit_selector');
-            popupDiv.modal('show');
+    if (name == "master_chk") {
+        if (document.getElementById("master_chk").checked==true){
+            //turn on everything
+            for (series in chart1.options.data){
+                console.log(series)
+                console.log(unit1)
+                console.log(unit2)
 
+
+
+                row_up = table.rows().data()[series]
+                legend = row_up.legend
+                chk_unit = row_up.chk_units
+                console.log(chk_unit)
+
+                // table.fnUpdate(row_up,series,undefined,false);
+
+                // var chk_unit = document.getElementById(series).name;
+                if (chk_unit == unit1 || chk_unit == unit2){
+                    row_up.legend = legend.replace('unchecked','checked')
+
+                    chart1.options.data[series].visible = true
+                    // document.getElementById(series).checked = true
+                    table.row(series).data(row_up).draw()
+
+                }
+
+            }
         }
-        else {
-            chart1.options.data[id].visible = true
+        else{
+            console.log('turn off')
+            //turn off everything
+            for (series in chart1.options.data){
+                row_up = table.rows().data()[series]
+                legend = row_up.legend
+                row_up.legend = legend.replace('checked','unchecked')
+                console.log(series)
+                chart1.options.data[series].visible = false
+                // document.getElementById(series).checked = false
+                row_up.legend = legend.replace('checked','unchecked')
+                table.row(series).data(row_up).draw()
+
+            }
+        }
+        chart1.render();
+    }
+    else {
+        var res = selected_box.getAttribute("data-resid")
+        var series_visibility = chart1.options.data[id].visible
+        if (series_visibility == true) {
+            chart1.options.data[id].visible = false
             chart1.render();
+        }
+        else if (series_visibility == false) {
+            //first_unit =''
+            if (chk_unit != unit1 && chk_unit != unit2) {
+                unit1_display = unit1.replace(/==/g, ' ')
+                unit2_display = unit2.replace(/==/g, ' ')
+                var test1 = 'Please select a unit type to hide.<br>' +
+                    '<input type="radio" id ="r1" name ="units" value=' + unit1 + ' checked>' + unit1_display + '<br>' +
+                    '<input type="radio" id ="r2" name ="units" value=' + unit2 + '>' + unit2_display + '<br>' +
+                    '<button class="btn btn-danger" id="change_unit" onclick ="multipletime()" >submit</button>'
+                $('#' + id).attr('checked', false);
+                $('#unit_selector_info').html("")
+                $('#unit_selector_info').append(test1)
+                unit3 = chk_unit
+                var popupDiv = $('#unit_selector');
+                popupDiv.modal('show');
+
+            }
+            else {
+                chart1.options.data[id].visible = true
+                chart1.render();
+            }
         }
     }
 }
@@ -365,6 +978,7 @@ function myFunc(id, name) {
 
 /* Formatting function for row details - modify as you need */
 function format(d) {
+    console.log(d)
     // `d` is the original data object for the row
     name = 'container' + d.boxplot_count
     return '<div id = "container' + d.boxplot_count + '"class ="highcharts-boxplot" style = "float:right;height:300px;width:40%" ></div>' +
@@ -461,85 +1075,6 @@ function finishloading(callback) {
     var chart = $("#chartContainer").CanvasJSChart()
     $("#chart").show();
     chart.render();
-
-
-}
-
-
-function addingseries(unit_off) {
-    var src = find_query_parameter("src");
-    var series_counter =0
-    var source = find_query_parameter('Source')
-    var end_of_resources = false
-    var chart = $("#chartContainer").CanvasJSChart()
-    var counter = 0
-    var res_id =null
-    var xml_rest_id=null
-    CanvasJS.addColorSet("greenShades",
-        [//colorSet Array
-            "#ec3131",
-            "#2cc52e",
-            "#313eec",
-            "#dd25d5",
-            "#0d0c0d",
-            "#31cbec",
-            "#fb8915",
-            "#ffb8e7",
-            "#fbfd07",
-            "#660099",
-        ])
-    $("#chartContainer").CanvasJSChart(chart_options);
-
-    if (source[0] == 'cuahsi'){
-        src='cuahsi'
-    }
-    else if (source[0]=''){window.location ='http://data.cuahsi.org/#'}
-
-    if (src =='cuahsi'){
-        res_id=find_query_parameter('WofUri')
-        var quality=find_query_parameter('QCLID')
-        var method=find_query_parameter('MethodId')
-        var sourceid = find_query_parameter('SourceId')
-
-    }
-    else if(src=='hydroshare') {
-        res_id = find_query_parameter("res_id");
-    }
-    else if (src=='xmlrest'){
-
-        res_id = find_query_parameter("res_id");
-
-        res_id = res_id[0].split(',')
-    }
-
-
-    //var series_counter = 0
-    if (unit_off == null) {
-        unit_off = ''
-    }
-    series_counter = res_id.length
-
-    for (var id in res_id){
-        xtime = []
-        if( src =='cuahsi'){
-            if(quality[id]=='null' || quality[id]=='None')
-            {quality1=''}
-            else{quality1 = quality[id]}
-            if(method[id]=='null' || method[id]=='None')
-            {method1=''}
-            else{method1 = method[id]}
-            if(sourceid[id]=='null' ||sourceid[id]=='None')
-            {sourceid1=''}
-            else{sourceid1 = sourceid[id]}
-            id_qms =  quality1 +'aa'+method1+'aa'+sourceid1
-        }
-        else{
-            id_qms="not_cuahsi"
-        }
-        counter = counter + 1
-        if (counter ==series_counter){end_of_resources =true}
-        add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms,src);
-    }
 }
 
 
@@ -555,15 +1090,20 @@ function multipletime() {
     unit2 = unit3
     resid_on = res
     chart.options.data = []
-    chart.render()
-    $("#chartContainer").html=''
+    // chart.render()
+    // $("#chartContainer").html=''
+    chart.options.data = []
     $("#chart").hide();
     ymax =0
     ymin=0
     y2max=0
     y2min=0
     var table = $('#data_table').DataTable();
+    series_tracker = []
+    row_tracker = []
     number  = 0
+    // TODO loop for chart data and turn off/on appropiate series and update checkboxes
+
     table
         .clear()
         .draw();
@@ -638,370 +1178,11 @@ function scatter_line(id){
 }
 
 
-function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
-    json = data
-    //console.log(json)
-    var status = json.status;
-    if (status !== 'success') //displays error
-    {
-        show_error(chart, "Error loading time series from " + res_id + ": " + status)
-        $('#loading').hide();
-        return;
-    }
-    var units = json.units;
-    var master_values = json.master_values;
-    //var master_counter = json.master_counter;
-    var master_times = json.master_times;
-    var meta_dic = json.meta_dic;
-    var master_boxplot = json.master_boxplot
-    var master_stat = json.master_stat
-    var bad_meta = false
-    var bad_meta_counter = 0
-    var val1=[]
-
-    var counter =0
-    id_qms_a_split = id_qms.split('aa')//identifier based upon url parameters
-    var counter1 = 0
-    for (val in master_values)//this loop deals with any parameters that are not specified in the url query
-    {
-
-        meta1 = val.split("aa");// an identifier based upon data in file
-        if (id_qms != 'not_cuahsi')
-        {
-            if (id_qms_a_split[0] == '') {
-                meta1[0] = ''
-            }
-            if (id_qms_a_split[1] == '') {
-                meta1[1] = ''
-            }
-            if (id_qms_a_split[2] == '') {
-                meta1[2] = ''
-            }
-        }
-        if (meta_dic['quality_code'][meta1[0]] == undefined) {
-            meta1[0] = ''
-        }
-        else {
-            meta1[0] = meta_dic['quality_code'][meta1[0]]// replaces quality code with quality id
-        }
-        id_qms_a = id_qms_a_split[0] + 'aa' + id_qms_a_split[1] + 'aa' + id_qms_a_split[2]
-        val1.push(meta1[0] + 'aa' + meta1[1] + 'aa' + meta1[2])
-
-        if (val1[counter1] != id_qms_a) {
-            bad_meta_counter += 1
-        }
-        counter1 = counter1+1
-    }
-    if (bad_meta_counter == Object.keys(master_values).length) {
-        bad_meta = true
-    }
-
-    for (val in master_values) {
-        if (bad_meta == true) {
-            var arr=[]
-            for (entry in val1){arr.push('')}
-            val1 = arr
-
-            id_qms_a = ''
-        }
-        if (id_qms_a == val1[counter] || id_qms_a == 'not_cuahsi') {
-            //console.log(json)
-            var m_xval = []
-            var m_yval = []
-            var length_master = length_master + 1
-            master_id.push(val)
-            var meta = val.split("aa");
-            var code = meta_dic['quality_code'][meta[0]]
-            var quality = meta_dic['quality'][code]
-            var quality_code = [meta[0]]
-            var method = meta_dic['method'][meta[1]]
-            var sourcedescription = meta_dic['source'][meta[2]]
-            var organization = meta_dic['organization'][meta[2]]
-            var m_yval = master_times[val]
-            var boxplot = master_boxplot[val]
-            var mean = master_stat[val][0]
-            var median = master_stat[val][1]
-            var max = master_stat[val][2]
-            var min = master_stat[val][3]
-            var m_xval = master_values[val]
-            var count = m_xval.length
-            var site_name = json.site_name
-            var variable_name = json.variable_name
-            var unit = json.units
-            var datatype = json.datatype
-            var valuetype = json.valuetype
-            var samplemedium = json.samplemedium
-            var timesupport = json.timesupport
-            var timeunit = json.timeunit
-            var boxplot_count = number
-            if (site_name == null) {
-                site_name = "N/A"
-            }
-            if (variable_name == null) {
-                variable_name = "N/A"
-            }
-            if (organization == null) {
-                organization = "N/A"
-            }
-            if (quality == null) {
-                quality = "N/A"
-            }
-            if (method == null) {
-                method = "N/A"
-            }
-            if (datatype == null) {
-                datatype = "N/A"
-            }
-            if (valuetype == null) {
-                valuetype = "N/A"
-            }
-            if (unit == null) {
-                unit = 'N/A'
-            }
-            if (timesupport == null) {
-                timesupport = "N/A"
-            }
-            if (timeunit == null || timeunit == ' ') {
-                timeunit = "N/A"
-            }
-            if (sourcedescription == null) {
-                sourcedescription = "N/A"
-            }
-            if (samplemedium == null) {
-                samplemedium = "N/A"
-            }
-            if (units != null) {
-                units = units.replace(/\s+/g, '==');//removes any spaces in the units
-            }
-            var unit_off_bool = false
-            unit_tracker.push(units);//tracks the units of the different time series
-            unit_different2 = null;
-            same_unit = 1//goes to 2 when more than one unit type is graphed
-            yaxis = 0 //tracks which dataset set goes on which axis
-            var y_title = null;//tracks which variable to use for the yaxis title
-            test = []
-            var temp_date = new Date()
-            var utc_offset = temp_date.getTimezoneOffset()*1000*60
-            for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
-            {
-                var date_value = m_yval[i]
-
-                var actual_date = (date_value*1000+utc_offset)
-                //var date_value = m_yval[i].replace("T","  ")
-                //date_value = date_value.replace("Z","")
-                //date_value = date_value.replace(/-/g,"/")
-                //console.log(date_value)
-                //temp_date = new Date(date_value)
-                //test.push(temp_date)
-                //actual_date = temp_date.getTimezoneOffset()*1000*60+temp_date.getTime()
-                xtime.push({x:actual_date , y: m_xval[i]})
-            }
-            //console.log(actual_date)
-            data1 = xtime
-            if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
-            {
-                unit1 = unit_tracker[0];
-                if (unit1 == units) {
-                    y_title = 0
-                }
-                if (unit1 != units)//checks the first unit type agaisnt the current unit
-                {
-                    same_unit = 2;//flags which axis is to be used
-                    y_title = 1
-                    if (unit2 == null) {
-                        unit2 = units //this tracks the second unit type if there is one
-                    }
-                    if (units != unit2) {
-                        same_unit = 3
-                        y_title = 3
-                    }
-                }
-            }
-            else {
-                y_title = 3
-                unit_off_bool = true
-                if (units != unit_off) {
-                    if (units == unit1) {
-                        y_title = 0
-                        unit_off_bool = false
-                    }
-                    else if (resid_on == res_id) {
-                        y_title = 1
-                        unit_off_bool = false
-                    }
-                }
-            }
-            if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
-                if (max > ymax) {
-                    ymax = max
-                }
-                if (min < ymin) {
-                    ymin = min
-                }
-                var newSeries =
-                {
-                    //type: "scatter",
-                    type: "line",
-                    axisYType: "primary",
-                    //axisYType:"secondary",
-                    xValueType: "dateTime",
-                    xValueFormatString: "MMM DD, YYYY: HH:mm",
-                    showInLegend: false,
-                    indexLabelFontSize: 1,
-                    visible: true,
-                    name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-                    dataPoints: data1
-                };
-                chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
-                chart.options.axisY.titleWrap = true
-                chart.options.data.push(newSeries);
-                if (ymax == 0 && ymin == 0) {
-                    ymax = 4.5, ymin = 0
-                }
-                grid_values = gridlines(ymax,ymin)
-                chart.options.axisY.viewportMaximum = grid_values.maxview
-                chart.options.axisY.maximum = grid_values.maxview
-                chart.options.axisY.viewportMinimum = grid_values.minview
-                chart.options.axisY.minimum = grid_values.minview
-                chart.options.axisY.interval = grid_values.interval
-            }
-            else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
-                if (max > y2max) {
-                    y2max = max
-                }
-                if (min < y2min) {
-                    y2min = min
-                }
-                var newSeries =
-                {
-                    type: "line",
-                    //axisYType:"primary",
-                    axisYType: "secondary",
-                    xValueType: "dateTime",
-                    xValueFormatString: "MMM DD, YYYY: HH:mm",
-                    showInLegend: false,
-                    indexLabelFontSize: 1,
-                    visible: true,
-                    name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-                    dataPoints: data1
-                };
-                chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
-                chart.options.axisY2.titleWrap = true
-                chart.options.data.push(newSeries);
-                if (y2max == 0 && y2min == 0) {
-                    y2max = 4.5, y2min = 0
-                }
-                grid_values = gridlines(y2max,y2min)
-                chart.options.axisY2.viewportMaximum = grid_values.maxview
-                chart.options.axisY2.viewportMinimum = grid_values.minview
-                chart.options.axisY2.interval = grid_values.interval
-                chart.options.axisY2.maximum = grid_values.maxview
-                chart.options.axisY2.minimum = grid_values.minview
-            }
-            else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
-                var newSeries =
-                {
-                    type: "line",
-                    //axisYType:"primary",
-                    axisYType: "primary",
-                    xValueType: "dateTime",
-                    showInLegend: false,
-                    indexLabelFontSize: 1,
-                    visible: false,
-                    name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
-                    dataPoints: data1
-                };
-                chart.options.data.push(newSeries);
-            }
-            chart.options.axisY.titleFontSize = 15
-            chart.options.axisY2.titleFontSize = 15
-            chart.options.axisX.titleFontSize = 15
-            xtime = []
-
-            if ((unit1 != units && unit2 != units) || unit_off_bool == true)//this triggers if more than 2 different units are used
-            {
-                var legend = "<div style='text-align:center'><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
-                    + " type='checkbox' onClick ='myFunc(this.id,this.name);' >" + "</div"
-                $('#multiple_units').html("")
-                $('#multiple_units').append('* Only two types of units are displayed at a time.');
-                title = 1
-                var chart = $("#chartContainer").CanvasJSChart()
-            }
-            else {
-                var legend = "<div style='text-align:center' '><input class = 'checkbox' id =" + number + " name =" + units + " data-resid =" + res_id
-                    + " type='checkbox' onClick ='myFunc(this.id,this.name);'checked = 'checked'>" + "</div>"
-                var chart = $("#chartContainer").CanvasJSChart()
-                title=0
-            }
-
-            if (quality == "N/A") {
-                quality_title = "N/A"
-            }
-            else {
-                quality_title = quality //string representing the contents of the tooltip
-                if (quality.length > 20) {
-                    quality = '(' + quality_code + ') ' + quality.substring(0, quality.indexOf(' ') + 1) + '...'
-                }
-            }
-            var dataset = {
-                legend: legend,
-                number: number,
-                organization: organization,
-                name: site_name,
-                variable: variable_name,
-                unit: unit,
-                samplemedium: samplemedium,
-                count: count,
-                //download:download,
-                quality: quality,
-                method: method,
-                datatype: datatype,
-                valuetype: valuetype,
-                timesupport: timesupport,
-                timeunit: timeunit,
-                sourcedescription: sourcedescription,
-                mean: mean,
-                median: median,
-                max: max,
-                min: min,
-                boxplot: boxplot,
-                boxplot_count: boxplot_count
-            }
-            var table = $('#data_table').DataTable();//defines the primary table
-            table.row.add(dataset).draw();//adds data from the time series to the primary table
-            chart.render();//updated chart with new values
-            number = number + 1;
-        }
-        counter =counter+1
-    }
-    //    end of looping through timeseries
-
-    if (end_of_resources == true )//checks to see if all the data is loaded before displaying
-    {
-        if (title == 1) {
-            //chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
-            chart.options.title.texft = "CUAHSI Data Series Viewer*"
-            chart.render();
-        }
-        else {
-            //chart.setTitle({ text: "CUAHSI Data Series Viewer" });
-            chart.options.title.text = "CUAHSI Data Series Viewer"
-            chart.render();
-        }
-        $('#data_table tbody tr:eq(0) td:eq(1)').click()
-        $('#data_table tbody tr:eq(0) td:eq(1)').click()
-        for (i = 0; i < number; i++) {
-            $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
-            $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
-        }
-        finishloading();
-    }
-}
-
 
 function gridlines(ymax,ymin){
 
-
+    //console.log(ymax)
+    //console.log(ymin)
     maxview = roundUp(Math.ceil(ymax))
     maxview = maxview + 0.1 * maxview
 
@@ -1047,4 +1228,71 @@ function gridlines(ymax,ymin){
     //}
 
     return {'maxview':maxview,'minview':minview,'interval':interval}
+}
+
+function get_list_hs_res(){
+    console.log('get hs resources')
+    hs_res_ids ='3333333'
+    if (hs_res_list_loaded == false) {
+        var csrf_token = getCookie('csrftoken');
+        data_url = base_url + "timeseries-viewer/get_hydroshare_res/";
+        $.ajax({
+            type: "POST",
+            headers: {'X-CSRFToken': csrf_token},
+            dataType: 'json',
+            //timeout: 5000,
+            data: {'hs_res_ids': hs_res_ids},
+            url: data_url,
+            success: function (json) {
+
+                error = json.error
+                //console.log(json.error)
+                if (error != '') {
+                    show_error(error)
+                }
+                else {
+
+                    var table_hs = $('#hs_resource_table').DataTable();//defines the primary table
+                    // console.log(row_tracker)
+                    json = json.data
+                    console.log(json)
+                    len = json.length
+                    for (series in json) {
+
+                        table_hs.row.add(json[series]).draw();
+                        // console.log('start series')
+
+                    }
+                    hs_res_list_loaded = true
+
+
+                }
+            },
+            error: function () {
+                show_error("Error loading HydroShare Resources");
+            }
+        });
+    }
+
+
+
+}
+function get_hs_res(){
+        var table_hs = $('#hs_resource_table').DataTable();
+        row_num = table_hs.rows().data().length
+        for (row = 0; row<row_num; row++){
+            console.log(row)
+            row_up = table_hs.rows().data()[row]
+            console.log(row_up)
+            // Update checkboxes
+            table_hs.row(row).data(row_up).draw()
+        }
+
+}
+
+// shows an error message in the chart title
+function show_error(error_message) {
+    $('#loading').hide();
+    console.log(error_message);
+    $('#error-message').text(error_message);
 }

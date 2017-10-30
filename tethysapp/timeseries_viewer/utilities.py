@@ -27,6 +27,8 @@ from django.conf import settings
 from time import gmtime, strftime
 from time import mktime as mktime
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
+from netCDF4 import Dataset
+
 
 def get_workspace():
     """Get path to Tethys Workspace"""
@@ -149,7 +151,7 @@ def parse_1_0_and_1_1(root):
                                 unit_is_set = True
                         # print units
                         if 'noDataValue' == tag:
-                            nodata = element.text
+                            nodata = float(element.text)
                         if 'siteName' == tag:
                             site_name = element.text
                         if 'variableName' == tag:
@@ -295,7 +297,7 @@ def parse_1_0_and_1_1(root):
                             master_data_values.update({dic: []})
 
                         v = element.text
-                        if v == nodata:
+                        if float(v) == nodata:
                             value = None
                             # x_value.append(n)
                             # y_value.append(value)
@@ -705,6 +707,9 @@ def unzip_waterml(request, res_id, src):
                         elif '.sqlite' in file:
                             file_path = path
                             file_type = 'sqlite'
+                        elif file.endswith('.nc'):
+                            file_path = path
+                            file_type='netcdf'
                 if file_type == None:
                     error = "No supported file type found. This app supports resource types HIS " \
                             "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
@@ -779,14 +784,16 @@ def unzip_waterml(request, res_id, src):
     if error == '':
         if file_type == 'waterml':
             # file_path = utilities.waterml_file_path(res_id,xml_id)
-            data_for_chart.append(Original_Checker(file_path)[0])
-            error = Original_Checker(file_path)[1]
+            chart_data = Original_Checker(file_path)
+            data_for_chart.append(chart_data[0])
+            error = chart_data[1]
         elif file_type == '.json.refts':
             for i in range(0, file_number):
                 # file_path = temp_dir+'/id/timeserieslayer'+str(i)+'.xml'
                 file_path = temp_dir+'/timeserieslayer'+str(i)+'.xml'
-                data_for_chart.append(Original_Checker(file_path)[0])
-                error = Original_Checker(file_path)[1]
+                chart_data = Original_Checker(file_path)
+                data_for_chart.append(chart_data[0])
+                error = chart_data[1]
         elif file_type == 'sqlite':
 
             conn = sqlite3.connect(file_path)
@@ -797,7 +804,52 @@ def unzip_waterml(request, res_id, src):
             for series in num_series:
                 str_series = str(series[0])
                 data_for_chart.append(parse_odm2(file_path, str_series))
+        elif file_type == 'netcdf':
 
+            dataset = Dataset(file_path)
+            # print dataset.file_format
+            # print dataset
+            # print dataset.dimensions.keys()
+            # print '@'
+            # print dataset.dimensions['feature_id']
+            #
+            # feature_id = dataset.variables['feature_id']
+            # print dataset.variables.keys()
+            # print dataset.variables['streamflow']
+            # print dataset.variables['streamflow'][:]
+            #
+            # print '#####'
+            # print dataset.variables['feature_id'][:]
+            # print dataset.variables['time'][:]
+            # print dataset.variables['reference_time'][:]
+            master_times = collections.OrderedDict()
+            dic='aaaa'
+            master_times.update({dic: []})
+            feature_id = dataset.variables['feature_id']
+            dates = dataset.variables['time'][:]
+            for ele in dates:
+                    n = float(ele)
+                    dates = dataset.variables['time'][:]
+                    n = n*60 # time is is minutes not seconds
+                    master_times[dic].append(n)
+            print master_times
+            for index, id in enumerate(feature_id):
+                variable = dataset.variables.keys()
+
+                print variable
+                for sub_var in variable:
+                    print sub_var
+                    print type(sub_var)
+                    sub_var_check = sub_var.encode('utf8')
+                    print sub_var_check
+                    print sub_var_check == 'time'
+                    if 'time' not in sub_var_check:
+                        if 'feature_id' not in sub_var_check:
+                            print sub_var
+                            chart_data = parse_netcdf(index, id, dataset.variables[sub_var], master_times)
+                            data_for_chart.append(chart_data[0])
+                #TODO fix error handling of sqlite and netcdf
+                error = chart_data[1]
         if isinstance(data_for_chart[0],basestring)==True:
             error = data_for_chart[0]
     if error is not '':
@@ -806,6 +858,154 @@ def unzip_waterml(request, res_id, src):
     # return {'file_number': file_number, "file_type": file_type,
     # 'error': error,
     #         'file_path': file_path}
+
+
+def parse_netcdf(index, id, dataset, master_times):
+    # master_times = []
+    master_values = collections.OrderedDict()
+    # master_times = collections.OrderedDict()
+    site_name = None
+    variable_name = None
+    units = None
+    meta_dic = None
+    organization = None
+    quality = None
+    method = None
+    datatype = None
+    valuetype = None
+    samplemedium = None
+    timeunit = None
+    sourcedescription = None
+    timesupport = None
+    master_counter = True
+    meth_qual = []
+    master_boxplot = collections.OrderedDict()
+    master_stat = collections.OrderedDict()
+    master_data_values = collections.OrderedDict()
+    meta_dic = {'method': {}, 'quality': {}, 'source': {}, 'organization': {},
+                'quality_code': {}}
+    meth_qual = []  # List of all the quality, method, and source combinations
+    nodatavalue = None
+
+
+    site_name = str(id)
+
+
+    # dic = str(id) + 'aaaa'
+    dic = 'aaaa'
+    dic = dic.replace(" ", "")
+    if dic not in meth_qual:
+        meth_qual.append(dic)
+        master_values.update({dic: []})
+        # master_times.update({dic: []})
+        master_boxplot.update({dic: []})
+        master_stat.update({dic: []})
+        master_data_values.update({dic: []})
+    # units = dataset.variables['streamflow'].units
+    # nodatavalue =  dataset.variables['streamflow'].missing_value
+    # variable_name = dataset.variables['streamflow'].long_name
+    print dataset
+    units = dataset.units
+    nodatavalue =  dataset.missing_value
+    variable_name = dataset.long_name
+
+
+
+
+    datatype = 'Average'
+    valuetype = 'Model Simulation Forecast'
+    samplemedium = 'SurfaceWater'
+
+    meta_dic['method'].update({'': 'Model Results'})
+    meta_dic['quality_code'].update({'': ''})
+    meta_dic['quality'].update({'': "Derived products"})
+    meta_dic['source'].update({'': 'NOAA: National Water Model Output'})
+    meta_dic['organization'].update({'':"NOAA"})
+
+    # data = dataset.variables['streamflow'][:]
+    data = dataset[:]
+    for ele in data:
+        v = ele[index]
+            # v = ele[2]
+            # n = ele[1]
+            # n = ciso8601.parse_datetime(str(n))
+            # n = n.timetuple()
+            # n = mktime(n)
+            # if v == nodata:
+        if v == nodatavalue:
+            v = None
+        else:
+            v = float(v)
+            # records only none null values for running statistics
+            master_data_values[dic].append(v)
+        master_values[dic].append(v)
+    # dates = dataset.variables['time'][:]
+    dates = dataset[:]
+
+    # for ele in dates:
+    #     print ele
+    #     n = float(ele)
+    #     n = n*60 # time is is minutes not seconds
+    #     master_times[dic].append(n)
+    print master_times
+    first_date = master_times[dic][0]
+    second_date = master_times[dic][1]
+
+
+    timesupport = (second_date - first_date)/3600
+    timeunit = 'hour'
+    for item in master_data_values:
+        if len(master_data_values[item]) == 0:
+            mean = None
+            median = None
+            quar1 = None
+            quar3 = None
+            min1 = None
+            max1 = None
+        else:
+            mean = numpy.mean(master_data_values[item])
+            mean = float(format(mean, '.2f'))
+            median = float(
+                format(numpy.median(master_data_values[item]), '.2f'))
+            quar1 = float(
+                format(numpy.percentile(master_data_values[item], 25), '.2f'))
+            quar3 = float(
+                format(numpy.percentile(master_data_values[item], 75), '.2f'))
+            min1 = float(format(min(master_data_values[item]), '.2f'))
+            max1 = float(format(max(master_data_values[item]), '.2f'))
+
+        master_stat[item].append(mean)
+        master_stat[item].append(median)
+        master_stat[item].append(max1)
+        master_stat[item].append(min1)
+        master_boxplot[item].append(1)
+        master_boxplot[item].append(min1)  # adding data for the boxplot
+        master_boxplot[item].append(quar1)
+        master_boxplot[item].append(median)
+        master_boxplot[item].append(quar3)
+        master_boxplot[item].append(max1)
+
+
+
+        error =''
+    return [{
+        'site_name': site_name,
+        'variable_name': variable_name,
+        'units': units,
+        'meta_dic': meta_dic,
+        'status': 'success',
+        'datatype': datatype,
+        'valuetype': valuetype,
+        'samplemedium': samplemedium,
+        'timeunit': timeunit,
+        'sourcedescription': sourcedescription,
+        'timesupport': timesupport,
+        'master_values': master_values,
+        'master_times': master_times,
+        'master_boxplot': master_boxplot,
+        'master_stat': master_stat,
+    },
+            error]
 
 
 def waterml_file_path(res_id, xml_id):
@@ -861,7 +1061,6 @@ def view_counter(request):
 
 
 def parse_ts_layer(path):
-    print 'parsing !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     counter = 0
     error = ''
     response = None
@@ -870,15 +1069,9 @@ def parse_ts_layer(path):
     data = data.encode(encoding='UTF-8')
     data = data.replace("'", '"')
     json_data = json.loads(data)
-    print json_data
-    print '@@@@@@@@@@@@@@@@@@@'
     json_data = json_data["timeSeriesReferenceFile"]
     layer = json_data['referencedTimeSeries']
-    print layer
-    print "11111111111111111111111  "
     for sub in layer:
-        print sub
-        print "####################"
         ref_type = sub['requestInfo']['refType']
         service_type = sub['requestInfo']['serviceType']
         url = sub['requestInfo']['url']
@@ -887,14 +1080,11 @@ def parse_ts_layer(path):
         start_date = sub['beginDate']
         end_date = sub['endDate']
         auth_token = ''
-        print ref_type
-        print "!!!!!!!!!!!!!!!!!!!"
         if ref_type == 'WOF':
-            print 'wof'
             if service_type == 'SOAP':
                 print 'soap'
                 if 'nasa' in url:
-                    start_date = '2016-01-02T01:00:05+00:00'
+                    # start_date = '2016-01-02T01:00:05+00:00'
                     headers = {'content-type': 'text/xml'}
                     body = """<?xml version="1.0" encoding="utf-8"?>
                         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">

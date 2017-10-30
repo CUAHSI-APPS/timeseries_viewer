@@ -16,6 +16,7 @@ import sqlite3
 from wsgiref.util import FileWrapper
 import ast as ast
 import json
+import netCDF4
 use_hs_client_helper = True
 # Backwards compatibility with older versions of Tethys
 try:
@@ -37,6 +38,9 @@ def temp_waterml(request, id):
 def home(request):
     """Home controller if page is launched from HydroShare"""
     utilities.view_counter(request)
+
+
+
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
 
@@ -68,44 +72,40 @@ def chart_data(request, res_id, src):
     This site data is formatted differently then the main site data.
 
     """
-    # id from USGS Gauge Viewer app
-    # if "xmlrest" in src:
-    #     res_id = request.POST.get('url_xml')
-    #     # Creates a unique id for the time series
-    #     xml_id = str(uuid.uuid4())
+
     file_meta = utilities.unzip_waterml(request, res_id, src)
-    # print file_meta
-    # if we don't have the xml file, download and unzip it
-    # file_number = int(file_meta['file_number'])
-    # file_path = file_meta['file_path']
-    # file_type = file_meta['file_type']
-    # error = file_meta['error']
-    # if error == '':
-    #     if file_type == 'waterml':
-    #         # file_path = utilities.waterml_file_path(res_id,xml_id)
-    #         data_for_chart.append(utilities.Original_Checker(file_path))
-    #     elif file_type == '.json.refts':
-    #         for i in range(0, file_number):
-    #             # file_path = temp_dir+'/id/timeserieslayer'+str(i)+'.xml'
-    #             file_path = temp_dir+'/timeserieslayer'+str(i)+'.xml'
-    #             data_for_chart.append(utilities.Original_Checker(file_path))
-    #     elif file_type == 'sqlite':
-    #         print file_path
-    #         conn = sqlite3.connect(file_path)
-    #         c = conn.cursor()
-    #         c.execute('SELECT Results.ResultID FROM Results')
-    #         num_series = c.fetchall()
-    #         conn.close()
-    #         for series in num_series:
-    #             str_series = str(series[0])
-    #             data_for_chart.append(utilities.parse_odm2(file_path,
-    #                                                        str_series))
-    # if isinstance(data_for_chart[0],basestring)==True:
-    #     error = data_for_chart[0]
-    # # print data_for_chart
-    # return JsonResponse({'data':data_for_chart,'error':error})
+
+    print "done with python"
     return JsonResponse(file_meta)
 
+def get_hydroshare_res(request):
+    hs_list = []
+    print "getting hydroshare list"
+    if use_hs_client_helper:
+        hs = get_oauth_hs(request)
+    else:
+        hs = utilities.getOAuthHS(request)
+    # resource_types =    ['CompositeResource','NetcdfResource','TimeSeriesResource']
+    resource_types =    ['TimeSeriesResource']
+    resource_list = hs.getResourceList(types =resource_types )
+    for resource in resource_list:
+        # if resource.resource_type ==''
+        print resource
+        hs_res_id = resource['resource_id']
+        legend = "<div style='text-align:center'><input class = 'checkbox' name = 'res_hydroshare' id =" + hs_res_id+" type='checkbox' onClick ='series_visiblity_toggle(this.id,this.name);' unchecked>" + "</div>"
+        title = resource['resource_title']
+        type = resource['resource_type']
+        author = resource['creator']
+        update = resource['date_last_updated']
+        hs_dic = dict(legend=legend,
+                      title=title,
+                      type=type,
+                      author=author,
+                      update=update,
+                      resource_id=hs_res_id)
+        hs_list.append(hs_dic)
+    hs_response = dict(error='',data=hs_list)
+    return JsonResponse(hs_response)
 
 # seperate handler for request originating from hydroshare.org
 @csrf_exempt

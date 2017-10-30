@@ -1,7 +1,7 @@
 /*makes the scroll bar appear */
-#app-content-wrapper{
-	overflow:inherit !important;
-}
+/*#app-content-wrapper{*/
+	/*overflow:inherit !important;*/
+/*}*/
 /*formats the logo*/
 #app-header .tethys-app-header .icon-wrapper img
 {
@@ -57,7 +57,13 @@ display:none !important;
 #title {
     color: #ff2283;
 }
-
+#modalLoadRes{
+    overflow-y:scroll;
+	/*width:80%*/
+}
+#modalLoadRes .modal-dialog{
+	width:80%
+}
 #byu-logo-container {
     float: left;
     position: absolute;
@@ -87,26 +93,26 @@ td.details-control {
 tr.shown td.details-control {
 	background: url('close1.png') no-repeat center center;
 }
-#data_table_length{
-	visibility: hidden;
-}
-#data_table_filter{
-	visibility: hidden;
-}
-#data_table_info{
-	visibility: hidden;
-}
-#data_table_paginate{
-	visibility: hidden;
-}
-.modal-dialog {
-    position: fixed;
-    top: 10%;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    z-index:101;
-}
+/*#data_table_length{*/
+	/*visibility: hidden;*/
+/*}*/
+/*#data_table_filter{*/
+	/*visibility: hidden;*/
+/*}*/
+/*#data_table_info{*/
+	/*visibility: hidden;*/
+/*}*/
+/*#data_table_paginate{*/
+	/*visibility: hidden;*/
+/*}*/
+/*.modal-dialog {*/
+    /*position: fixed;*/
+    /*top: 10%;*/
+    /*bottom: 0;*/
+    /*right: 0;*/
+    /*left: 0;*/
+    /*z-index:101;*/
+/*}*/
 
 /*Toggle Switch for chart*/
 /* The switch - the box around the slider */
