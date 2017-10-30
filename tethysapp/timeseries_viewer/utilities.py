@@ -149,7 +149,7 @@ def parse_1_0_and_1_1(root):
                                 unit_is_set = True
                         # print units
                         if 'noDataValue' == tag:
-                            nodata = element.text
+                            nodata = float(element.text)
                         if 'siteName' == tag:
                             site_name = element.text
                         if 'variableName' == tag:
@@ -295,7 +295,7 @@ def parse_1_0_and_1_1(root):
                             master_data_values.update({dic: []})
 
                         v = element.text
-                        if v == nodata:
+                        if float(v) == nodata:
                             value = None
                             # x_value.append(n)
                             # y_value.append(value)
