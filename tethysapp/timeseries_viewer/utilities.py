@@ -809,8 +809,8 @@ def unzip_waterml(request, res_id, src):
             dataset = Dataset(file_path)
             # print dataset.file_format
             # print dataset
-            # print dataset.dimensions.keys()
-            # print '@'
+            print dataset.dimensions.keys()
+            print '@'
             # print dataset.dimensions['feature_id']
             #
             # feature_id = dataset.variables['feature_id']

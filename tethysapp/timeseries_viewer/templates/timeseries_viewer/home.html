@@ -66,7 +66,8 @@ CUAHSI Time Series Viewer
 </div>
 
 <!-- Add HS Resource Modal -->
-    <div id="modalLoadRes" class="modal fade" role="dialog">
+<div id="modalLoadRes" class="modal fade" role="dialog">
+
         <div class="modal-dialog">
             <!-- Modal content-->
             <div class="modal-content">
@@ -75,9 +76,15 @@ CUAHSI Time Series Viewer
                     <h4 class="modal-title">Add HydroShare Resource</h4>
                 </div>
                 <div class="modal-body">
-                    <img src="/static/hydroshare_gis/images/loading-animation.gif">
-                    <br>
-                    <p><b>Loading resource list...</b></p>
+                    <div id = loading_hs>
+                        <div class="cssload-loader">
+                            <div class="cssload-dot"></div>
+                            <div class="cssload-dot"></div>
+                            <div class="cssload-dot"></div>
+                            <div class="cssload-dot"></div>
+                            <div class="cssload-dot"></div>
+                        </div>
+                    </div>
 
                      <table id="hs_resource_table" class="display" cellspacing="0" width="100%">
                         <thead>
@@ -134,15 +141,21 @@ CUAHSI Time Series Viewer
 <!--<button class='btn btn-danger' id='reset' >Reset</button>-->
 
 <div id = "stat_div" >
-    <button type="button" class="btn btn-info "  data-toggle="modal" data-target="#help-modal" style="float: right; position:relative">
-        <span id = 'get_data_span' data-toggle="tooltip" data-placement="bottom" title = "Get Data for New Selection" class="glyphicon glyphicon-question-sign"></span>
-    </button>
-     <button type="button" class="btn btn-info "  data-toggle="modal" data-target="#modalLoadRes" style="float: left; position:relative" onClick = "get_list_hs_res()">
-        <span id = 'get_hs_resource' data-toggle="tooltip" data-placement="bottom" title = "Get Data for New Selection" class="glyphicon glyphicon-question-sign"></span>
-    </button>
-    <!--<div>*All times are displayed in local time</div>-->
+    <!--<button type="button" class="btn btn-info "  data-toggle="modal" data-target="#help-modal" style="float: right; position:relative">-->
+        <!--<span id = 'get_data_span' data-toggle="tooltip" data-placement="bottom" title = "Get Data for New Selection" class="glyphicon glyphicon-question-sign"></span>-->
+    <!--</button>-->
+    <button type="button" class="btn btn-success "  data-toggle="modal" data-target="#modalLoadRes" style="float: left; position:relative" onClick = "get_list_hs_res()">
+        <div>
 
-    <table id="data_table" class="display" cellspacing="0" width="100%">
+        </div>
+    <!--<span id = 'get_hs_resource' data-toggle="tooltip" data-placement="bottom" title = "Add a HydroShare Resource" class="glyphicon glyphicon-question-sign">Import from <img id = "hs_logo" src="{% static 'timeseries_viewer/images/hydroshare.png' %}"/></span>-->
+    <!--<span id = 'get_hs_resource' data-toggle="tooltip" data-placement="bottom" title = "Add a HydroShare Resource"><img id = "hs_logo" src="{% static 'timeseries_viewer/images/hydroshare.png' %}"/></span>-->
+    <span id = 'get_hs_resource' data-toggle="tooltip" data-placement="bottom" title = "Add a HydroShare Resource" >Add HydroShare Resource</span>
+    </button>
+
+
+    <!--<div>*All times are displayed in local time</div>-->
+    <table id="data_table" class="display" cellspacing="0" width="100%" style="">
         <thead>
         <tr>
             <th> <div style='text-align:center'><input class = 'checkbox' id ='master_chk' name ='master_chk' data-resid =" + res_id
@@ -177,7 +190,6 @@ CUAHSI Time Series Viewer
 
 
 <div id = loading>
-
     <div class="cssload-loader">
         <div class="cssload-dot"></div>
         <div class="cssload-dot"></div>

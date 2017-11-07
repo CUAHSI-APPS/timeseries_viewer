@@ -3,6 +3,12 @@
 	/*overflow:inherit !important;*/
 /*}*/
 /*formats the logo*/
+#data_table_wrapper{
+	padding-top: 10px;
+}
+#hs_logo{
+	width:100px;
+}
 #app-header .tethys-app-header .icon-wrapper img
 {
     height:50px;
@@ -59,6 +65,7 @@ display:none !important;
 }
 #modalLoadRes{
     overflow-y:scroll;
+	/*height: 50%*/
 	/*width:80%*/
 }
 #modalLoadRes .modal-dialog{

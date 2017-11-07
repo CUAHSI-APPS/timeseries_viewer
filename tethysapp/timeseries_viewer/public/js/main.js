@@ -56,6 +56,7 @@ var color_selection = [ "#FF4A46", "#008941", "#006FA6", "#A30059","#000000", "#
 var chart_options = {
     zoomEnabled: true,
     height: 600,
+    exportEnabled: true,
     legend: {
         cursor: "pointer",
         itemclick: function (e) {
@@ -104,6 +105,7 @@ var popupDiv = $('#welcome-popup');
 var series_tracker = []
 var row_tracker = []
 var hs_res_list_loaded = false
+var add_hs_res = []
 
 $(document).ready(function (callback) {
 
@@ -237,7 +239,7 @@ $(document).ready(function (callback) {
     });
 
 
-    var table1 = $('#hs_resource_table').DataTable({
+    $('#hs_resource_table').DataTable({
         "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
         "scrollY":true,
         "createdRow": function (row, data, dataIndex) {
@@ -311,6 +313,13 @@ $(document).ready(function (callback) {
     $("#chart").hide();
     $('#stat_div').hide();
     $('#multiple_units').hide();
+    $("#modalLoadRes").on("show.bs.modal", function () {
+    // Set delay so that resize function will trigger properly
+        setTimeout(function(){
+            console.log('resize')
+            $(window).trigger("resize");
+        }, 500);
+    });
     addingseries();
     //$('#button').hide();
 
@@ -326,25 +335,28 @@ function addingseries(unit_off) {
     var src = find_query_parameter("src");
     var series_counter =0
     var source = find_query_parameter('Source')
-    var end_of_resources = false
+    console.log(source)
+    // var end_of_resources = false
     var chart = $("#chartContainer").CanvasJSChart()
     var counter = 0
     var res_id =null
     var xml_rest_id=null
+    var sources = []
     CanvasJS.addColorSet("greenShades",color_selection)
     $("#chartContainer").CanvasJSChart(chart_options);
+    //
+    // if (source[0] == 'cuahsi'){
+    //     src='cuahsi'
+    // }
+    // else if (source[0]=''){window.location ='http://data.cuahsi.org/#'}
 
-    if (source[0] == 'cuahsi'){
-        src='cuahsi'
-    }
-    else if (source[0]=''){window.location ='http://data.cuahsi.org/#'}
-
-    if (src =='cuahsi'){
+    if (source[0] =='cuahsi'){
+        console.log('cuahsi')
+        src = source[0]
         res_id=find_query_parameter('WofUri')
         var quality=find_query_parameter('QCLID')
         var method=find_query_parameter('MethodId')
         var sourceid = find_query_parameter('SourceId')
-
     }
     else if(src=='hydroshare') {
         res_id = find_query_parameter("res_id");
@@ -359,8 +371,20 @@ function addingseries(unit_off) {
     if (unit_off == null) {
         unit_off = ''
     }
+    //Create an array of same dimension of res_id with sources
+    sources = res_id.slice()
+    sources = sources.fill(src)
+    //Add selected hs resources to resource list
+    res_id =res_id.concat(add_hs_res)
+
     series_counter = res_id.length
+
     for (var id in res_id){
+        src = sources[id]
+        if (src == undefined){
+            src = 'hydroshare'
+        }
+        // Checking filter parameters from CUAHSI
         if( src =='cuahsi'){
             if(quality[id]=='null' || quality[id]=='None')
             {quality1=''}
@@ -377,29 +401,24 @@ function addingseries(unit_off) {
             id_qms="not_cuahsi"
         }
         counter = counter + 1
-        if (counter ==series_counter){end_of_resources =true}
+        // if (counter ==series_counter){end_of_resources =true}
         // add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms,src);
+
         length_master= 0
-        current_url = location.href;
-        index = current_url.indexOf("timeseries-viewer");
-        base_url = current_url.substring(0, index);
-
-
-
+        var current_url = location.href;
+        var index = current_url.indexOf("timeseries-viewer");
+        var base_url = current_url.substring(0, index);
         var csrf_token = getCookie('csrftoken');
-        data_url = base_url + 'timeseries-viewer/chart_data/' + res_id[id] + '/' + src + '/';
+        var data_url = base_url + 'timeseries-viewer/chart_data/' + res_id[id] + '/' + src + '/';
         $.ajax({
             type:"POST",
             headers:{'X-CSRFToken':csrf_token},
             dataType: 'json',
-            //timeout: 5000,
             data:{'url_xml':xml_rest_id},
             url: data_url,
             success: function (json) {
-                //console.log(json)
                 var dseries =[]
                 error = json.error
-                //console.log(json.error)
                 if (error != ''){show_error(error)}
                 else {
                     var chart = $("#chartContainer").CanvasJSChart()
@@ -408,8 +427,7 @@ function addingseries(unit_off) {
                     len = json.length
                     for (series in json) {
                         console.log('start series')
-
-                        plot_data(chart, res_id[id], series_counter+len-1, unit_off, id_qms, json[series], len)
+                        plot_data(chart, res_id[id], series_counter+len-1, unit_off, id_qms, json[series])
                     }
                 }
             },
@@ -421,7 +439,7 @@ function addingseries(unit_off) {
 }
 
 
-function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
+function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
     json = data
     var xtime = []
     //console.log(json)
@@ -492,7 +510,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
             //console.log(json)
             var m_xval = []
             var m_yval = []
-            var length_master = length_master + 1
+            // var length_master = length_master + 1
             var meta = val.split("aa");
             var code = meta_dic['quality_code'][meta[0]]
             var quality = meta_dic['quality'][code]
@@ -779,11 +797,17 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data,len){
         counter =counter+1
     }
     //    end of looping through timeseries
-
+    console.log('checking end of series')
+    console.log(end_of_resources)
+    console.log(number)
     if (end_of_resources == number )//checks to see if all the data is loaded before displaying
     {
         var table = $('#data_table').DataTable();//defines the primary table
         // console.log(row_tracker)
+        // var table = $('#data_table').DataTable();
+        table
+            .clear()
+            .draw();
         for (row in row_tracker){
             // console.log(row_tracker[row])
             table.row.add(row_tracker[row]).draw();
@@ -1092,18 +1116,16 @@ function multipletime() {
     chart.options.data = []
     // chart.render()
     // $("#chartContainer").html=''
-    chart.options.data = []
     $("#chart").hide();
     ymax =0
     ymin=0
     y2max=0
     y2min=0
-    var table = $('#data_table').DataTable();
     series_tracker = []
     row_tracker = []
     number  = 0
     // TODO loop for chart data and turn off/on appropiate series and update checkboxes
-
+    var table = $('#data_table').DataTable();
     table
         .clear()
         .draw();
@@ -1178,7 +1200,6 @@ function scatter_line(id){
 }
 
 
-
 function gridlines(ymax,ymin){
 
     //console.log(ymax)
@@ -1231,10 +1252,15 @@ function gridlines(ymax,ymin){
 }
 
 function get_list_hs_res(){
+
     console.log('get hs resources')
-    hs_res_ids ='3333333'
+    hs_res_ids =''
     if (hs_res_list_loaded == false) {
+        $('#hs_resource_table_wrapper').hide();
         var csrf_token = getCookie('csrftoken');
+        var current_url = location.href;
+        var index = current_url.indexOf("timeseries-viewer");
+        var base_url = current_url.substring(0, index);
         data_url = base_url + "timeseries-viewer/get_hydroshare_res/";
         $.ajax({
             type: "POST",
@@ -1263,6 +1289,9 @@ function get_list_hs_res(){
                         // console.log('start series')
 
                     }
+                    $('#loading_hs').hide();
+                    $('#hs_resource_table_wrapper').show();
+                    $(window).resize()
                     hs_res_list_loaded = true
 
 
@@ -1278,18 +1307,77 @@ function get_list_hs_res(){
 
 }
 function get_hs_res(){
-        var table_hs = $('#hs_resource_table').DataTable();
-        row_num = table_hs.rows().data().length
-        for (row = 0; row<row_num; row++){
-            console.log(row)
-            row_up = table_hs.rows().data()[row]
-            console.log(row_up)
-            // Update checkboxes
-            table_hs.row(row).data(row_up).draw()
-        }
+    var src = 'hydroshare'
+    var unit_off = ''
+    var id_qms="not_cuahsi"
+    var chart = $("#chartContainer").CanvasJSChart()
+    var series_counter = add_hs_res.length+number
+    var xml_rest_id=null
+    var popupDiv = $('#modalLoadRes');
+    popupDiv.modal('hide');
+    $('#loading').show();
+    $("#chart").hide();
+    $('#stat_div').hide();
+    $('#multiple_units').hide();
+    for (id in add_hs_res){
+        length_master= 0
+
+        current_url = location.href;
+        index = current_url.indexOf("timeseries-viewer");
+        base_url = current_url.substring(0, index);
+        var csrf_token = getCookie('csrftoken');
+        data_url = base_url + 'timeseries-viewer/chart_data/' + add_hs_res[id] + '/' + src + '/';
+        $.ajax({
+            type:"POST",
+            headers:{'X-CSRFToken':csrf_token},
+            dataType: 'json',
+            //timeout: 5000,
+            data:{'url_xml':xml_rest_id},
+            url: data_url,
+            success: function (json) {
+                //console.log(json)
+                var dseries =[]
+                error = json.error
+                //console.log(json.error)
+                if (error != ''){show_error(error)}
+                else {
+                    var chart = $("#chartContainer").CanvasJSChart()
+                    json = json.data
+                    console.log(json)
+                    len = json.length
+                    for (series in json) {
+                        console.log('start series')
+
+                        plot_data(chart, add_hs_res[id], series_counter+len-1, unit_off, id_qms, json[series], len)
+                    }
+                }
+            },
+            error: function () {
+                show_error("Error loading time series from " + add_hs_res[id]);
+            }
+        });
+    }
 
 }
+// id = id of selected checkbox element
+// check_box - changes status attribute for checkboxes in hydroshare resource selector
+function check_box(id){
+    var selected_box = document.getElementById(id)
+    if($(selected_box).is(':checked')){
+        $(selected_box).attr('status',"checked")
+        add_hs_res.push(id)
 
+    }
+    else{
+        $(selected_box).attr('status',"unchecked")
+        var index = add_hs_res.indexOf(id);
+        console.log(index)
+        if (index > -1) {
+            add_hs_res.splice(index, 1);
+        }
+    }
+    console.log(add_hs_res)
+}
 // shows an error message in the chart title
 function show_error(error_message) {
     $('#loading').hide();

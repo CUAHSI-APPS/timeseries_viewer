@@ -92,7 +92,7 @@ def get_hydroshare_res(request):
         # if resource.resource_type ==''
         print resource
         hs_res_id = resource['resource_id']
-        legend = "<div style='text-align:center'><input class = 'checkbox' name = 'res_hydroshare' id =" + hs_res_id+" type='checkbox' onClick ='series_visiblity_toggle(this.id,this.name);' unchecked>" + "</div>"
+        legend = "<div style='text-align:center'><input class = 'checkbox' name = 'res_hydroshare' id =" + hs_res_id+" type='checkbox' onClick ='check_box(this.id);' status ='unchecked'>" + "</div>"
         title = resource['resource_title']
         type = resource['resource_type']
         author = resource['creator']
