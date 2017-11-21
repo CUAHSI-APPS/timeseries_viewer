@@ -17,6 +17,8 @@ from wsgiref.util import FileWrapper
 import ast as ast
 import json
 import netCDF4
+from selenium import webdriver
+# from PyQt4.QtCore import QTimer
 use_hs_client_helper = True
 # Backwards compatibility with older versions of Tethys
 try:
@@ -39,7 +41,11 @@ def home(request):
     """Home controller if page is launched from HydroShare"""
     utilities.view_counter(request)
 
-
+    # DRIVER = 'chromedriver'
+    # driver = webdriver.Chrome(DRIVER)
+    # driver.get('https://www.spotify.com')
+    # screenshot = driver.save_screenshot('my_screenshot.png')
+    # driver.quit()
 
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
@@ -78,6 +84,7 @@ def chart_data(request, res_id, src):
     print "done with python"
     return JsonResponse(file_meta)
 
+
 def get_hydroshare_res(request):
     hs_list = []
     print "getting hydroshare list"
@@ -85,8 +92,9 @@ def get_hydroshare_res(request):
         hs = get_oauth_hs(request)
     else:
         hs = utilities.getOAuthHS(request)
-    # resource_types =    ['CompositeResource','NetcdfResource','TimeSeriesResource']
-    resource_types =    ['TimeSeriesResource']
+    # resource_types = ['CompositeResource','NetcdfResource','TimeSeriesResource']
+    # resource_types = ['TimeSeriesResource']
+    resource_types = ['CompositeResource']
     resource_list = hs.getResourceList(types =resource_types )
     for resource in resource_list:
         # if resource.resource_type ==''
@@ -104,7 +112,7 @@ def get_hydroshare_res(request):
                       update=update,
                       resource_id=hs_res_id)
         hs_list.append(hs_dic)
-    hs_response = dict(error='',data=hs_list)
+    hs_response = dict(error='', data=hs_list)
     return JsonResponse(hs_response)
 
 # seperate handler for request originating from hydroshare.org
@@ -128,6 +136,7 @@ def view_counter(request):
     file_temp = open(file_path, 'r')
     content = file_temp.read()
     return JsonResponse({"Number of Viewers":content})
+
 
 # @user_passes_test(lambda u: u.is_superuser)
 @staff_member_required

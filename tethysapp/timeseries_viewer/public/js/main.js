@@ -56,7 +56,7 @@ var color_selection = [ "#FF4A46", "#008941", "#006FA6", "#A30059","#000000", "#
 var chart_options = {
     zoomEnabled: true,
     height: 600,
-    exportEnabled: true,
+    // exportEnabled: true,
     legend: {
         cursor: "pointer",
         itemclick: function (e) {
@@ -108,6 +108,9 @@ var hs_res_list_loaded = false
 var add_hs_res = []
 
 $(document).ready(function (callback) {
+    // document.getElementById('screenshot').addEventListener('click', function() {
+    //     downloadCanvas(this);
+    // }, false);
 
     console.log("ready")
     // var src = find_query_parameter("SourceId");
@@ -126,6 +129,7 @@ $(document).ready(function (callback) {
 
     var table = $('#data_table').DataTable({
         "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+
         "createdRow": function (row, data, dataIndex) {
             var col_counter = 0
             columns =
@@ -315,11 +319,13 @@ $(document).ready(function (callback) {
     $('#multiple_units').hide();
     $("#modalLoadRes").on("show.bs.modal", function () {
     // Set delay so that resize function will trigger properly
+        loadMap();
         setTimeout(function(){
             console.log('resize')
             $(window).trigger("resize");
         }, 500);
     });
+
     addingseries();
     //$('#button').hide();
 
@@ -410,6 +416,7 @@ function addingseries(unit_off) {
         var base_url = current_url.substring(0, index);
         var csrf_token = getCookie('csrftoken');
         var data_url = base_url + 'timeseries-viewer/chart_data/' + res_id[id] + '/' + src + '/';
+        console.log('heeeeeeeeeeelo world')
         $.ajax({
             type:"POST",
             headers:{'X-CSRFToken':csrf_token},
@@ -418,6 +425,7 @@ function addingseries(unit_off) {
             url: data_url,
             success: function (json) {
                 var dseries =[]
+                console.log(json)
                 error = json.error
                 if (error != ''){show_error(error)}
                 else {
@@ -431,7 +439,10 @@ function addingseries(unit_off) {
                     }
                 }
             },
-            error: function () {
+            error: function (xhr,status,error) {
+                console.log(xhr)
+                console.log(status)
+                console.log(error)
                 show_error("Error loading time series from " + res_id);
             }
         });
@@ -443,13 +454,13 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
     json = data
     var xtime = []
     //console.log(json)
-    var status = json.status;
-    if (status !== 'success') //displays error
-    {
-        show_error(chart, "Error loading time series from " + res_id + ": " + status)
-        $('#loading').hide();
-        return;
-    }
+    // var status = json.status;
+    // if (status !== 'success') //displays error
+    // {
+    //     show_error(chart, "Error loading time series from " + res_id + ": " + status)
+    //     $('#loading').hide();
+    //     return;
+    // }
 
     var master_values = json.master_values;
     //var master_counter = json.master_counter;
@@ -494,6 +505,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
         }
         counter1 = counter1+1
     }
+    console.log(master_values)
     if (bad_meta_counter == Object.keys(master_values).length) {
         bad_meta = true
     }
@@ -589,6 +601,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
                 xtime.push({x:actual_date , y: m_xval[i]})
             }
             data1 = xtime
+            console.log(data1)
             if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
             {
                 if (unit1 == null) {
@@ -639,6 +652,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
                     unit_off_bool = true
                 }
             }
+            console.log(y_title)
             if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
                 if (max > ymax) {
                     ymax = max
@@ -726,8 +740,6 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
                 };
                 // chart.options.data.push(newSeries);
             }
-            console.log(y_title)
-            console.log(newSeries)
             series_tracker.push(newSeries)
 
             xtime = []
@@ -783,7 +795,6 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
                 boxplot_count: boxplot_count
             }
             row_tracker.push(dataset)
-            console.log(row_tracker)
             // var table = $('#data_table').DataTable();//defines the primary table
             // table.row.add(dataset).draw();//adds data from the time series to the primary table
             // chart.render();//updated chart with new values
@@ -797,9 +808,7 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
         counter =counter+1
     }
     //    end of looping through timeseries
-    console.log('checking end of series')
-    console.log(end_of_resources)
-    console.log(number)
+
     if (end_of_resources == number )//checks to see if all the data is loaded before displaying
     {
         var table = $('#data_table').DataTable();//defines the primary table
@@ -808,12 +817,22 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
         table
             .clear()
             .draw();
+        // Adding data row to data for each series
         for (row in row_tracker){
             // console.log(row_tracker[row])
             table.row.add(row_tracker[row]).draw();
 
         }
         console.log('adding data to chart')
+        console.log(series_tracker)
+        console.log(ymax)
+        console.log(ymin)
+        if (ymax == ymin){
+            ymax = ymin +1
+        }
+         if (y2max == y2min){
+            y2max = y2min +1
+        }
         chart.options.data = series_tracker
         chart.options.axisY.titleFontSize = 15
         chart.options.axisY2.titleFontSize = 15
@@ -1002,7 +1021,6 @@ function series_visiblity_toggle(id, name) {
 
 /* Formatting function for row details - modify as you need */
 function format(d) {
-    console.log(d)
     // `d` is the original data object for the row
     name = 'container' + d.boxplot_count
     return '<div id = "container' + d.boxplot_count + '"class ="highcharts-boxplot" style = "float:right;height:300px;width:40%" ></div>' +
@@ -1250,12 +1268,46 @@ function gridlines(ymax,ymin){
 
     return {'maxview':maxview,'minview':minview,'interval':interval}
 }
-
+function loadMap () {
+    var map = new ol.Map({
+        target: 'map',
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM()
+          })
+        ],
+        view: new ol.View({
+          center: ol.proj.fromLonLat([37.41, 8.82]),
+          zoom: 4
+        })
+      });
+}
+// Get list of HydroShare Resources
 function get_list_hs_res(){
-
     console.log('get hs resources')
+
+
     hs_res_ids =''
+    $('#map').hide();
+    // hs_res_list_loaded = true
     if (hs_res_list_loaded == false) {
+        setTimeout(function(){
+            console.log('resize')
+            $(window).trigger("resize");
+
+        var map = new ol.Map({
+            target: 'map',
+            layers: [
+              new ol.layer.Tile({
+                source: new ol.source.OSM()
+              })
+            ],
+            view: new ol.View({
+              center: ol.proj.fromLonLat([37.41, 8.82]),
+              zoom: 4
+            })
+          });
+         }, 500);
         $('#hs_resource_table_wrapper').hide();
         var csrf_token = getCookie('csrftoken');
         var current_url = location.href;
@@ -1284,10 +1336,8 @@ function get_list_hs_res(){
                     console.log(json)
                     len = json.length
                     for (series in json) {
-
                         table_hs.row.add(json[series]).draw();
                         // console.log('start series')
-
                     }
                     $('#loading_hs').hide();
                     $('#hs_resource_table_wrapper').show();
@@ -1321,7 +1371,6 @@ function get_hs_res(){
     $('#multiple_units').hide();
     for (id in add_hs_res){
         length_master= 0
-
         current_url = location.href;
         index = current_url.indexOf("timeseries-viewer");
         base_url = current_url.substring(0, index);
@@ -1338,19 +1387,22 @@ function get_hs_res(){
                 //console.log(json)
                 var dseries =[]
                 error = json.error
-                //console.log(json.error)
+                console.log(json.error)
+                var chart = $("#chartContainer").CanvasJSChart()
+                json = json.data
+                console.log(json)
+                len = json.length
                 if (error != ''){show_error(error)}
                 else {
-                    var chart = $("#chartContainer").CanvasJSChart()
-                    json = json.data
-                    console.log(json)
-                    len = json.length
+                    if (json[series]['gridded'] == true) {
+                        console.log('Data is gridded')
+                    }
                     for (series in json) {
                         console.log('start series')
-
-                        plot_data(chart, add_hs_res[id], series_counter+len-1, unit_off, id_qms, json[series], len)
+                        plot_data(chart, add_hs_res[id], series_counter + len - 1, unit_off, id_qms, json[series], len)
                     }
                 }
+
             },
             error: function () {
                 show_error("Error loading time series from " + add_hs_res[id]);
@@ -1383,4 +1435,61 @@ function show_error(error_message) {
     $('#loading').hide();
     console.log(error_message);
     $('#error-message').text(error_message);
+    console.log(series_tracker)
+    if (series_tracker.length >0){
+        finishloading()
+    }
 }
+function get_screenshot() {
+    var myDiv = document.getElementById('app-content-wrapper');
+    myDiv.scrollTop = 0;
+    $("tfoot").hide()
+    console.log(screen.width)
+    html2canvas(document.body, {
+        onrendered: function (canvas) {
+            console.log(canvas)
+            canvas.setAttribute("id", "canvas_print")
+
+            var print = document.getElementById('print_div');
+            print.innerHTML =""
+            var link = document.getElementById('download');
+
+            myDiv.scrollTop = 0;
+            print.appendChild(canvas);
+            var canvas = document.getElementById("canvas_print");
+            console.log(link)
+            link.href = canvas.toDataURL("image/png");
+            // link.href    = canvas.toDataURL();
+            link.download = 'data_series_viewer.png'
+            console.log(link)
+            $("#download")[0].click()
+            $("tfoot").show()
+        },
+        width: $(document).width(),
+        height:$('#app-content-wrapper')[0].scrollHeight
+        // height: 1500
+    });
+    // canvas = html2canvas(document.getElementById('chartContainer') , {
+    //     onrendered: function (canvas) {
+    //         console.log(canvas)
+    //         canvas.setAttribute("id", "canvas_print")
+    //         var myDiv = document.getElementById('app-content-wrapper');
+    //         var print = document.getElementById('print_div');
+    //         var link = document.getElementById('download');
+    //
+    //         myDiv.scrollTop = 0;
+    //         print.appendChild(canvas);
+    //         var canvas = document.getElementById("canvas_print");
+    //         console.log(link)
+    //         link.href = canvas.toDataURL("image/png");
+    //         // link.href    = canvas.toDataURL();
+    //         link.download = 'canvas_test.png'
+    //         console.log(link)
+    //         $("#download")[0].click()
+    //     },
+    //     width: 1300,
+    //     height: 1300
+    // });
+    // console.log(canvas)
+}
+

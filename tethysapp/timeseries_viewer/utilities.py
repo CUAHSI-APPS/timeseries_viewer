@@ -5,6 +5,7 @@ from lxml import etree
 import numpy
 import urllib2
 import urllib
+import math
 from .app import TimeSeriesViewer
 import StringIO
 import time
@@ -333,6 +334,7 @@ def parse_1_0_and_1_1(root):
                                '.2f'))
                     min1 = float(format(min(master_data_values[item]), '.2f'))
                     max1 = float(format(max(master_data_values[item]), '.2f'))
+
                 master_stat[item].append(mean)
                 master_stat[item].append(median)
                 master_stat[item].append(max1)
@@ -663,7 +665,8 @@ def unzip_waterml(request, res_id, src):
                                    unzip=True)
                     status = 'done'
                 except HydroShareNotAuthorized as e:
-                    print "Not authorized"
+                    print e
+
                     error = 'Current user does not have permission to view this resource'
                     # error = str(e)
                     break
@@ -711,8 +714,8 @@ def unzip_waterml(request, res_id, src):
                             file_path = path
                             file_type='netcdf'
                 if file_type == None:
-                    error = "No supported file type found. This app supports resource types HIS " \
-                            "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
+                    error = "No supported file type found for resource "+res_id+". This app supports resource types of HIS " \
+                            "Referenced Time Series, Time Series, and Collection with file extension .refts.json"
             except Exception as e:
                 error = str(e)
     # Data from USGS and AHPS Gaugeviewer WML
@@ -795,7 +798,7 @@ def unzip_waterml(request, res_id, src):
                 data_for_chart.append(chart_data[0])
                 error = chart_data[1]
         elif file_type == 'sqlite':
-
+            print "sqlite!!!!!!!!!!!!!!!!!!!!!!!!!"
             conn = sqlite3.connect(file_path)
             c = conn.cursor()
             c.execute('SELECT Results.ResultID FROM Results')
@@ -807,57 +810,116 @@ def unzip_waterml(request, res_id, src):
         elif file_type == 'netcdf':
 
             dataset = Dataset(file_path)
-            # print dataset.file_format
-            # print dataset
+            print dataset.file_format
+            print '&&&&&&&&&&&&&&&&&&&&&&'
+            print dataset
+            print '!!!!!!!!!!!'
             print dataset.dimensions.keys()
             print '@'
+            # print dataset.variables
+            # print dataset.variables['x'][:]
             # print dataset.dimensions['feature_id']
-            #
-            # feature_id = dataset.variables['feature_id']
+            # feature id only belongs to channel data
+            try:
+                feature_id = dataset.variables['feature_id']
+                print '#####'
+                # print dataset.variables['feature_id'][:]
+                print dataset.variables['time'][:]
+                print dataset.variables['reference_time'][:]
+                master_times = collections.OrderedDict()
+                dic = 'aaaa'
+                master_times.update({dic: []})
+                # feature_id = dataset.variables['feature_id']
+                dates = dataset.variables['time'][:]
+                for ele in dates:
+                    n = float(ele)
+                    dates = dataset.variables['time'][:]
+                    n = n * 60  # time is is minutes not seconds
+                    master_times[dic].append(n)
+                for index, id in enumerate(feature_id):
+                    variable = dataset.variables.keys()
+
+                    for sub_var in variable:
+
+                        sub_var_check = sub_var.encode('utf8')
+
+                        if 'time' not in sub_var_check:
+                            if 'feature_id' not in sub_var_check:
+                                print sub_var
+                                print dataset.variables[sub_var]
+                                chart_data = parse_netcdf(index, id,
+                                                          dataset.variables[
+                                                              sub_var],
+                                                          master_times)
+                                data_for_chart.append(chart_data[0])
+                    # TODO fix error handling of sqlite and netcdf
+                    error = chart_data[1]
+            # try to see if resource is a gridded nwm resource
+            except:
+
+                y_array = dataset.variables['y']
+                x_array = dataset.variables['x']
+                for y_index, y in enumerate(y_array):
+                    for x_index, x in enumerate(x_array):
+                        chart_data = test_grid(dataset, y_index, y, x_index, x)
+                        data_for_chart.append(chart_data[0])
             # print dataset.variables.keys()
             # print dataset.variables['streamflow']
             # print dataset.variables['streamflow'][:]
-            #
-            # print '#####'
-            # print dataset.variables['feature_id'][:]
-            # print dataset.variables['time'][:]
-            # print dataset.variables['reference_time'][:]
-            master_times = collections.OrderedDict()
-            dic='aaaa'
-            master_times.update({dic: []})
-            feature_id = dataset.variables['feature_id']
-            dates = dataset.variables['time'][:]
-            for ele in dates:
-                    n = float(ele)
-                    dates = dataset.variables['time'][:]
-                    n = n*60 # time is is minutes not seconds
-                    master_times[dic].append(n)
-            print master_times
-            for index, id in enumerate(feature_id):
-                variable = dataset.variables.keys()
+    try:
 
-                print variable
-                for sub_var in variable:
-                    print sub_var
-                    print type(sub_var)
-                    sub_var_check = sub_var.encode('utf8')
-                    print sub_var_check
-                    print sub_var_check == 'time'
-                    if 'time' not in sub_var_check:
-                        if 'feature_id' not in sub_var_check:
-                            print sub_var
-                            chart_data = parse_netcdf(index, id, dataset.variables[sub_var], master_times)
-                            data_for_chart.append(chart_data[0])
-                #TODO fix error handling of sqlite and netcdf
-                error = chart_data[1]
         if isinstance(data_for_chart[0],basestring)==True:
             error = data_for_chart[0]
+    except:
+        eroor = 'No time series were found in the selected resource'
     if error is not '':
         error_report(error, res_id)
     return {'data': data_for_chart, 'error': error}
     # return {'file_number': file_number, "file_type": file_type,
     # 'error': error,
     #         'file_path': file_path}
+# Testing environment for graphing 2d netcdf file
+
+
+def test_grid(dataset, y_index, y, x_index, x):
+    print '#####'
+    print dataset
+    feature_id = dataset.variables['x']
+    # print dataset.variables['feature_id'][:]
+    print dataset.variables['time'][:]
+    print dataset.variables['reference_time'][:]
+    master_times = collections.OrderedDict()
+    dic = 'aaaa'
+    master_times.update({dic: []})
+    # feature_id = dataset.variables['feature_id']
+    # print feature_id
+    dates = dataset.variables['time'][:]
+    for ele in dates:
+        n = float(ele)
+        dates = dataset.variables['time'][:]
+        n = n * 60  # time is is minutes not seconds
+        master_times[dic].append(n)
+
+    variable = dataset.variables.keys()
+
+    for sub_var in variable:
+
+        sub_var_check = sub_var.encode('utf8')
+
+        if 'time' not in sub_var_check:
+            # if 'feature_id' not in sub_var_check:
+            if 'RAINRATE' in sub_var_check:
+
+                # chart_data = parse_netcdf(index, id, dataset.variables[sub_var], master_times)
+
+
+                # y_array = dataset.variables['y']
+
+                chart_data = parse_netcdf2(x_index, x,
+                                               dataset.variables[sub_var],
+                                               master_times, y_index, y)
+
+                return chart_data
 
 
 def parse_netcdf(index, id, dataset, master_times):
@@ -909,7 +971,8 @@ def parse_netcdf(index, id, dataset, master_times):
     nodatavalue =  dataset.missing_value
     variable_name = dataset.long_name
 
-
+    print nodatavalue
+    print variable_name
 
 
     datatype = 'Average'
@@ -923,16 +986,19 @@ def parse_netcdf(index, id, dataset, master_times):
     meta_dic['organization'].update({'':"NOAA"})
 
     # data = dataset.variables['streamflow'][:]
+    print dataset[:]
     data = dataset[:]
     for ele in data:
+        print ele
         v = ele[index]
+        print v
             # v = ele[2]
             # n = ele[1]
             # n = ciso8601.parse_datetime(str(n))
             # n = n.timetuple()
             # n = mktime(n)
             # if v == nodata:
-        if v == nodatavalue:
+        if float(v) == float(nodatavalue):
             v = None
         else:
             v = float(v)
@@ -1006,6 +1072,165 @@ def parse_netcdf(index, id, dataset, master_times):
         'master_stat': master_stat,
     },
             error]
+
+
+def parse_netcdf2(x_index, x, dataset, master_times, y_index, y):
+    # master_times = []
+    master_values = collections.OrderedDict()
+    # master_times = collections.OrderedDict()
+    site_name = None
+    variable_name = None
+    units = None
+    meta_dic = None
+    organization = None
+    quality = None
+    method = None
+    datatype = None
+    valuetype = None
+    samplemedium = None
+    timeunit = None
+    sourcedescription = None
+    timesupport = None
+    master_counter = True
+    meth_qual = []
+    master_boxplot = collections.OrderedDict()
+    master_stat = collections.OrderedDict()
+    master_data_values = collections.OrderedDict()
+    meta_dic = {'method': {}, 'quality': {}, 'source': {}, 'organization': {},
+                'quality_code': {}}
+    meth_qual = []  # List of all the quality, method, and source combinations
+    nodatavalue = None
+
+    site_name = str(x)+ " "+str(y)
+
+    # dic = str(id) + 'aaaa'
+    dic = 'aaaa'
+    dic = dic.replace(" ", "")
+    if dic not in meth_qual:
+        meth_qual.append(dic)
+        master_values.update({dic: []})
+        # master_times.update({dic: []})
+        master_boxplot.update({dic: []})
+        master_stat.update({dic: []})
+        master_data_values.update({dic: []})
+    # units = dataset.variables['streamflow'].units
+    # nodatavalue =  dataset.variables['streamflow'].missing_value
+    # variable_name = dataset.variables['streamflow'].long_name
+    units = dataset.units
+    nodatavalue = dataset.missing_value
+    variable_name = dataset.long_name
+
+    print nodatavalue
+    print variable_name
+
+    datatype = 'Average'
+    valuetype = 'Model Simulation Forecast'
+    samplemedium = 'SurfaceWater'
+
+    meta_dic['method'].update({'': 'Model Results'})
+    meta_dic['quality_code'].update({'': ''})
+    meta_dic['quality'].update({'': "Derived products"})
+    meta_dic['source'].update({'': 'NOAA: National Water Model Output'})
+    meta_dic['organization'].update({'': "NOAA"})
+
+    # data = dataset.variables['streamflow'][:]
+
+    data = dataset[:]
+    print data.shape
+    print "numasdfjfhsd;"
+    for ele in data:
+        values_array = ele[y_index][x_index]
+
+        v = values_array
+        # for v in values_array:
+
+            # v = ele[2]
+            # n = ele[1]
+            # n = ciso8601.parse_datetime(str(n))
+            # n = n.timetuple()
+            # n = mktime(n)
+        # if v == nodata:
+        if float(v) == float(nodatavalue):
+            v = None
+            # print v
+            # print 'not data'
+        else:
+
+            v = float(v)
+            if not math.isnan(v):
+                # records only none null values for running statistics
+
+                master_data_values[dic].append(v)
+        # print v
+        # print type(v)
+        if math.isnan(v):
+            v = None
+        # print v
+        master_values[dic].append(v)
+    # dates = dataset.variables['time'][:]
+    # dates = dataset[:]
+
+    # for ele in dates:
+    #     print ele
+    #     n = float(ele)
+    #     n = n*60 # time is is minutes not seconds
+    #     master_times[dic].append(n)
+    first_date = master_times[dic][0]
+    second_date = master_times[dic][1]
+
+    timesupport = (second_date - first_date) / 3600
+    timeunit = 'hour'
+    for item in master_data_values:
+        if len(master_data_values[item]) == 0:
+            mean = None
+            median = None
+            quar1 = None
+            quar3 = None
+            min1 = None
+            max1 = None
+        else:
+            mean = numpy.mean(master_data_values[item])
+            mean = float(format(mean, '.2f'))
+            median = float(
+                format(numpy.median(master_data_values[item]), '.2f'))
+            quar1 = float(
+                format(numpy.percentile(master_data_values[item], 25), '.2f'))
+            quar3 = float(
+                format(numpy.percentile(master_data_values[item], 75), '.2f'))
+            min1 = float(format(min(master_data_values[item]), '.2f'))
+            max1 = float(format(max(master_data_values[item]), '.2f'))
+
+        master_stat[item].append(mean)
+        master_stat[item].append(median)
+        master_stat[item].append(max1)
+        master_stat[item].append(min1)
+        master_boxplot[item].append(1)
+        master_boxplot[item].append(min1)  # adding data for the boxplot
+        master_boxplot[item].append(quar1)
+        master_boxplot[item].append(median)
+        master_boxplot[item].append(quar3)
+        master_boxplot[item].append(max1)
+
+        error = ''
+    return [{
+        'site_name': site_name,
+        'variable_name': variable_name,
+        'units': units,
+        'meta_dic': meta_dic,
+        'status': 'success',
+        'datatype': datatype,
+        'valuetype': valuetype,
+        'samplemedium': samplemedium,
+        'timeunit': timeunit,
+        'sourcedescription': sourcedescription,
+        'timesupport': timesupport,
+        'master_values': master_values,
+        'master_times': master_times,
+        'master_boxplot': master_boxplot,
+        'master_stat': master_stat,
+        'gridded' : True
+    },
+        error]
 
 
 def waterml_file_path(res_id, xml_id):
