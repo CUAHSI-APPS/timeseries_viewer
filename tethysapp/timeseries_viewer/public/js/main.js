@@ -11,6 +11,8 @@ var y2min=0
 //tool tip for the quality control column
 var quality_title=null
 var number = 0
+var counter_all =0
+var end_of_resources = 0
 var unit3 = ''
 var res = null
 // here we set up the configuration of the CanvasJS chart
@@ -383,7 +385,10 @@ function addingseries(unit_off) {
     //Add selected hs resources to resource list
     res_id =res_id.concat(add_hs_res)
 
-    series_counter = res_id.length
+    end_of_resources = res_id.length
+    console.log(series_counter)
+    console.log('@@@@@@@@@@@@@@@@@@@@@@@')
+
 
     for (var id in res_id){
         src = sources[id]
@@ -416,7 +421,7 @@ function addingseries(unit_off) {
         var base_url = current_url.substring(0, index);
         var csrf_token = getCookie('csrftoken');
         var data_url = base_url + 'timeseries-viewer/chart_data/' + res_id[id] + '/' + src + '/';
-        console.log('heeeeeeeeeeelo world')
+        var res_id_counter = 0
         $.ajax({
             type:"POST",
             headers:{'X-CSRFToken':csrf_token},
@@ -432,10 +437,20 @@ function addingseries(unit_off) {
                     var chart = $("#chartContainer").CanvasJSChart()
                     json = json.data
                     console.log(json)
-                    len = json.length
+                    console.log(res_id.length)
+                    var json_len = json.length
+                    end_of_resources = end_of_resources + json_len -1
                     for (series in json) {
+                        //number of res_ids
+
+
                         console.log('start series')
-                        plot_data(chart, res_id[id], series_counter+len-1, unit_off, id_qms, json[series])
+                        // if (res_id_counter == series_length){
+                        //     end_of_data = true
+                        // }
+                        plot_data(chart, res_id[id], series_counter, unit_off, id_qms, json[series])
+                        // series_length = series_length+1
+
                     }
                 }
             },
@@ -450,9 +465,10 @@ function addingseries(unit_off) {
 }
 
 
-function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
+function plot_data(chart, res_id, end_of_resources1, unit_off,id_qms,data){
     json = data
     var xtime = []
+    var end_of_subresources =false
     //console.log(json)
     // var status = json.status;
     // if (status !== 'success') //displays error
@@ -473,8 +489,12 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
     var val1=[]
 
     var counter =0
+    console.log(Object.keys(master_values).length)
+    end_of_resources = Object.keys(master_values).length + end_of_resources -1
     id_qms_a_split = id_qms.split('aa')//identifier based upon url parameters
     var counter1 = 0
+    console.log(master_values)
+
     for (val in master_values)//this loop deals with any parameters that are not specified in the url query
     {
 
@@ -509,7 +529,6 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
     if (bad_meta_counter == Object.keys(master_values).length) {
         bad_meta = true
     }
-
     for (val in master_values) {
         if (bad_meta == true) {
             var arr=[]
@@ -530,13 +549,13 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
             var method = meta_dic['method'][meta[1]]
             var sourcedescription = meta_dic['source'][meta[2]]
             var organization = meta_dic['organization'][meta[2]]
-            var m_yval = master_times[val]
+            var m_xval = master_times[val]
             var boxplot = master_boxplot[val]
             var mean = master_stat[val][0]
             var median = master_stat[val][1]
             var max = master_stat[val][2]
             var min = master_stat[val][3]
-            var m_xval = master_values[val]
+            var m_yval = master_values[val]
             var count = m_xval.length
             var site_name = json.site_name
             var variable_name = json.variable_name
@@ -596,12 +615,15 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
             var utc_offset = temp_date.getTimezoneOffset()*1000*60
             for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
             {
-                var date_value = m_yval[i]
+                var date_value = y_yval[i]
                 var actual_date = (date_value*1000+utc_offset)
-                xtime.push({x:actual_date , y: m_xval[i]})
+                var yval = null
+                if (m_yval[i]!=None){
+                    yval = m_yval[i]
+                }
+                xtime.push({x:actual_date , y: yval})
             }
             data1 = xtime
-            console.log(data1)
             if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
             {
                 if (unit1 == null) {
@@ -652,7 +674,6 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
                     unit_off_bool = true
                 }
             }
-            console.log(y_title)
             if (y_title == 0) {//sets the y-axis title and graphs data on primary axis
                 if (max > ymax) {
                     ymax = max
@@ -805,13 +826,31 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
             number = number + 1;
             console.log(number)
         }
-        counter =counter+1
+        counter_all =counter_all+1
+        // end_of_subresources=true
+        console.log(end_of_resources)
+        console.log("yyyyyyyyyyyyy")
+        console.log(counter_all)
+        console.log(end_of_resources - counter_all)
+        // if (counter_all==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
+        if (0==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
+        {
+            display_table_chart(number)
+        }
+
+
     }
     //    end of looping through timeseries
 
-    if (end_of_resources == number )//checks to see if all the data is loaded before displaying
-    {
-        var table = $('#data_table').DataTable();//defines the primary table
+    // if (end_of_resources == true && counter ==Object.keys(master_values).length )//checks to see if all the data is loaded before displaying
+    // {
+    //     display_table_chart(number)
+    // }
+}
+// Take all data and display it in the table and graph
+function display_table_chart(number){
+    var chart = $("#chartContainer").CanvasJSChart()
+    var table = $('#data_table').DataTable();//defines the primary table
         // console.log(row_tracker)
         // var table = $('#data_table').DataTable();
         table
@@ -824,9 +863,9 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
 
         }
         console.log('adding data to chart')
-        console.log(series_tracker)
-        console.log(ymax)
-        console.log(ymin)
+        // console.log(series_tracker)
+        // console.log(ymax)
+        // console.log(ymin)
         if (ymax == ymin){
             ymax = ymin +1
         }
@@ -869,9 +908,9 @@ function plot_data(chart, res_id, end_of_resources, unit_off,id_qms,data){
             $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
         }
         finishloading();
-    }
-}
 
+
+}
 
 function roundUp(x){
     var negative = false;
@@ -1369,6 +1408,7 @@ function get_hs_res(){
     $("#chart").hide();
     $('#stat_div').hide();
     $('#multiple_units').hide();
+    series_counter = add_hs_res.length
     for (id in add_hs_res){
         length_master= 0
         current_url = location.href;
@@ -1392,13 +1432,22 @@ function get_hs_res(){
                 json = json.data
                 console.log(json)
                 len = json.length
+                var res_id_counter = 0
                 if (error != ''){show_error(error)}
                 else {
-                    if (json[series]['gridded'] == true) {
-                        console.log('Data is gridded')
-                    }
+                    console.log(json[series])
+                    var series_length = series_counter
                     for (series in json) {
                         console.log('start series')
+                        res_id_counter = res_id_counter + 1
+                        console.log(res_id_counter)
+                        res_id_counter = res_id_counter + 1
+                        if (res_id_counter == series_length){
+                            end_of_data = true
+                        }
+                        if (json[series]['gridded'] == true) {
+                            console.log('Data is gridded')
+                        }
                         plot_data(chart, add_hs_res[id], series_counter + len - 1, unit_off, id_qms, json[series], len)
                     }
                 }

@@ -29,6 +29,7 @@ from time import gmtime, strftime
 from time import mktime as mktime
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 from netCDF4 import Dataset
+import sys
 
 
 def get_workspace():
@@ -132,8 +133,8 @@ def parse_1_0_and_1_1(root):
             # lists to store the time-series data
 
             # iterate through xml document and read all values
+            print root_tag
             for element in root.iter():
-
                 bracket_lock = -1
                 if '}' in element.tag:
                     # print element.tag
@@ -219,6 +220,7 @@ def parse_1_0_and_1_1(root):
                             meta_dic['source'].update({m_code: m_des})
                             meta_dic['organization'].update({m_code: m_org})
                         if "qualitycontrollevel" == tag.lower():
+                            print tag
                             try:
                                 qlc = element.attrib['qualityControlLevelID']
                             except:
@@ -230,7 +232,12 @@ def parse_1_0_and_1_1(root):
                                         'qualityControlLevelID']
                                     m_code = m_code.replace(" ", "")
                                 if 'qualitycontrollevelcode' in subele.tag.lower():
+                                    print subele.text
+                                    print 'HIIIIIIIIIII'
                                     m_code1 = subele.text
+                                    if m_code1 ==None:
+                                        m_code1 = m_code
+                                    # m_code1 = '10'
                                     m_code1 = m_code1.replace(" ", "")
                                 if 'qualitycontrollevelcode' in subele.tag.lower() and m_code == '':
                                     m_code = subele.text
@@ -369,6 +376,7 @@ def parse_1_0_and_1_1(root):
                 'master_times': master_times,
                 'master_boxplot': master_boxplot,
                 'master_stat': master_stat,
+                'gridded': False,
                 # 'master_data_values': master_data_values
             },
                     error]
@@ -384,6 +392,9 @@ def parse_1_0_and_1_1(root):
         #     "Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
         print data_error
         print e
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return [None,data_error]
 
 
@@ -1070,6 +1081,7 @@ def parse_netcdf(index, id, dataset, master_times):
         'master_times': master_times,
         'master_boxplot': master_boxplot,
         'master_stat': master_stat,
+        'gridded': False,
     },
             error]
 
@@ -1555,6 +1567,7 @@ def parse_odm2(file_path, result_num):
         'master_times': master_times,
         'master_boxplot': master_boxplot,
         'master_stat': master_stat,
+        'gridded': False,
         'master_data_values': master_data_values
     }
 
