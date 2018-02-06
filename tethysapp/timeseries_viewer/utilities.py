@@ -30,7 +30,13 @@ from time import mktime as mktime
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 from netCDF4 import Dataset
 import sys
-
+import shapely.wkt
+import shapely.geometry
+import shapely.ops
+# import pyproj
+from osgeo import ogr
+from osgeo import osr
+import ast
 
 def get_workspace():
     """Get path to Tethys Workspace"""
@@ -233,7 +239,6 @@ def parse_1_0_and_1_1(root):
                                     m_code = m_code.replace(" ", "")
                                 if 'qualitycontrollevelcode' in subele.tag.lower():
                                     print subele.text
-                                    print 'HIIIIIIIIIII'
                                     m_code1 = subele.text
                                     if m_code1 ==None:
                                         m_code1 = m_code
@@ -248,22 +253,11 @@ def parse_1_0_and_1_1(root):
                             meta_dic['quality_code'].update({m_code1: m_code})
                             # print meta_dic
                     elif 'value' == tag:
-                        # try:
-                        #     n = element.attrib['dateTimeUTC']
-                        # except:
-                        #     n =element.attrib['dateTime']
                         n = element.attrib['dateTime']
-                        # print n
                         n = ciso8601.parse_datetime(n)
-                        n=n.timetuple()
+                        n = n.timetuple()
                         n = time.mktime(n)
-                        # print n
-                        # print type(n)
-                        # print ts
-                        # if 'Z' in n:
-                        #     n = n.replace('Z','')
-                        #     print "there is a z"
-                        #     print n
+
                         try:
                             quality = element.attrib['qualityControlLevelCode']
                         except:
@@ -306,11 +300,7 @@ def parse_1_0_and_1_1(root):
 
                         v = element.text
                         if float(v) == nodata:
-                            value = None
-                            # x_value.append(n)
-                            # y_value.append(value)
                             v = None
-
                         else:
                             v = float(element.text)
                             # x_value.append(n)
@@ -347,23 +337,19 @@ def parse_1_0_and_1_1(root):
                 master_stat[item].append(max1)
                 master_stat[item].append(min1)
                 master_boxplot[item].append(1)
-                master_boxplot[item].append(
-                    min1)  # adding data for the boxplot
+                master_boxplot[item].append(min1)
                 master_boxplot[item].append(quar1)
                 master_boxplot[item].append(median)
                 master_boxplot[item].append(quar3)
                 master_boxplot[item].append(max1)
                 # print 'end parse'
                 # print time.ctime()
-                error =''
+                error = ''
             return [{
                 'site_name': site_name,
                 'variable_name': variable_name,
                 'units': units,
                 'meta_dic': meta_dic,
-                # 'organization': organization,
-                # 'quality': quality,
-                # 'method': method,
                 'status': 'success',
                 'datatype': datatype,
                 'valuetype': valuetype,
@@ -371,15 +357,12 @@ def parse_1_0_and_1_1(root):
                 'timeunit': timeunit,
                 'sourcedescription': sourcedescription,
                 'timesupport': timesupport,
-                # 'master_counter': master_counter,
                 'master_values': master_values,
                 'master_times': master_times,
                 'master_boxplot': master_boxplot,
                 'master_stat': master_stat,
                 'gridded': False,
-                # 'master_data_values': master_data_values
-            },
-                    error]
+            },error]
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
             # error_report(
@@ -641,6 +624,8 @@ def unzip_waterml(request, res_id, src):
     file_type = None
     error = ''
     file_path = ''
+    data_for_chart = []
+    data_for_gridded = []
     # if not os.path.exists(temp_dir+"/id"):
     #     os.makedirs(temp_dir+"/id")
     if 'hydroshare' in src:
@@ -788,7 +773,6 @@ def unzip_waterml(request, res_id, src):
             print error
             error = str(e)
 
-    data_for_chart = []
     # if we don't have the xml file, download and unzip it
     # file_number = int(file_meta['file_number'])
     # file_path = file_meta['file_path']
@@ -821,22 +805,15 @@ def unzip_waterml(request, res_id, src):
         elif file_type == 'netcdf':
 
             dataset = Dataset(file_path)
-            print dataset.file_format
-            print '&&&&&&&&&&&&&&&&&&&&&&'
-            print dataset
-            print '!!!!!!!!!!!'
-            print dataset.dimensions.keys()
-            print '@'
+
             # print dataset.variables
             # print dataset.variables['x'][:]
             # print dataset.dimensions['feature_id']
             # feature id only belongs to channel data
             try:
                 feature_id = dataset.variables['feature_id']
-                print '#####'
                 # print dataset.variables['feature_id'][:]
-                print dataset.variables['time'][:]
-                print dataset.variables['reference_time'][:]
+
                 master_times = collections.OrderedDict()
                 dic = 'aaaa'
                 master_times.update({dic: []})
@@ -856,8 +833,6 @@ def unzip_waterml(request, res_id, src):
 
                         if 'time' not in sub_var_check:
                             if 'feature_id' not in sub_var_check:
-                                print sub_var
-                                print dataset.variables[sub_var]
                                 chart_data = parse_netcdf(index, id,
                                                           dataset.variables[
                                                               sub_var],
@@ -867,16 +842,17 @@ def unzip_waterml(request, res_id, src):
                     error = chart_data[1]
             # try to see if resource is a gridded nwm resource
             except:
-
+                print 'Gridded Data'
                 y_array = dataset.variables['y']
                 x_array = dataset.variables['x']
+                # todo put coordinate conversion here
                 for y_index, y in enumerate(y_array):
                     for x_index, x in enumerate(x_array):
-                        chart_data = test_grid(dataset, y_index, y, x_index, x)
-                        data_for_chart.append(chart_data[0])
-            # print dataset.variables.keys()
-            # print dataset.variables['streamflow']
-            # print dataset.variables['streamflow'][:]
+                        chart_data = parse_grid(dataset, y_index, y, x_index, x)
+                        # for sub_time_series in chart_data:
+                        #
+                        #     data_for_gridded.append(sub_time_series)
+                        data_for_gridded.append(chart_data)
     try:
 
         if isinstance(data_for_chart[0],basestring)==True:
@@ -885,20 +861,15 @@ def unzip_waterml(request, res_id, src):
         eroor = 'No time series were found in the selected resource'
     if error is not '':
         error_report(error, res_id)
-    return {'data': data_for_chart, 'error': error}
+    return {'data': data_for_chart, 'error': error, 'gridded_data':data_for_gridded}
     # return {'file_number': file_number, "file_type": file_type,
     # 'error': error,
     #         'file_path': file_path}
 # Testing environment for graphing 2d netcdf file
 
 
-def test_grid(dataset, y_index, y, x_index, x):
-    print '#####'
-    print dataset
-    feature_id = dataset.variables['x']
+def parse_grid(dataset, y_index, y, x_index, x):
     # print dataset.variables['feature_id'][:]
-    print dataset.variables['time'][:]
-    print dataset.variables['reference_time'][:]
     master_times = collections.OrderedDict()
     dic = 'aaaa'
     master_times.update({dic: []})
@@ -911,26 +882,22 @@ def test_grid(dataset, y_index, y, x_index, x):
         n = n * 60  # time is is minutes not seconds
         master_times[dic].append(n)
 
-    variable = dataset.variables.keys()
-
-    for sub_var in variable:
-
+    net_variable = dataset.variables.keys()
+    netcdf_var = ['PSFC', 'Q2D', 'RAINRATE', 'SWDOWN', 'T2D', 'U2D', 'V2D',
+                  'ACCET', 'FSNO', 'SNEQV', 'SNOWH', 'SNOWT_AVG', 'SOILSAT_TOP']
+    chart_data = []
+    for sub_var in net_variable:
         sub_var_check = sub_var.encode('utf8')
+        # print sub_var
+        # print sub_var_check
+        if sub_var_check in netcdf_var:
+            chart_data.append(parse_netcdf_grid(x_index, x,
+                                           dataset.variables[sub_var],
+                                           master_times, y_index, y))
+        # elif 'RAINRATE' in sub_var_check:
+        #     print 'gir'
 
-        if 'time' not in sub_var_check:
-            # if 'feature_id' not in sub_var_check:
-            if 'RAINRATE' in sub_var_check:
-
-                # chart_data = parse_netcdf(index, id, dataset.variables[sub_var], master_times)
-
-
-                # y_array = dataset.variables['y']
-
-                chart_data = parse_netcdf2(x_index, x,
-                                               dataset.variables[sub_var],
-                                               master_times, y_index, y)
-
-                return chart_data
+    return chart_data
 
 
 def parse_netcdf(index, id, dataset, master_times):
@@ -977,7 +944,6 @@ def parse_netcdf(index, id, dataset, master_times):
     # units = dataset.variables['streamflow'].units
     # nodatavalue =  dataset.variables['streamflow'].missing_value
     # variable_name = dataset.variables['streamflow'].long_name
-    print dataset
     units = dataset.units
     nodatavalue =  dataset.missing_value
     variable_name = dataset.long_name
@@ -997,12 +963,9 @@ def parse_netcdf(index, id, dataset, master_times):
     meta_dic['organization'].update({'':"NOAA"})
 
     # data = dataset.variables['streamflow'][:]
-    print dataset[:]
     data = dataset[:]
     for ele in data:
-        print ele
         v = ele[index]
-        print v
             # v = ele[2]
             # n = ele[1]
             # n = ciso8601.parse_datetime(str(n))
@@ -1024,7 +987,6 @@ def parse_netcdf(index, id, dataset, master_times):
     #     n = float(ele)
     #     n = n*60 # time is is minutes not seconds
     #     master_times[dic].append(n)
-    print master_times
     first_date = master_times[dic][0]
     second_date = master_times[dic][1]
 
@@ -1086,7 +1048,7 @@ def parse_netcdf(index, id, dataset, master_times):
             error]
 
 
-def parse_netcdf2(x_index, x, dataset, master_times, y_index, y):
+def parse_netcdf_grid(x_index, x, dataset, master_times, y_index, y):
     # master_times = []
     master_values = collections.OrderedDict()
     # master_times = collections.OrderedDict()
@@ -1132,8 +1094,7 @@ def parse_netcdf2(x_index, x, dataset, master_times, y_index, y):
     nodatavalue = dataset.missing_value
     variable_name = dataset.long_name
 
-    print nodatavalue
-    print variable_name
+    # print variable_name
 
     datatype = 'Average'
     valuetype = 'Model Simulation Forecast'
@@ -1148,8 +1109,6 @@ def parse_netcdf2(x_index, x, dataset, master_times, y_index, y):
     # data = dataset.variables['streamflow'][:]
 
     data = dataset[:]
-    print data.shape
-    print "numasdfjfhsd;"
     for ele in data:
         values_array = ele[y_index][x_index]
 
@@ -1224,8 +1183,27 @@ def parse_netcdf2(x_index, x, dataset, master_times, y_index, y):
         master_boxplot[item].append(max1)
 
         error = ''
-    return [{
-        'site_name': site_name,
+        forcing_proj4 = '+proj=lcc +lat_1=30 +lat_2=60 +lat_0=40 +lon_0=-97 +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs'
+        wkt_epsg = 4326
+        wkt_str = 'Point({} {})'.format(x, y)
+        x_transformed = wkt_str[1]
+        y_transformed = wkt_str[0]
+        reproject = reproject_wkt_gdal("proj4",
+                                                 forcing_proj4,
+                                                 "epsg",
+                                                 wkt_epsg,
+                                                 wkt_str)
+        reproject = ast.literal_eval(reproject)
+        # print reproject[0]
+        # print reproject[1]
+        # print reproject["coordinates"]
+        lon_lat = reproject["coordinates"]
+
+    return {
+        'site_name': str(lon_lat[1])+', '+ str(lon_lat[0]),
+        'latitude':y_transformed,
+        'longitude':x_transformed,
+        'lon_lat':lon_lat,
         'variable_name': variable_name,
         'units': units,
         'meta_dic': meta_dic,
@@ -1240,9 +1218,9 @@ def parse_netcdf2(x_index, x, dataset, master_times, y_index, y):
         'master_times': master_times,
         'master_boxplot': master_boxplot,
         'master_stat': master_stat,
-        'gridded' : True
-    },
-        error]
+        'gridded': True
+    }
+
 
 
 def waterml_file_path(res_id, xml_id):
@@ -1584,3 +1562,46 @@ def getOAuthHS(request):
     auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
     hs = HydroShare(auth=auth, hostname=hs_hostname)
     return hs
+
+def reproject_wkt_gdal(in_proj_type,
+                       in_proj_value,
+                       out_proj_type,
+                       out_proj_value,
+                       in_geom_wkt):
+
+    # try:
+        # if 'GDAL_DATA' not in os.environ:
+        #     raise Exception("Environment variable 'GDAL_DATA' not found!")
+
+    source = osr.SpatialReference()
+    if in_proj_type.lower() == "epsg":
+        source.ImportFromEPSG(int(in_proj_value))
+    elif in_proj_type.lower() == "proj4":
+        source.ImportFromProj4(in_proj_value)
+    elif in_proj_type.lower() == "esri":
+        source.ImportFromESRI([in_proj_value])
+
+
+    target = osr.SpatialReference()
+    if out_proj_type.lower() == "epsg":
+        target.ImportFromEPSG(out_proj_value)
+    elif out_proj_type.lower() == "proj4":
+        target.ImportFromProj4(out_proj_value)
+    elif out_proj_type.lower() == "esri":
+        target.ImportFromESRI([out_proj_value])
+        # raise Exception("unsupported projection type: " + out_proj_type)
+
+    transform = osr.CoordinateTransformation(source, target)
+
+    geom_gdal = ogr.CreateGeometryFromWkt(in_geom_wkt)
+
+    geom_gdal.Transform(transform)
+    return geom_gdal.ExportToJson()
+
+    # except Exception as ex:
+    #     # logger.error("in_proj_type: {0}".format(in_proj_type))
+    #     # logger.error("in_proj_value: {0}".format(in_proj_value))
+    #     # logger.error("out_proj_type: {0}".format(out_proj_type))
+    #     # logger.error("out_proj_value: {0}".format(out_proj_value))
+    #     # logger.error(str(type(ex)) + " " + ex.message)
+    #     raise ex

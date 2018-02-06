@@ -85,8 +85,6 @@ CUAHSI Time Series Viewer
                             <div class="cssload-dot"></div>
                         </div>
                     </div>
-                    <div id="map" class="map"></div>
-
                      <table id="hs_resource_table" class="display" cellspacing="0" width="100%">
                         <thead>
                         <tr>
@@ -121,6 +119,44 @@ CUAHSI Time Series Viewer
             <!--End modal content-->
         </div>
     </div>
+<!-- Map for National Water Model Gridded Data -->
+<div id="modalNWMMAP" class="modal fade" role="dialog">
+
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Add HydroShare Resource</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="map" class="map"></div>
+                    <p></p>
+                    <div id = "nwm_table" class="dropdown">
+                      <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Variable
+                        <span class="caret"></span>
+                      </button>
+                      <ul id = "nwm_variable" class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                        <!--<li><a href="#">Action</a></li>-->
+                        <!--<li><a href="#">Another action</a></li>-->
+                        <!--<li><a href="#">Something else here</a></li>-->
+                        <!--&lt;!&ndash;<li role="separator" class="divider"></li>&ndash;&gt;-->
+                        <!--<li><a href="#">Separated link</a></li>-->
+                      </ul>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <div class="button-group flex1-0">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" id="btn-NWM-selection" class="btn btn-success btn-upload" onClick = "add_nwm_grid()" >Add</button>
+                    </div>
+                </div>
+            </div>
+            <!--End modal content-->
+        </div>
+    </div>
 <!--End modal-->
 {{block.super}}
 
@@ -131,7 +167,7 @@ CUAHSI Time Series Viewer
 <!--
 <!--<div id = chart_cont>-->
 <!--<div id ='chartDiv'></div>-->
-
+<div id = "map2"></div>
 <div id="error-message"></div>
 <!--<div id="ts-chart" class="highcharts-plot"></div>-->
 <div id = 'chart' style='height:600px;width:100% '>
@@ -148,6 +184,11 @@ CUAHSI Time Series Viewer
     <button id = 'screenshot' type="button" class="btn btn-info "  data-toggle="modal"  style="float: left; position:relative" onClick = "get_screenshot()">
         <span id = 'download_screenshot' data-toggle="tooltip" data-placement="bottom"  >Download as PNG</span>
     </button>
+
+    <!--<button id = 'map_btn' type="button" class="btn btn-info "  data-toggle="modal"  data-target="#modalNWMMAP" style="float: left; position:relative">-->
+        <!--<span id = 'map_span' data-toggle="tooltip" data-placement="bottom"  >Display map in model</span>-->
+    <!--</button>-->
+
     <button type="button" class="btn btn-info "  data-toggle="modal" data-target="#help-modal" style="float: left; position:relative">
         <span id = 'get_data_span' data-toggle="tooltip" data-placement="bottom" title = "Get Data for New Selection" class="glyphicon glyphicon-question-sign"></span>
     </button>

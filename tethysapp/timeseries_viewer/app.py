@@ -51,9 +51,7 @@ class TimeSeriesViewer(TethysAppBase):
                     UrlMap(name='hydroshare',
                            url='hydroshare',
                            controller='timeseries_viewer.controllers.hydroshare'),
-                    UrlMap(name='test',
-                           url='test',
-                           controller='timeseries_viewer.controllers.test'),
+
                     UrlMap(name='get_hydroshare_res',
                            url='get_hydroshare_res',
                            controller='timeseries_viewer.controllers.get_hydroshare_res')

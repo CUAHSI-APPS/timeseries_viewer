@@ -108,6 +108,8 @@ var series_tracker = []
 var row_tracker = []
 var hs_res_list_loaded = false
 var add_hs_res = []
+var selected_features = null
+var nwm_data = null
 
 $(document).ready(function (callback) {
     // document.getElementById('screenshot').addEventListener('click', function() {
@@ -319,13 +321,16 @@ $(document).ready(function (callback) {
     $("#chart").hide();
     $('#stat_div').hide();
     $('#multiple_units').hide();
-    $("#modalLoadRes").on("show.bs.modal", function () {
+    $("#modalNWMMAP").on("show.bs.modal", function () {
     // Set delay so that resize function will trigger properly
-        loadMap();
+        console.log("Open map div")
         setTimeout(function(){
+                    // loadMap();
+
             console.log('resize')
             $(window).trigger("resize");
-        }, 500);
+
+        }, 800);
     });
 
     addingseries();
@@ -385,7 +390,6 @@ function addingseries(unit_off) {
     //Add selected hs resources to resource list
     res_id =res_id.concat(add_hs_res)
 
-    end_of_resources = res_id.length
     console.log(series_counter)
     console.log('@@@@@@@@@@@@@@@@@@@@@@@')
 
@@ -435,22 +439,30 @@ function addingseries(unit_off) {
                 if (error != ''){show_error(error)}
                 else {
                     var chart = $("#chartContainer").CanvasJSChart()
-                    json = json.data
+                    json_data = json.data
+                    nwm_data = json.gridded_data
+                    if (json.gridded_data.length != 0){
+                        console.log(json)
+                        $('#modalNWMMAP').modal('show')
+                        setTimeout(function(){
+                    // loadMap();
+                            nwm = loadMap(json.gridded_data);
+                            console.log('resize')
+                            $(window).trigger("resize");
+                        }, 800);
+                    }
+
                     console.log(json)
                     console.log(res_id.length)
-                    var json_len = json.length
-                    end_of_resources = end_of_resources + json_len -1
-                    for (series in json) {
+                    var json_len = json_data.length
+                    for (series in json_data) {
                         //number of res_ids
-
-
                         console.log('start series')
                         // if (res_id_counter == series_length){
                         //     end_of_data = true
                         // }
-                        plot_data(chart, res_id[id], series_counter, unit_off, id_qms, json[series])
+                        plot_data(res_id[id], unit_off, id_qms, json_data[series])
                         // series_length = series_length+1
-
                     }
                 }
             },
@@ -465,8 +477,9 @@ function addingseries(unit_off) {
 }
 
 
-function plot_data(chart, res_id, end_of_resources1, unit_off,id_qms,data){
+function plot_data(res_id, unit_off,id_qms,data){
     json = data
+    var chart = $("#chartContainer").CanvasJSChart()
     var xtime = []
     var end_of_subresources =false
     //console.log(json)
@@ -490,14 +503,15 @@ function plot_data(chart, res_id, end_of_resources1, unit_off,id_qms,data){
 
     var counter =0
     console.log(Object.keys(master_values).length)
-    end_of_resources = Object.keys(master_values).length + end_of_resources -1
+    console.log(end_of_resources)
+    end_of_resources = Object.keys(master_values).length + end_of_resources
+    console.log(end_of_resources)
     id_qms_a_split = id_qms.split('aa')//identifier based upon url parameters
     var counter1 = 0
     console.log(master_values)
 
     for (val in master_values)//this loop deals with any parameters that are not specified in the url query
     {
-
         meta1 = val.split("aa");// an identifier based upon data in file
         if (id_qms != 'not_cuahsi')
         {
@@ -615,14 +629,41 @@ function plot_data(chart, res_id, end_of_resources1, unit_off,id_qms,data){
             var utc_offset = temp_date.getTimezoneOffset()*1000*60
             for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
             {
-                var date_value = y_yval[i]
+                var date_value = m_xval[i]
                 var actual_date = (date_value*1000+utc_offset)
                 var yval = null
-                if (m_yval[i]!=None){
+                if (m_yval[i]!="None"){
                     yval = m_yval[i]
                 }
                 xtime.push({x:actual_date , y: yval})
             }
+
+            var all_null = true
+            for (i = 0; i < m_yval.length; i++) {
+                if (m_yval[i] != null) {
+                    all_null = false
+                    break
+                }
+
+
+                else {
+                    console.log('null')
+                }
+            }
+            if(all_null){
+                console.log(end_of_resources)
+                end_of_resources = end_of_resources - 1
+                console.log(end_of_resources)
+                console.log('everything is null')
+                if (0==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
+                {
+                    display_table_chart(number)
+                }
+                else{return}
+
+            }
+
+
             data1 = xtime
             if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
             {
@@ -1307,21 +1348,168 @@ function gridlines(ymax,ymin){
 
     return {'maxview':maxview,'minview':minview,'interval':interval}
 }
-function loadMap () {
+function loadMap (graph_data) {
+    var lat = []
+    var long = []
+
+    console.log('Creating new map')
+    // var map = new ol.Map({
+    //
+    //     target: 'map',
+    //     layers: [
+    //       new ol.layer.Tile({
+    //         source: new ol.source.OSM()
+    //       }),
+    //         new ol.layer.Vector
+    //     ],
+    //     view: new ol.View({
+    //       center: ol.proj.fromLonLat([-90, 40]),
+    //       zoom: 4
+    //     })
+    //   });
+    var nwm_var_list = null
+    for (site in graph_data[0]){
+        // nwm_var_list.append(graph_data[0][site]['variable_name'])
+        $("#nwm_variable").append("<li><a href=\"#\">"+graph_data[0][site]['variable_name']+"</a></li>")
+    }
+    // $("#nwm_table").append(' <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">\n' +
+    //     '                        Variable\n' +
+    //     '                        <span class="caret"></span>\n' +
+    //     '                      </button>\n' +
+    //     '                      <ul id = "nwm_variable" class="dropdown-menu" aria-labelledby="dropdownMenu1">\n' +
+    //     '                        <li><a href="#">testing</a></li>\n' +
+    //     '                        <li><a href="#">variable</a></li>\n' +
+    //     '                        <li><a href="#">Something else here</a></li>\n' +
+    //     '                        <!--<li role="separator" class="divider"></li>-->\n' +
+    //     '                        <li><a href="#">Separated link</a></li>\n' +
+    //     '                      </ul>')
+    // $("#nwm_variable").text('<li><a href=\"#\">Action</a></li>')
+    $("#nwm_table a").click(function(e){
+        e.preventDefault(); // cancel the link behaviour
+        var selText = $(this).text();
+        $("#dropdownMenu1").text("")
+        $("#dropdownMenu1").append(selText+'<span class="caret"></span>');
+    });
+
+    var icon_features = []
+    console.log(graph_data)
+    for (series in graph_data){
+        var center = [-85.32, 42.4]
+    //     lat.push(graph_data[series]['latitude'])
+    //     long.push(graph_data[series]['longitude'])
+    //     var lonLat = new OpenLayers.LonLat(longitude, latitude)
+        var point = new ol.geom.Point(graph_data[series][0]['lon_lat']);
+        // point.transform('EPSG:4326', 'EPSG:900913');
+        // I tried it the other way too, but doesn't seem to work
+        // point.transform('EPSG:4326', 'EPSG:900913')
+        center = point
+        var iconFeature = new ol.Feature({
+            geometry: point,
+            name: graph_data[series][0]['lon_lat']
+        });
+
+        icon_features.push(iconFeature);
+    };
+
+    var vectorSource = new ol.source.Vector({
+       features: icon_features
+    });
+
+    var vectorLayer = new ol.layer.Vector({
+       source: vectorSource
+    });
+
+    var view = new ol.View({
+        center: [-85.32, 42.4],
+        zoom: 5,
+        projection: 'EPSG:4326'
+    });
+
     var map = new ol.Map({
-        target: 'map',
         layers: [
-          new ol.layer.Tile({
-            source: new ol.source.OSM()
-          })
+           new ol.layer.Tile({
+               source: new ol.source.OSM()
+           }),
+           vectorLayer
         ],
-        view: new ol.View({
-          center: ol.proj.fromLonLat([37.41, 8.82]),
-          zoom: 4
+        target: 'map',
+        controls: ol.control.defaults({
+            attributionOptions:  ({
+            collapsible: false
         })
-      });
+      }),
+      view: view
+    });
+    $('#map').data('map', map);
+    var select = new ol.interaction.Select();
+    //make sure you add select interaction to map
+    map.addInteraction(select);
+    selected_features = select.getFeatures();
+    console.log(selected_features)
+
+    select.on('select', function(evt) {
+        console.info(evt.selected[0]);
+        console.log(evt)
+        console.log(evt.selected)
+        console.log(selected_features.getArray())
+    });
+    var int_features=selected_features.getLength();
+    console.log(int_features)
+
+
+
+    return "hello"
+
+    // var lat            = 47.35387;
+    // var lon            = 8.43609;
+    // var position       = new ol.LonLat(lon, lat)
+    // var markers = new ol.Layer.Markers( "Markers" );
+    // map.addLayer(markers);
+    // markers.addMarker(new ol.Marker(position));
+    // for (series in graph_data){
+    //     lat.push(graph_data[series]['latitude'])
+    //     long.push(graph_data[series]['longitude'])
+    //     var lonLat = new OpenLayers.LonLat(longitude, latitude)
+    // }
 }
-// Get list of HydroShare Resources
+// Add national water model gridded data
+function add_nwm_grid(){
+    console.log(' the point is selected')
+    // var select =  ol.interaction.Select();
+    // var features = select.getFeatures();
+    // var map = $('#map').data('map');
+    console.log(map)
+    console.log(selected_features.getArray())
+    grid_nwm = selected_features.getArray()
+    // Loops through all selected sites
+    for (site in grid_nwm){
+
+        console.log(grid_nwm[site].getGeometryName())
+        nwm_coor = grid_nwm[site]["P"]["name"]
+        console.log(nwm_coor)
+        console.log(nwm_data)
+        //Loops through all sites and extracts the correct site to plot based on location and variable
+        for (sub_site in nwm_data){
+            // if (nwm_coor == nwm_data[site_var][lon_lat] && nwm_var == nwm_data[site_var][variable_name]){
+            for (var_sub_site in nwm_data[sub_site]){
+
+                console.log(nwm_coor)
+                console.log(nwm_data[sub_site][var_sub_site])
+                if (nwm_coor[0] == nwm_data[sub_site][var_sub_site]["lon_lat"][0] &&nwm_coor[1] == nwm_data[sub_site][var_sub_site]["lon_lat"][1]){
+                    if($("#dropdownMenu1").text()==nwm_data[sub_site][var_sub_site]['variable_name'])
+                    {
+                        res_id = "testing"
+                        series_counter = 1
+                        unit_off = ""
+                        id_qms = "not_cuahsi"
+                        plot_data(res_id, unit_off, id_qms, nwm_data[sub_site][var_sub_site])
+                    }
+                }
+            }
+
+        }
+    }
+}
 function get_list_hs_res(){
     console.log('get hs resources')
 
@@ -1429,26 +1617,32 @@ function get_hs_res(){
                 error = json.error
                 console.log(json.error)
                 var chart = $("#chartContainer").CanvasJSChart()
-                json = json.data
-                console.log(json)
-                len = json.length
+                json_data = json.data
+                console.log(json_data)
+                len = json_data.length
+                nwm_data = json.gridded_data
                 var res_id_counter = 0
                 if (error != ''){show_error(error)}
                 else {
-                    console.log(json[series])
+                    console.log(json_data[series])
                     var series_length = series_counter
-                    for (series in json) {
+                    if (json.gridded_data != null){
+                        console.log(json)
+                        $('#modalNWMMAP').modal('show')
+                        setTimeout(function(){
+                    // loadMap();
+                            nwm = loadMap(json.gridded_data);
+                            console.log('resize')
+                            $(window).trigger("resize");
+                        }, 800);
+                    }
+                    for (series in json_data) {
                         console.log('start series')
                         res_id_counter = res_id_counter + 1
                         console.log(res_id_counter)
                         res_id_counter = res_id_counter + 1
-                        if (res_id_counter == series_length){
-                            end_of_data = true
-                        }
-                        if (json[series]['gridded'] == true) {
-                            console.log('Data is gridded')
-                        }
-                        plot_data(chart, add_hs_res[id], series_counter + len - 1, unit_off, id_qms, json[series], len)
+
+                        plot_data(add_hs_res[id], unit_off, id_qms, json_data[series])
                     }
                 }
 

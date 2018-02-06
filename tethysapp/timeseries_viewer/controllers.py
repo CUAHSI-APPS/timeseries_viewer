@@ -18,6 +18,12 @@ import ast as ast
 import json
 import netCDF4
 from selenium import webdriver
+import shapely.wkt
+import shapely.geometry
+import shapely.ops
+# import pyproj
+from osgeo import ogr
+from osgeo import osr
 # from PyQt4.QtCore import QTimer
 use_hs_client_helper = True
 # Backwards compatibility with older versions of Tethys
@@ -39,20 +45,18 @@ def temp_waterml(request, id):
 
 def home(request):
     """Home controller if page is launched from HydroShare"""
-    utilities.view_counter(request)
-
-    # DRIVER = 'chromedriver'
-    # driver = webdriver.Chrome(DRIVER)
-    # driver.get('https://www.spotify.com')
-    # screenshot = driver.save_screenshot('my_screenshot.png')
-    # driver.quit()
-
+    # utilities.view_counter(request)
+    # forcing_proj4 = '+proj=lcc +lat_1=30 +lat_2=60 +lat_0=40 +lon_0=-97 +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs'
+    # wkt_epsg = 4326
+    # wkt_str = 'Point(917499 318499.9)'
+    # reproject = utilities.reproject_wkt_gdal("proj4",
+    #                                          forcing_proj4,
+    #                                          "epsg",
+    #                                          wkt_epsg,
+    #                                          wkt_str)
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
 
-
-def test():
-    print "d"
 @csrf_exempt
 @never_cache
 def chart_data(request, res_id, src):
