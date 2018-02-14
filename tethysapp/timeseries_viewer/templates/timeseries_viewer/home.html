@@ -64,6 +64,100 @@ CUAHSI Time Series Viewer
         </div>
     </div>
 </div>
+
+<!-- Add HS Resource Modal -->
+<div id="modalLoadRes" class="modal fade" role="dialog">
+
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Add HydroShare Resource</h4>
+                </div>
+                <div class="modal-body">
+                    <div id = loading_hs>
+                        <div class="cssload-loader">
+                            <div class="cssload-dot"></div>
+                            <div class="cssload-dot"></div>
+                            <div class="cssload-dot"></div>
+                            <div class="cssload-dot"></div>
+                            <div class="cssload-dot"></div>
+                        </div>
+                    </div>
+                     <table id="hs_resource_table" class="display" cellspacing="0" width="100%">
+                        <thead>
+                        <tr>
+                            <!--<th></th>-->
+                            <th></th>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Author</th>
+                            <th>Last Updated</th>
+                            <!--<th>Download Data</th>-->
+                        </tr>
+                        </thead>
+                        <tfoot><tr>
+
+                            <th></th>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Author</th>
+                            <th>Last Updated</th>
+                            <!--<th>Download Data</th>-->
+                        </tr></tfoot>
+                    </table>
+
+                </div>
+                <div class="modal-footer">
+                    <div class="button-group flex1-0">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" id="btn-upload-res" class="btn btn-success btn-upload" onClick = "get_hs_res()" >Add</button>
+                    </div>
+                </div>
+            </div>
+            <!--End modal content-->
+        </div>
+    </div>
+<!-- Map for National Water Model Gridded Data -->
+<div id="modalNWMMAP" class="modal fade" role="dialog">
+
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Add HydroShare Resource</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="map" class="map"></div>
+                    <p></p>
+                    <div id = "nwm_table" class="dropdown">
+                      <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                        Variable
+                        <span class="caret"></span>
+                      </button>
+                      <ul id = "nwm_variable" class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                        <!--<li><a href="#">Action</a></li>-->
+                        <!--<li><a href="#">Another action</a></li>-->
+                        <!--<li><a href="#">Something else here</a></li>-->
+                        <!--&lt;!&ndash;<li role="separator" class="divider"></li>&ndash;&gt;-->
+                        <!--<li><a href="#">Separated link</a></li>-->
+                      </ul>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <div class="button-group flex1-0">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" id="btn-NWM-selection" class="btn btn-success btn-upload" onClick = "add_nwm_grid()" >Add</button>
+                    </div>
+                </div>
+            </div>
+            <!--End modal content-->
+        </div>
+    </div>
+<!--End modal-->
 {{block.super}}
 
 {% endblock %}
@@ -73,7 +167,7 @@ CUAHSI Time Series Viewer
 <!--
 <!--<div id = chart_cont>-->
 <!--<div id ='chartDiv'></div>-->
-<!--</div>-->
+<div id = "map2"></div>
 <div id="error-message"></div>
 <!--<div id="ts-chart" class="highcharts-plot"></div>-->
 <div id = 'chart' style='height:600px;width:100% '>
@@ -82,16 +176,43 @@ CUAHSI Time Series Viewer
 
 
 <!--<button class='btn btn-danger' id='reset' >Reset</button>-->
-
 <div id = "stat_div" >
-    <!--<button type="button" class="btn btn-info "  data-toggle="modal" data-target="#help-modal" style="float: right; position:relative">-->
-        <!--<span id = 'get_data_span' data-toggle="tooltip" data-placement="bottom" title = "Get Data for New Selection" class="glyphicon glyphicon-question-sign"></span>-->
+    <!--This button is for adding hydroshare resources-->
+
+    <!--<button type="button" class="btn btn-info "  data-toggle="modal" data-target="#modalLoadRes" style="float: left; position:relative" onClick = "get_list_hs_res()">-->
+        <!--<span id = 'get_hs_resource' data-toggle="tooltip" data-placement="bottom" title = "Add a HydroShare Resource" >Add HydroShare Resource</span>-->
     <!--</button>-->
+    <button id = 'screenshot' type="button" class="btn btn-info "  data-toggle="modal"  style="float: left; position:relative" onClick = "get_screenshot()">
+        <span id = 'download_screenshot' data-toggle="tooltip" data-placement="bottom"  >Download as PNG</span>
+    </button>
+
+    <!--<button id = 'map_btn' type="button" class="btn btn-info "  data-toggle="modal"  data-target="#modalNWMMAP" style="float: left; position:relative">-->
+        <!--<span id = 'map_span' data-toggle="tooltip" data-placement="bottom"  >Display map in model</span>-->
+    <!--</button>-->
+
+    <button type="button" class="btn btn-info "  data-toggle="modal" data-target="#help-modal" style="float: left; position:relative">
+        <span id = 'get_data_span' data-toggle="tooltip" data-placement="bottom" title = "Get Data for New Selection" class="glyphicon glyphicon-question-sign"></span>
+    </button>
+    <a id="download" style="display:none">Download as image</a>
     <!--<div>*All times are displayed in local time</div>-->
-    <table id="data_table" class="display" cellspacing="0" width="100%">
+    <table id="data_table" class="display" cellspacing="0" width="100%" style="">
         <thead>
         <tr>
+            <th> <div style='text-align:center'><input class = 'checkbox' id ='master_chk' name ='master_chk' data-resid =" + res_id
+                    + " type='checkbox' onClick ='series_visiblity_toggle(this.id,this.name);'checked = 'checked'></div></th>
+            <!--<th></th>-->
             <th></th>
+            <th>Organization</th>
+            <th>Site Name</th>
+            <th>Variable</th>
+            <th>Variable Unit</th>
+            <th>Quality Control</th>
+            <th>Value Count</th>
+            <!--<th>Download Data</th>-->
+        </tr>
+        </thead>
+        <tfoot><tr>
+            <th> </th>
             <th></th>
             <th>Organization</th>
             <th>Site Name</th>
@@ -101,16 +222,14 @@ CUAHSI Time Series Viewer
             <th>Value Count</th>
 
             <!--<th>Download Data</th>-->
-        </tr>
-        </thead>
+        </tr></tfoot>
     </table>
     <div id = 'multiple_units'></div>
 </div>
 
 
-
+<div id = print_div style="display:none"></div>
 <div id = loading>
-
     <div class="cssload-loader">
         <div class="cssload-dot"></div>
         <div class="cssload-dot"></div>
@@ -134,18 +253,28 @@ CUAHSI Time Series Viewer
 <script src="/static/tethys_gizmos/vendor/highcharts/js/highcharts-more.js"></script>
 <script src="/static/tethys_gizmos/vendor/highcharts/js/modules/exporting.js"></script>
 
-<link href = 'https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css' rel ='stylesheet'>
 <script src="{% static 'timeseries_viewer/js/main.js' %}"></script>
 
 <script src="{% static 'timeseries_viewer/js/canvasjs.min.js' %}" type="text/javascript"></script>
 <script src="{% static 'timeseries_viewer/js/jquery.canvasjs.min.js' %}" type="text/javascript"></script>
 
 <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/1.4.2/js/buttons.print.min.js"></script>
+<link href = 'https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css' rel ='stylesheet'>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.10.16/api/column().title().js"></script>
 
 <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
 <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+
+<script src="https://openlayers.org/en/v4.5.0/build/ol.js" type="text/javascript"></script>
+<link rel="stylesheet" href="https://openlayers.org/en/v4.5.0/css/ol.css" type="text/css">
+
+<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">-->
 {{ block.super }}
 {% endblock %}
 
