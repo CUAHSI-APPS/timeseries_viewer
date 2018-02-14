@@ -1282,10 +1282,12 @@ def parse_ts_layer(path):
         data = f.read()
     data = data.encode(encoding='UTF-8')
     data = data.replace("'", '"')
-    json_data = json.loads(data)
+    json_data = json.loads(data)    
     json_data = json_data["timeSeriesReferenceFile"]
     layer = json_data['referencedTimeSeries']
+   
     for sub in layer:
+      
         ref_type = sub['requestInfo']['refType']
         service_type = sub['requestInfo']['serviceType']
         url = sub['requestInfo']['url']
@@ -1298,7 +1300,6 @@ def parse_ts_layer(path):
             if service_type == 'SOAP':
                 print 'soap'
                 if 'nasa' in url:
-                    # start_date = '2016-01-02T01:00:05+00:00'
                     headers = {'content-type': 'text/xml'}
                     body = """<?xml version="1.0" encoding="utf-8"?>
                         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
