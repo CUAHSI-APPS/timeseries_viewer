@@ -103,8 +103,7 @@ def parse_1_0_and_1_1(root):
     master_stat'
     master_data_values
     """
-    print type(root)
-    print '!!!!!!!!!!!!'
+
     # print 'begin parse'
     # print time.ctime()
     root_tag = root.tag.lower()
@@ -1201,8 +1200,8 @@ def parse_netcdf_grid(x_index, x, dataset, master_times, y_index, y):
 
     return {
         'site_name': str(lon_lat[1])+', '+ str(lon_lat[0]),
-        'latitude':y_transformed,
-        'longitude':x_transformed,
+        'latitude':lon_lat[1],
+        'longitude':lon_lat[0],
         'lon_lat':lon_lat,
         'variable_name': variable_name,
         'units': units,

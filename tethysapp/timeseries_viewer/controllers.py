@@ -44,6 +44,9 @@ def temp_waterml(request, id):
 
 
 def home(request):
+    message = request.GET.getlist('WofUri')
+    print "!!!!!!!!!!!!!1"
+    print message
     """Home controller if page is launched from HydroShare"""
     # utilities.view_counter(request)
     # forcing_proj4 = '+proj=lcc +lat_1=30 +lat_2=60 +lat_0=40 +lon_0=-97 +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs'
