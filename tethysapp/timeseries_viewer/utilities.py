@@ -138,7 +138,6 @@ def parse_1_0_and_1_1(root):
             # lists to store the time-series data
 
             # iterate through xml document and read all values
-            print root_tag
             for element in root.iter():
                 bracket_lock = -1
                 if '}' in element.tag:
@@ -225,7 +224,6 @@ def parse_1_0_and_1_1(root):
                             meta_dic['source'].update({m_code: m_des})
                             meta_dic['organization'].update({m_code: m_org})
                         if "qualitycontrollevel" == tag.lower():
-                            print tag
                             try:
                                 qlc = element.attrib['qualityControlLevelID']
                             except:
@@ -237,7 +235,6 @@ def parse_1_0_and_1_1(root):
                                         'qualityControlLevelID']
                                     m_code = m_code.replace(" ", "")
                                 if 'qualitycontrollevelcode' in subele.tag.lower():
-                                    print subele.text
                                     m_code1 = subele.text
                                     if m_code1 ==None:
                                         m_code1 = m_code
@@ -503,7 +500,6 @@ def parse_2_0(root):  # waterml 2 has not been implemented in the viewer at this
                             for a in e.attrib:
                                 if 'title' in a:
                                     method = e.attrib[a]
-                print element.tag
                 if 'organization' in element.tag:
                     organization = element.text
                 if 'definition' in element.tag:
@@ -792,7 +788,6 @@ def unzip_waterml(request, res_id, src):
                 data_for_chart.append(chart_data[0])
                 error = chart_data[1]
         elif file_type == 'sqlite':
-            print "sqlite!!!!!!!!!!!!!!!!!!!!!!!!!"
             conn = sqlite3.connect(file_path)
             c = conn.cursor()
             c.execute('SELECT Results.ResultID FROM Results')
@@ -947,8 +942,6 @@ def parse_netcdf(index, id, dataset, master_times):
     nodatavalue =  dataset.missing_value
     variable_name = dataset.long_name
 
-    print nodatavalue
-    print variable_name
 
 
     datatype = 'Average'

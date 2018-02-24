@@ -44,19 +44,6 @@ def temp_waterml(request, id):
 
 
 def home(request):
-    message = request.GET.getlist('WofUri')
-    print "!!!!!!!!!!!!!1"
-    print message
-    """Home controller if page is launched from HydroShare"""
-    # utilities.view_counter(request)
-    # forcing_proj4 = '+proj=lcc +lat_1=30 +lat_2=60 +lat_0=40 +lon_0=-97 +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs'
-    # wkt_epsg = 4326
-    # wkt_str = 'Point(917499 318499.9)'
-    # reproject = utilities.reproject_wkt_gdal("proj4",
-    #                                          forcing_proj4,
-    #                                          "epsg",
-    #                                          wkt_epsg,
-    #                                          wkt_str)
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
 

@@ -112,7 +112,7 @@ var selected_features = null
 var nwm_data = null
 
 $(document).ready(function (callback) {
-    console.log("ready")
+    //console.log("ready")
     var table = $('#data_table').DataTable({
         "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
 
@@ -303,11 +303,11 @@ $(document).ready(function (callback) {
     $('#multiple_units').hide();
     $("#modalNWMMAP").on("show.bs.modal", function () {
     // Set delay so that resize function will trigger properly
-        console.log("Open map div")
+        //console.log("Open map div")
         setTimeout(function(){
                     // loadMap();
 
-            console.log('resize')
+            //console.log('resize')
             $(window).trigger("resize");
 
         }, 800);
@@ -320,7 +320,7 @@ function addingseries(unit_off) {
     var src = find_query_parameter("src");
     var series_counter =0
     var source = find_query_parameter('Source')
-    console.log(source)
+    //console.log(source)
     // var end_of_resources = false
     var chart = $("#chartContainer").CanvasJSChart()
     var counter = 0
@@ -331,7 +331,7 @@ function addingseries(unit_off) {
     $("#chartContainer").CanvasJSChart(chart_options);
 
     if (source[0] =='cuahsi'){
-        console.log('cuahsi')
+        //console.log('cuahsi')
         src = source[0]
         res_id=find_query_parameter('WofUri')
         var quality=find_query_parameter('QCLID')
@@ -397,7 +397,7 @@ function addingseries(unit_off) {
             url: data_url,
             success: function (json) {
                 var dseries =[]
-                console.log(json)
+                //console.log(json)
                 error = json.error
                 if (error != ''){show_error(error)}
                 else {
@@ -405,22 +405,22 @@ function addingseries(unit_off) {
                     json_data = json.data
                     nwm_data = json.gridded_data
                     if (json.gridded_data.length != 0){
-                        console.log(json)
+                        //console.log(json)
                         $('#modalNWMMAP').modal('show')
                         setTimeout(function(){
                     // loadMap();
                             loadMap(json.gridded_data);
-                            console.log('resize')
+                            //console.log('resize')
                             $(window).trigger("resize");
                         }, 800);
                     }
 
-                    console.log(json)
-                    console.log(res_id.length)
+                    //console.log(json)
+                    //console.log(res_id.length)
                     var json_len = json_data.length
                     for (series in json_data) {
                         //number of res_ids
-                        console.log('start series')
+                        //console.log('start series')
                         // if (res_id_counter == series_length){
                         //     end_of_data = true
                         // }
@@ -430,9 +430,9 @@ function addingseries(unit_off) {
                 }
             },
             error: function (xhr,status,error) {
-                console.log(xhr)
-                console.log(status)
-                console.log(error)
+                //console.log(xhr)
+                //console.log(status)
+                //console.log(error)
                 show_error("Error loading time series from " + res_id);
             }
         });
@@ -457,13 +457,13 @@ function plot_data(res_id, unit_off,id_qms,data){
     var val1=[]
 
     var counter =0
-    console.log(Object.keys(master_values).length)
-    console.log(end_of_resources)
+    //console.log(Object.keys(master_values).length)
+    //console.log(end_of_resources)
     end_of_resources = Object.keys(master_values).length + end_of_resources
-    console.log(end_of_resources)
+    //console.log(end_of_resources)
     id_qms_a_split = id_qms.split('aa')//identifier based upon url parameters
     var counter1 = 0
-    console.log(master_values)
+    //console.log(master_values)
 
     for (val in master_values)//this loop deals with any parameters that are not specified in the url query
     {
@@ -494,7 +494,7 @@ function plot_data(res_id, unit_off,id_qms,data){
         }
         counter1 = counter1+1
     }
-    console.log(master_values)
+    //console.log(master_values)
     if (bad_meta_counter == Object.keys(master_values).length) {
         bad_meta = true
     }
@@ -596,23 +596,15 @@ function plot_data(res_id, unit_off,id_qms,data){
                     all_null = false
                     break
                 }
-                else {
-                    console.log('null')
-                }
             }
             if(all_null){
-                console.log(end_of_resources)
                 end_of_resources = end_of_resources - 1
-                console.log(end_of_resources)
-                console.log('everything is null')
                 if (0==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
                 {
                     display_table_chart(number)
                 }
                 else{return}
-
             }
-
 
             data1 = xtime
             if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
@@ -765,7 +757,6 @@ function plot_data(res_id, unit_off,id_qms,data){
                 chk_units:units,
                 samplemedium: samplemedium,
                 count: count,
-                //download:download,
                 quality: quality,
                 method: method,
                 datatype: datatype,
@@ -782,13 +773,13 @@ function plot_data(res_id, unit_off,id_qms,data){
             }
             row_tracker.push(dataset)
             number = number + 1;
-            console.log(number)
+            //console.log(number)
         }
         counter_all =counter_all+1
-        console.log(end_of_resources)
-        console.log("yyyyyyyyyyyyy")
-        console.log(counter_all)
-        console.log(end_of_resources - counter_all)
+        //console.log(end_of_resources)
+        //console.log("yyyyyyyyyyyyy")
+        //console.log(counter_all)
+        //console.log(end_of_resources - counter_all)
         if (0==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
         {
             display_table_chart(number)
@@ -799,6 +790,7 @@ function plot_data(res_id, unit_off,id_qms,data){
 }
 // Take all data and display it in the table and graph
 function display_table_chart(number){
+    //console.log("show only run this once!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     var chart = $("#chartContainer").CanvasJSChart()
     var table = $('#data_table').DataTable();//defines the primary table
         // console.log(row_tracker)
@@ -812,7 +804,7 @@ function display_table_chart(number){
             table.row.add(row_tracker[row]).draw();
 
         }
-        console.log('adding data to chart')
+        //console.log('adding data to chart')
         // console.log(series_tracker)
         // console.log(ymax)
         // console.log(ymin)
@@ -933,17 +925,10 @@ function series_visiblity_toggle(id, name) {
         if (document.getElementById("master_chk").checked==true){
             //turn on everything
             for (series in chart1.options.data){
-                console.log(series)
-                console.log(unit1)
-                console.log(unit2)
-
-
 
                 row_up = table.rows().data()[series]
                 legend = row_up.legend
                 chk_unit = row_up.chk_units
-                console.log(chk_unit)
-
                 // table.fnUpdate(row_up,series,undefined,false);
 
                 // var chk_unit = document.getElementById(series).name;
@@ -959,13 +944,13 @@ function series_visiblity_toggle(id, name) {
             }
         }
         else{
-            console.log('turn off')
+            //console.log('turn off')
             //turn off everything
             for (series in chart1.options.data){
                 row_up = table.rows().data()[series]
                 legend = row_up.legend
                 row_up.legend = legend.replace('checked','unchecked')
-                console.log(series)
+                //console.log(series)
                 chart1.options.data[series].visible = false
                 // document.getElementById(series).checked = false
                 row_up.legend = legend.replace('checked','unchecked')
@@ -1258,7 +1243,7 @@ function gridlines(ymax,ymin){
     return {'maxview':maxview,'minview':minview,'interval':interval}
 }
 function loadMap (graph_data) {
-    console.log('Creating new map')
+    //console.log('Creating new map')
     var nwm_var_list = null
     for (site in graph_data[0]){
         // nwm_var_list.append(graph_data[0][site]['variable_name'])
@@ -1273,7 +1258,7 @@ function loadMap (graph_data) {
     });
 
     var icon_features = []
-    console.log(graph_data)
+    //console.log(graph_data)
     var cen_lat = []
     var cen_long = []
     for (series in graph_data){
@@ -1330,20 +1315,20 @@ function loadMap (graph_data) {
 }
 // Add national water model gridded data
 function add_nwm_grid(){
-    console.log(' the point is selected')
+    //console.log(' the point is selected')
     // var select =  ol.interaction.Select();
     // var features = select.getFeatures();
     // var map = $('#map').data('map');
-    console.log(map)
-    console.log(selected_features.getArray())
+    //console.log(map)
+    //console.log(selected_features.getArray())
     grid_nwm = selected_features.getArray()
     // Loops through all selected sites
     for (site in grid_nwm){
 
-        console.log(grid_nwm[site].getGeometryName())
+        //console.log(grid_nwm[site].getGeometryName())
         nwm_coor = grid_nwm[site]["P"]["name"]
-        console.log(nwm_coor)
-        console.log(nwm_data)
+        //console.log(nwm_coor)
+        //console.log(nwm_data)
         //Loops through all sites and extracts the correct site to plot based on location and variable
         for (sub_site in nwm_data){
             // if (nwm_coor == nwm_data[site_var][lon_lat] && nwm_var == nwm_data[site_var][variable_name]){
@@ -1365,7 +1350,7 @@ function add_nwm_grid(){
     }
 }
 function get_list_hs_res(){
-    console.log('get hs resources')
+    //console.log('get hs resources')
 
 
     hs_res_ids =''
@@ -1373,7 +1358,7 @@ function get_list_hs_res(){
     // hs_res_list_loaded = true
     if (hs_res_list_loaded == false) {
         setTimeout(function(){
-            console.log('resize')
+            //console.log('resize')
             $(window).trigger("resize");
 
         var map = new ol.Map({
@@ -1414,7 +1399,7 @@ function get_list_hs_res(){
                     var table_hs = $('#hs_resource_table').DataTable();//defines the primary table
                     // console.log(row_tracker)
                     json = json.data
-                    console.log(json)
+                    //console.log(json)
                     len = json.length
                     for (series in json) {
                         table_hs.row.add(json[series]).draw();
@@ -1469,31 +1454,31 @@ function get_hs_res(){
                 //console.log(json)
                 var dseries =[]
                 error = json.error
-                console.log(json.error)
+                //console.log(json.error)
                 var chart = $("#chartContainer").CanvasJSChart()
                 json_data = json.data
-                console.log(json_data)
+                //console.log(json_data)
                 len = json_data.length
                 nwm_data = json.gridded_data
                 var res_id_counter = 0
                 if (error != ''){show_error(error)}
                 else {
-                    console.log(json_data[series])
+                    //console.log(json_data[series])
                     var series_length = series_counter
                     if (json.gridded_data != null){
-                        console.log(json)
+                        //console.log(json)
                         $('#modalNWMMAP').modal('show')
                         setTimeout(function(){
                     // loadMap();
                             nwm = loadMap(json.gridded_data);
-                            console.log('resize')
+                            //console.log('resize')
                             $(window).trigger("resize");
                         }, 800);
                     }
                     for (series in json_data) {
-                        console.log('start series')
+                        //console.log('start series')
                         res_id_counter = res_id_counter + 1
-                        console.log(res_id_counter)
+                        //console.log(res_id_counter)
                         res_id_counter = res_id_counter + 1
 
                         plot_data(add_hs_res[id], unit_off, id_qms, json_data[series])
@@ -1520,31 +1505,36 @@ function check_box(id){
     else{
         $(selected_box).attr('status',"unchecked")
         var index = add_hs_res.indexOf(id);
-        console.log(index)
+        //console.log(index)
         if (index > -1) {
             add_hs_res.splice(index, 1);
         }
     }
-    console.log(add_hs_res)
+    //console.log(add_hs_res)
 }
 // shows an error message in the chart title
 function show_error(error_message) {
     $('#loading').hide();
-    console.log(error_message);
+    //console.log(error_message);
     $('#error-message').text(error_message);
-    console.log(series_tracker)
+    //console.log(series_tracker)
     if (series_tracker.length >0){
         finishloading()
     }
 }
 function get_screenshot() {
+    var table = $('#data_table').DataTable()
+    var curr_table_len = table.page.len()
+    // Display all time series in table
+    table.page.len(-1).draw()
+
     var myDiv = document.getElementById('app-content-wrapper');
     myDiv.scrollTop = 0;
     $("tfoot").hide()
-    console.log(screen.width)
+    //console.log(screen.width)
     html2canvas(document.body, {
         onrendered: function (canvas) {
-            console.log(canvas)
+            //console.log(canvas)
             canvas.setAttribute("id", "canvas_print")
 
             var print = document.getElementById('print_div');
@@ -1554,11 +1544,11 @@ function get_screenshot() {
             myDiv.scrollTop = 0;
             print.appendChild(canvas);
             var canvas = document.getElementById("canvas_print");
-            console.log(link)
+            //console.log(link)
             link.href = canvas.toDataURL("image/png");
             // link.href    = canvas.toDataURL();
             link.download = 'data_series_viewer.png'
-            console.log(link)
+            //console.log(link)
             $("#download")[0].click()
             $("tfoot").show()
         },
@@ -1588,5 +1578,9 @@ function get_screenshot() {
     //     height: 1300
     // });
     // console.log(canvas)
+    setTimeout(function() {
+        table.page.len(curr_table_len).draw()
+    }, 500)
+
 }
 
