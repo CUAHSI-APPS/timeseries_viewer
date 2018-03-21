@@ -123,7 +123,7 @@ def parse_1_0_and_1_1(root):
     x_value = []
     y_value = []
     master_counter = True
-    nodata = "-9999"  # default NoData value. The actual NoData value is read from the XML noDataValue tag
+    nodata = -9999  # default NoData value. The actual NoData value is read from the XML noDataValue tag
     timeunit = None
     sourcedescription = None
     timesupport = None
@@ -157,7 +157,7 @@ def parse_1_0_and_1_1(root):
 
                                 unit_is_set = True
                         # print units
-                        if 'noDataValue' == tag:
+                        if 'nodatavalue' == tag.lower():
                             nodata = float(element.text)
                         if 'siteName' == tag:
                             site_name = element.text
@@ -1396,6 +1396,8 @@ def parse_odm2(file_path, result_num):
         'WHERE Results.ResultID=' + result_num + ' '
                                                  'AND Results.UnitsID = Units.UnitsID AND Results.VariableID = Variables.VariableID')
     var_unit = c.fetchall()
+    print var_unit
+    print 'sqlite!!!'
     for unit in var_unit:
         variable_name = unit[0]
         units = unit[1]
@@ -1438,8 +1440,22 @@ def parse_odm2(file_path, result_num):
         'AND Affiliations.OrganizationID = Organizations.OrganizationID ')
     # c.execute('Select *')
     organizations = c.fetchall()
+    print 'methods'
+    print 'too many methods'
+    # print methods
+    print 'quality control'
+    print qualityControl
+    print 'organizations'
+    print organizations
+    dic = 'aaaa'
+    if organizations ==[]:
+        organizations = [(1,'test','test')]
+    if qualityControl == []:
+        qualityControl = [(1, 'test', 'test')]
+    if methods == []:
+        methods = [(1, 'test', 'test', 'test', 'test')]
     for meth, qual, org in zip(methods, qualityControl, organizations):
-
+        print 'looping meth q and o'
         result_id = str(meth[0])
         m_code = meth[1]
         m_des = meth[2]
@@ -1461,6 +1477,8 @@ def parse_odm2(file_path, result_num):
         meta_dic['organization'].update({s_code: o_org})
 
         dic = str(q_code) + 'aa' + str(m_code) + 'aa' + str(s_code)
+        print dic
+        print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!1dic"
         # dic = dic.replace(" ","")
         if dic not in meth_qual:
             # meth_qual.append(dic)
@@ -1562,6 +1580,7 @@ def getOAuthHS(request):
     auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
     hs = HydroShare(auth=auth, hostname=hs_hostname)
     return hs
+
 
 def reproject_wkt_gdal(in_proj_type,
                        in_proj_value,

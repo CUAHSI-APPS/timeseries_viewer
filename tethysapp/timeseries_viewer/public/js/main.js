@@ -1,20 +1,20 @@
 var data = [];
 var unit_tracker = [];
-var unit1 = null
+var unit1 = null;
 var unit2 = null;
 var resid_on = null;
 //ymax and ymin store the maximum y value for each axis.
-var ymax =0
-var ymin=0
-var y2max=0
-var y2min=0
+var ymax =0;
+var ymin=0;
+var y2max=0;
+var y2min=0;
 //tool tip for the quality control column
-var quality_title=null
-var number = 0
-var counter_all =0
-var end_of_resources = 0
-var unit3 = ''
-var res = null
+var quality_title=null;
+var number = 0;
+var counter_all =0;
+var end_of_resources = 0;
+var unit3 = '';
+var res = null;
 // here we set up the configuration of the CanvasJS chart
 // 269 maximally distinct colors
 var color_selection = [ "#FF4A46", "#008941", "#006FA6", "#A30059","#000000", "#FFFF00", "#1CE6FF", "#FF34FF",
@@ -54,7 +54,7 @@ var color_selection = [ "#FF4A46", "#008941", "#006FA6", "#A30059","#000000", "#
         "#061203", "#DFFB71", "#868E7E", "#98D058", "#6C8F7D", "#D7BFC2", "#3C3E6E", "#D83D66",
 
         "#2F5D9B", "#6C5E46", "#D25B88", "#5B656C", "#00B57F", "#545C46", "#866097", "#365D25",
-        "#252F99", "#00CCFF", "#674E60", "#FC009C", "#92896B"]
+        "#252F99", "#00CCFF", "#674E60", "#FC009C", "#92896B"];
 var chart_options = {
     zoomEnabled: true,
     height: 600,
@@ -104,15 +104,15 @@ var chart_options = {
     }
 };
 var popupDiv = $('#welcome-popup');
-var series_tracker = []
-var row_tracker = []
-var hs_res_list_loaded = false
-var add_hs_res = []
-var selected_features = null
-var nwm_data = null
+var series_tracker = [];
+var row_tracker = [];
+var hs_res_list_loaded = false;
+var add_hs_res = [];
+var selected_features = null;
+var nwm_data = null;
 
 $(document).ready(function (callback) {
-    console.log("ready")
+    console.log("ready");
     var table = $('#data_table').DataTable({
         "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
 
@@ -318,21 +318,20 @@ $(document).ready(function (callback) {
 
 function addingseries(unit_off) {
     var src = find_query_parameter("src");
-    var series_counter =0
-    var source = find_query_parameter('Source')
-    console.log(source)
+    var series_counter =0;
+    var source = find_query_parameter('Source');
     // var end_of_resources = false
-    var chart = $("#chartContainer").CanvasJSChart()
-    var counter = 0
-    var res_id =null
-    var xml_rest_id=null
-    var sources = []
-    CanvasJS.addColorSet("greenShades",color_selection)
+    var chart = $("#chartContainer").CanvasJSChart();
+    var counter = 0;
+    var res_id =null;
+    var xml_rest_id=null;
+    var sources = [];
+    CanvasJS.addColorSet("greenShades",color_selection);
     $("#chartContainer").CanvasJSChart(chart_options);
 
     if (source[0] =='cuahsi'){
-        console.log('cuahsi')
-        src = source[0]
+        console.log('cuahsi');
+        src = source[0];
         res_id=find_query_parameter('WofUri')
         var quality=find_query_parameter('QCLID')
         var method=find_query_parameter('MethodId')
@@ -414,9 +413,6 @@ function addingseries(unit_off) {
                             $(window).trigger("resize");
                         }, 800);
                     }
-
-                    console.log(json)
-                    console.log(res_id.length)
                     var json_len = json_data.length
                     for (series in json_data) {
                         //number of res_ids
@@ -450,20 +446,17 @@ function plot_data(res_id, unit_off,id_qms,data){
     //var master_counter = json.master_counter;
     var master_times = json.master_times;
     var meta_dic = json.meta_dic;
-    var master_boxplot = json.master_boxplot
-    var master_stat = json.master_stat
-    var bad_meta = false
-    var bad_meta_counter = 0
-    var val1=[]
+    var master_boxplot = json.master_boxplot;
+    var master_stat = json.master_stat;
+    var bad_meta = false;
+    var bad_meta_counter = 0;
+    var val1=[];
 
-    var counter =0
-    console.log(Object.keys(master_values).length)
-    console.log(end_of_resources)
+    var counter =0;
     end_of_resources = Object.keys(master_values).length + end_of_resources
-    console.log(end_of_resources)
     id_qms_a_split = id_qms.split('aa')//identifier based upon url parameters
-    var counter1 = 0
-    console.log(master_values)
+    var counter1 = 0;
+    console.log(master_values);
 
     for (val in master_values)//this loop deals with any parameters that are not specified in the url query
     {
@@ -494,7 +487,6 @@ function plot_data(res_id, unit_off,id_qms,data){
         }
         counter1 = counter1+1
     }
-    console.log(master_values)
     if (bad_meta_counter == Object.keys(master_values).length) {
         bad_meta = true
     }
@@ -1209,21 +1201,22 @@ function scatter_line(id){
 
 function gridlines(ymax,ymin){
 
-    //console.log(ymax)
-    //console.log(ymin)
-    maxview = roundUp(Math.ceil(ymax))
-    maxview = maxview + 0.1 * maxview
+    console.log(ymax);
+    console.log(ymin);
+    // var maxview = roundUp(Math.ceil(ymax));
+    // Possible fix for NLDAS data 
+    var maxview = Math.ceil(ymax);
+    maxview = maxview + 0.1 * maxview;
+    var minview = roundDown(Math.floor(ymin));
+    minview = minview + minview * .1;
 
-    minview = roundDown(Math.floor(ymin))
-    minview = minview + minview * .1
-
-    interval = Math.ceil(maxview - minview) / 11
+    var interval = Math.ceil(maxview - minview) / 11;
 
 
     if (minview < 0) {
-        neg_interval = Math.ceil(-1*(minview/interval))
+        neg_interval = Math.ceil(-1*(minview/interval));
         //pos1_interval = Math.ceil(maxview/interval)
-        pos_interval = 11-neg_interval
+        pos_interval = 11-neg_interval;
 
 
         if (ymax> pos_interval*interval)//checks to make sure points are in view range
@@ -1234,7 +1227,7 @@ function gridlines(ymax,ymin){
             interval = Math.ceil(-1*minview/interval)*interval
         }
 
-        maxview = pos_interval*interval
+        maxview = pos_interval*interval;
         minview = -1*neg_interval*interval
 
     }

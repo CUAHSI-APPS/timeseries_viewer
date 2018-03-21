@@ -9,13 +9,7 @@
 #hs_logo{
 	width:100px;
 }
-#app-header .tethys-app-header .icon-wrapper img
-{
-    height:50px;
-    width:250px;
-    border-radius: 0%;
-	background: rgba(211, 211, 211, 1) !important;
-}
+
 #app-header .tethys-app-header {
     background: rgba(211, 211, 211, 1) !important;
     height: 50px !important;
@@ -53,6 +47,14 @@ display:none !important;
   -ms-transform: translate3d(0px, 0, 0);
   -o-transform: translate3d(0px, 0, 0);
    transform: translate3d(0px, 0, 0);
+}
+
+#app-header .tethys-app-header .icon-wrapper img
+{
+    height:50px;
+    width:250px;
+    border-radius: 0!important;
+	background: rgba(211, 211, 211, 1) !important;
 }
 #app-header .tethys-app-header .icon-wrapper img{
     height: 48px !important;
