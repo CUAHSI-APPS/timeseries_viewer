@@ -307,7 +307,7 @@ $(document).ready(function (callback) {
         setTimeout(function(){
                     // loadMap();
 
-            console.log('resize')
+            // console.log('resize')
             $(window).trigger("resize");
 
         }, 800);
@@ -404,23 +404,25 @@ function addingseries(unit_off) {
                     json_data = json.data
                     nwm_data = json.gridded_data
                     if (json.gridded_data.length != 0){
-                        console.log(json)
+                        // console.log(json)
                         $('#modalNWMMAP').modal('show')
                         setTimeout(function(){
                     // loadMap();
                             loadMap(json.gridded_data);
-                            console.log('resize')
+                            // console.log('resize')
                             $(window).trigger("resize");
                         }, 800);
                     }
                     var json_len = json_data.length
+                    end_of_resources = end_of_resources + json_len
+                    // console.log(json_len)
                     for (series in json_data) {
                         //number of res_ids
                         console.log('start series')
                         // if (res_id_counter == series_length){
                         //     end_of_data = true
                         // }
-                        plot_data(res_id[id], unit_off, id_qms, json_data[series])
+                        plot_data(res_id[id], unit_off, id_qms, json_data[series],json_data.length)
                         // series_length = series_length+1
                     }
                 }
@@ -436,7 +438,7 @@ function addingseries(unit_off) {
 }
 
 
-function plot_data(res_id, unit_off,id_qms,data){
+function plot_data(res_id, unit_off,id_qms,data,){
     json = data
     var chart = $("#chartContainer").CanvasJSChart()
     var xtime = []
@@ -453,7 +455,7 @@ function plot_data(res_id, unit_off,id_qms,data){
     var val1=[];
 
     var counter =0;
-    end_of_resources = Object.keys(master_values).length + end_of_resources
+    end_of_resources = Object.keys(master_values).length + end_of_resources -1
     id_qms_a_split = id_qms.split('aa')//identifier based upon url parameters
     var counter1 = 0;
     console.log(master_values);
@@ -491,6 +493,7 @@ function plot_data(res_id, unit_off,id_qms,data){
         bad_meta = true
     }
     for (val in master_values) {
+        console.log("looping through master values")
         if (bad_meta == true) {
             var arr=[]
             for (entry in val1){arr.push('')}
@@ -592,10 +595,12 @@ function plot_data(res_id, unit_off,id_qms,data){
                     console.log('null')
                 }
             }
+            counter_all =counter_all+1
             if(all_null){
                 console.log(end_of_resources)
                 end_of_resources = end_of_resources - 1
                 console.log(end_of_resources)
+                console.log(counter_all)
                 console.log('everything is null')
                 if (0==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
                 {
@@ -718,6 +723,7 @@ function plot_data(res_id, unit_off,id_qms,data){
                     dataPoints: data1
                 };
             }
+            console.log('push data to master list')
             series_tracker.push(newSeries)
 
             xtime = []
@@ -772,15 +778,16 @@ function plot_data(res_id, unit_off,id_qms,data){
                 boxplot: boxplot,
                 boxplot_count: boxplot_count
             }
+            console.log('add entry for table')
             row_tracker.push(dataset)
             number = number + 1;
-            console.log(number)
+            // console.log(number)
         }
-        counter_all =counter_all+1
-        console.log(end_of_resources)
-        console.log("yyyyyyyyyyyyy")
-        console.log(counter_all)
-        console.log(end_of_resources - counter_all)
+
+        // console.log(end_of_resources)
+        // console.log("yyyyyyyyyyyyy")
+        // console.log(counter_all)
+        // console.log(end_of_resources - counter_all)
         if (0==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
         {
             display_table_chart(number)

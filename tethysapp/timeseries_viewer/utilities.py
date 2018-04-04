@@ -802,69 +802,42 @@ def unzip_waterml(request, res_id, src):
                 str_series = str(series[0])
                 data_for_chart.append(parse_odm2(file_path, str_series))
         elif file_type == 'netcdf':
-
             dataset = Dataset(file_path)
+            feature_id = dataset.variables['feature_id']
+            master_times = collections.OrderedDict()
+            dic = 'aaaa'
+            master_times.update({dic: []})
+            # feature_id = dataset.variables['feature_id']
+            dates = dataset.variables['time'][:]
+            for ele in dates:
+                n = float(ele)
+                n = n * 60  # time is is minutes not seconds
+                master_times[dic].append(n)
+            for index, id in enumerate(feature_id):
+                variable = dataset.variables.keys()
+                for sub_var in variable:
 
-            # print dataset.variables
-            # print dataset.variables['x'][:]
-            # print dataset.dimensions['feature_id']
-            # feature id only belongs to channel data
-            try:
-                feature_id = dataset.variables['feature_id']
-                # print dataset.variables['feature_id'][:]
+                    sub_var_check = sub_var.encode('utf8')
+                    if 'streamflow' in sub_var_check or 'velocity' in sub_var_check:
 
-                master_times = collections.OrderedDict()
-                dic = 'aaaa'
-                master_times.update({dic: []})
-                # feature_id = dataset.variables['feature_id']
-                dates = dataset.variables['time'][:]
-                for ele in dates:
-                    n = float(ele)
-                    dates = dataset.variables['time'][:]
-                    n = n * 60  # time is is minutes not seconds
-                    master_times[dic].append(n)
-                for index, id in enumerate(feature_id):
-                    variable = dataset.variables.keys()
-
-                    for sub_var in variable:
-
-                        sub_var_check = sub_var.encode('utf8')
-
-                        if 'time' not in sub_var_check:
-                            if 'feature_id' not in sub_var_check:
-                                chart_data = parse_netcdf(index, id,
-                                                          dataset.variables[
-                                                              sub_var],
-                                                          master_times)
-                                data_for_chart.append(chart_data[0])
-                    # TODO fix error handling of sqlite and netcdf
-                    error = chart_data[1]
+                        chart_data = parse_netcdf(index, id,
+                                                  dataset.variables[
+                                                      sub_var],
+                                                  master_times)
+                        data_for_chart.append(chart_data[0])
+                # TODO fix error handling of sqlite and netcdf
+                error = chart_data[1]
             # try to see if resource is a gridded nwm resource
-            except:
-                print 'Gridded Data'
-                y_array = dataset.variables['y']
-                x_array = dataset.variables['x']
-                # todo put coordinate conversion here
-                for y_index, y in enumerate(y_array):
-                    for x_index, x in enumerate(x_array):
-                        chart_data = parse_grid(dataset, y_index, y, x_index, x)
-                        # for sub_time_series in chart_data:
-                        #
-                        #     data_for_gridded.append(sub_time_series)
-                        data_for_gridded.append(chart_data)
+
     try:
 
         if isinstance(data_for_chart[0],basestring)==True:
             error = data_for_chart[0]
     except:
-        eroor = 'No time series were found in the selected resource'
+        error = 'No time series were found in the selected resource'
     if error is not '':
         error_report(error, res_id)
     return {'data': data_for_chart, 'error': error, 'gridded_data':data_for_gridded}
-    # return {'file_number': file_number, "file_type": file_type,
-    # 'error': error,
-    #         'file_path': file_path}
-# Testing environment for graphing 2d netcdf file
 
 
 def parse_grid(dataset, y_index, y, x_index, x):
@@ -963,8 +936,13 @@ def parse_netcdf(index, id, dataset, master_times):
 
     # data = dataset.variables['streamflow'][:]
     data = dataset[:]
+    print '%%%%%%%%%%%%%'
+    print data
     for ele in data:
-        v = ele[index]
+        try:
+            v = ele[index]
+        except:
+            v = ele
             # v = ele[2]
             # n = ele[1]
             # n = ciso8601.parse_datetime(str(n))
@@ -1022,10 +1000,8 @@ def parse_netcdf(index, id, dataset, master_times):
         master_boxplot[item].append(median)
         master_boxplot[item].append(quar3)
         master_boxplot[item].append(max1)
+        error = ''
 
-
-
-        error =''
     return [{
         'site_name': site_name,
         'variable_name': variable_name,

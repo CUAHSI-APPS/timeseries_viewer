@@ -58,10 +58,18 @@ def list_apps(request):
         return JsonResponse({"apps": [app1, app2, app3, app4]})
     else:
         app1 = {'name': 'Data Series Viewer',
-        # 'url': 'https://appsdev.hydroshare.org/apps/timeseries-viewer',
-        'url': 'http://apps.hydroshare.org/apps/timeseries-viewer',
-        'description': 'View graph and descriptive statistics for selected time series',
-        'min_series': 1,
-        'max_series': 5,
-        'icon': 'https://appsdev.hydroshare.org/static/timeseries_viewer/images/viewer_icon2.gif'}
-        return JsonResponse({"apps":[app1]})
+                # 'url': 'https://appsdev.hydroshare.org/apps/timeseries-viewer',
+                'url': 'http://apps.hydroshare.org/apps/timeseries-viewer',
+                'description': 'View graph and descriptive statistics for selected time series',
+                'min_series': 1,
+                'max_series': 5,
+                'icon': 'https://apps.hydroshare.org/static/timeseries_viewer/images/viewer_icon2.gif'}
+        app4 = {'name': 'Create HydroShare Resource',
+                # 'name': 'HydroShare Resource Creator',
+                'url': 'https://appsdev.hydroshare.org/apps/hydroshare-resource-creator/',
+                'description': 'Creates a HydroShare resource from selected time series',
+                'min_series': 1,
+                'max_series': 10,
+                'icon': 'https://apps.hydroshare.org/static/hydroshare_resource_creator/images/tool.svg',
+                }
+        return JsonResponse({"apps": [app1, app2]})
