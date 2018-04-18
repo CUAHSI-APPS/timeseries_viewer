@@ -102,7 +102,7 @@ def get_hydroshare_res(request):
     # resource_types = ['CompositeResource','NetcdfResource','TimeSeriesResource']
     resource_types = ['TimeSeriesResource']
     # resource_types = ['CompositeResource']
-    resource_list = hs.getResourceList(types =resource_types )
+    resource_list = hs.getResourceList(types =resource_types)
     for resource in resource_list:
         # if resource.resource_type ==''
         print resource

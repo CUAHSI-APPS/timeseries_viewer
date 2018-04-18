@@ -803,38 +803,50 @@ def unzip_waterml(request, res_id, src):
                 data_for_chart.append(parse_odm2(file_path, str_series))
         elif file_type == 'netcdf':
             dataset = Dataset(file_path)
-            feature_id = dataset.variables['feature_id']
-            master_times = collections.OrderedDict()
-            dic = 'aaaa'
-            master_times.update({dic: []})
-            # feature_id = dataset.variables['feature_id']
-            dates = dataset.variables['time'][:]
-            for ele in dates:
-                n = float(ele)
-                n = n * 60  # time is is minutes not seconds
-                master_times[dic].append(n)
-            for index, id in enumerate(feature_id):
-                variable = dataset.variables.keys()
-                for sub_var in variable:
+            try:
+                feature_id = dataset.variables['feature_id']
+                master_times = collections.OrderedDict()
+                dic = 'aaaa'
+                master_times.update({dic: []})
+                # feature_id = dataset.variables['feature_id']
+                dates = dataset.variables['time'][:]
+                for ele in dates:
+                    n = float(ele)
+                    n = n * 60  # time is is minutes not seconds
+                    master_times[dic].append(n)
+                for index, id in enumerate(feature_id):
+                    variable = dataset.variables.keys()
+                    for sub_var in variable:
 
-                    sub_var_check = sub_var.encode('utf8')
-                    if 'streamflow' in sub_var_check or 'velocity' in sub_var_check:
+                        sub_var_check = sub_var.encode('utf8')
+                        if 'streamflow' in sub_var_check or 'velocity' in sub_var_check:
 
-                        chart_data = parse_netcdf(index, id,
-                                                  dataset.variables[
-                                                      sub_var],
-                                                  master_times)
-                        data_for_chart.append(chart_data[0])
-                # TODO fix error handling of sqlite and netcdf
-                error = chart_data[1]
+                            chart_data = parse_netcdf(index, id,
+                                                      dataset.variables[
+                                                          sub_var],
+                                                      master_times)
+                            data_for_chart.append(chart_data[0])
+                    # TODO fix error handling of sqlite and netcdf
+                    error = chart_data[1]
+            except:
+                print 'Gridded Data'
+                y_array = dataset.variables['y']
+                x_array = dataset.variables['x']
+                # todo put coordinate conversion here
+                for y_index, y in enumerate(y_array):
+                    for x_index, x in enumerate(x_array):
+                        chart_data = parse_grid(dataset, y_index, y, x_index, x)
+                        # for sub_time_series in chart_data:
+                        #
+                        #     data_for_gridded.append(sub_time_series)
+                        data_for_gridded.append(chart_data)
             # try to see if resource is a gridded nwm resource
 
-    try:
-
-        if isinstance(data_for_chart[0],basestring)==True:
-            error = data_for_chart[0]
-    except:
-        error = 'No time series were found in the selected resource'
+    # try:
+    #     if isinstance(data_for_chart[0],basestring)==True:
+    #         error = data_for_chart[0]
+    # except:
+    #     error = 'No time series were found in the selected resource'
     if error is not '':
         error_report(error, res_id)
     return {'data': data_for_chart, 'error': error, 'gridded_data':data_for_gridded}
@@ -1085,21 +1097,17 @@ def parse_netcdf_grid(x_index, x, dataset, master_times, y_index, y):
 
     data = dataset[:]
     for ele in data:
-        values_array = ele[y_index][x_index]
+        try:
+            values_array = ele[y_index][x_index]
+        except:
+            values_array = ele
+
+
 
         v = values_array
-        # for v in values_array:
 
-            # v = ele[2]
-            # n = ele[1]
-            # n = ciso8601.parse_datetime(str(n))
-            # n = n.timetuple()
-            # n = mktime(n)
-        # if v == nodata:
         if float(v) == float(nodatavalue):
             v = None
-            # print v
-            # print 'not data'
         else:
 
             v = float(v)
@@ -1113,14 +1121,7 @@ def parse_netcdf_grid(x_index, x, dataset, master_times, y_index, y):
             v = None
         # print v
         master_values[dic].append(v)
-    # dates = dataset.variables['time'][:]
-    # dates = dataset[:]
 
-    # for ele in dates:
-    #     print ele
-    #     n = float(ele)
-    #     n = n*60 # time is is minutes not seconds
-    #     master_times[dic].append(n)
     first_date = master_times[dic][0]
     second_date = master_times[dic][1]
 
@@ -1195,7 +1196,6 @@ def parse_netcdf_grid(x_index, x, dataset, master_times, y_index, y):
         'master_stat': master_stat,
         'gridded': True
     }
-
 
 
 def waterml_file_path(res_id, xml_id):

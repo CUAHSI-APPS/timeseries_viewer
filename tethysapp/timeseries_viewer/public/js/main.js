@@ -320,7 +320,6 @@ function addingseries(unit_off) {
     var src = find_query_parameter("src");
     var series_counter =0;
     var source = find_query_parameter('Source');
-    // var end_of_resources = false
     var chart = $("#chartContainer").CanvasJSChart();
     var counter = 0;
     var res_id =null;
@@ -378,8 +377,6 @@ function addingseries(unit_off) {
             id_qms="not_cuahsi"
         }
         counter = counter + 1
-        // if (counter ==series_counter){end_of_resources =true}
-        // add_series_to_chart(chart, res_id[id], end_of_resources, unit_off,id_qms,src);
 
         length_master= 0
         var current_url = location.href;
@@ -404,10 +401,10 @@ function addingseries(unit_off) {
                     json_data = json.data
                     nwm_data = json.gridded_data
                     if (json.gridded_data.length != 0){
-                        // console.log(json)
+                        console.log('griddddddddddde data')
                         $('#modalNWMMAP').modal('show')
+
                         setTimeout(function(){
-                    // loadMap();
                             loadMap(json.gridded_data);
                             // console.log('resize')
                             $(window).trigger("resize");
@@ -438,7 +435,8 @@ function addingseries(unit_off) {
 }
 
 
-function plot_data(res_id, unit_off,id_qms,data,){
+function plot_data(res_id, unit_off,id_qms,data){
+    console.log(data)
     json = data
     var chart = $("#chartContainer").CanvasJSChart()
     var xtime = []
@@ -456,6 +454,7 @@ function plot_data(res_id, unit_off,id_qms,data,){
 
     var counter =0;
     end_of_resources = Object.keys(master_values).length + end_of_resources -1
+    console.log(end_of_resources)
     id_qms_a_split = id_qms.split('aa')//identifier based upon url parameters
     var counter1 = 0;
     console.log(master_values);
@@ -607,9 +606,7 @@ function plot_data(res_id, unit_off,id_qms,data,){
                     display_table_chart(number)
                 }
                 else{return}
-
             }
-
 
             data1 = xtime
             if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
@@ -788,6 +785,8 @@ function plot_data(res_id, unit_off,id_qms,data,){
         // console.log("yyyyyyyyyyyyy")
         // console.log(counter_all)
         // console.log(end_of_resources - counter_all)
+        console.log(end_of_resources)
+        console.log(counter_all)
         if (0==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
         {
             display_table_chart(number)
@@ -1349,6 +1348,7 @@ function add_nwm_grid(){
             // if (nwm_coor == nwm_data[site_var][lon_lat] && nwm_var == nwm_data[site_var][variable_name]){
             for (var_sub_site in nwm_data[sub_site]){
 
+
                 if (nwm_coor[0] == nwm_data[sub_site][var_sub_site]["lon_lat"][0] &&nwm_coor[1] == nwm_data[sub_site][var_sub_site]["lon_lat"][1]){
                     if($("#dropdownMenu1").text()==nwm_data[sub_site][var_sub_site]['variable_name'])
                     {
@@ -1356,6 +1356,8 @@ function add_nwm_grid(){
                         series_counter = 1
                         unit_off = ""
                         id_qms = "not_cuahsi"
+                        console.log('plotting gridded data')
+                        end_of_resources = end_of_resources + 1
                         plot_data(res_id, unit_off, id_qms, nwm_data[sub_site][var_sub_site])
                     }
                 }
