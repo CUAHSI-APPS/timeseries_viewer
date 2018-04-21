@@ -1425,11 +1425,11 @@ def parse_odm2(file_path, result_num):
     print organizations
     dic = 'aaaa'
     if organizations ==[]:
-        organizations = [(1,'test','test')]
+        organizations = [(1,'No Data','No Data')]
     if qualityControl == []:
-        qualityControl = [(1, 'test', 'test')]
+        qualityControl = [(1, 'No Data', 'No Data')]
     if methods == []:
-        methods = [(1, 'test', 'test', 'test', 'test')]
+        methods = [(1, 'No Data', 'No Data', 'No Data', 'No Data')]
     for meth, qual, org in zip(methods, qualityControl, organizations):
         print 'looping meth q and o'
         result_id = str(meth[0])
