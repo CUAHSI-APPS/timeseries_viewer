@@ -5,6 +5,7 @@ from lxml import etree
 import numpy
 import urllib2
 import urllib
+import math
 from .app import TimeSeriesViewer
 import StringIO
 import time
@@ -27,6 +28,15 @@ from django.conf import settings
 from time import gmtime, strftime
 from time import mktime as mktime
 from tethys_services.backends.hs_restclient_helper import get_oauth_hs
+from netCDF4 import Dataset
+import sys
+import shapely.wkt
+import shapely.geometry
+import shapely.ops
+# import pyproj
+from osgeo import ogr
+from osgeo import osr
+import ast
 
 def get_workspace():
     """Get path to Tethys Workspace"""
@@ -93,8 +103,7 @@ def parse_1_0_and_1_1(root):
     master_stat'
     master_data_values
     """
-    print type(root)
-    print '!!!!!!!!!!!!'
+
     # print 'begin parse'
     # print time.ctime()
     root_tag = root.tag.lower()
@@ -114,7 +123,7 @@ def parse_1_0_and_1_1(root):
     x_value = []
     y_value = []
     master_counter = True
-    nodata = "-9999"  # default NoData value. The actual NoData value is read from the XML noDataValue tag
+    nodata = -9999  # default NoData value. The actual NoData value is read from the XML noDataValue tag
     timeunit = None
     sourcedescription = None
     timesupport = None
@@ -129,8 +138,8 @@ def parse_1_0_and_1_1(root):
             # lists to store the time-series data
 
             # iterate through xml document and read all values
+            print root_tag
             for element in root.iter():
-
                 bracket_lock = -1
                 if '}' in element.tag:
                     # print element.tag
@@ -148,8 +157,8 @@ def parse_1_0_and_1_1(root):
 
                                 unit_is_set = True
                         # print units
-                        if 'noDataValue' == tag:
-                            nodata = element.text
+                        if 'nodatavalue' == tag.lower():
+                            nodata = float(element.text)
                         if 'siteName' == tag:
                             site_name = element.text
                         if 'variableName' == tag:
@@ -216,6 +225,7 @@ def parse_1_0_and_1_1(root):
                             meta_dic['source'].update({m_code: m_des})
                             meta_dic['organization'].update({m_code: m_org})
                         if "qualitycontrollevel" == tag.lower():
+                            print tag
                             try:
                                 qlc = element.attrib['qualityControlLevelID']
                             except:
@@ -227,7 +237,11 @@ def parse_1_0_and_1_1(root):
                                         'qualityControlLevelID']
                                     m_code = m_code.replace(" ", "")
                                 if 'qualitycontrollevelcode' in subele.tag.lower():
+                                    print subele.text
                                     m_code1 = subele.text
+                                    if m_code1 ==None:
+                                        m_code1 = m_code
+                                    # m_code1 = '10'
                                     m_code1 = m_code1.replace(" ", "")
                                 if 'qualitycontrollevelcode' in subele.tag.lower() and m_code == '':
                                     m_code = subele.text
@@ -238,22 +252,11 @@ def parse_1_0_and_1_1(root):
                             meta_dic['quality_code'].update({m_code1: m_code})
                             # print meta_dic
                     elif 'value' == tag:
-                        # try:
-                        #     n = element.attrib['dateTimeUTC']
-                        # except:
-                        #     n =element.attrib['dateTime']
                         n = element.attrib['dateTime']
-                        # print n
                         n = ciso8601.parse_datetime(n)
-                        n=n.timetuple()
+                        n = n.timetuple()
                         n = time.mktime(n)
-                        # print n
-                        # print type(n)
-                        # print ts
-                        # if 'Z' in n:
-                        #     n = n.replace('Z','')
-                        #     print "there is a z"
-                        #     print n
+
                         try:
                             quality = element.attrib['qualityControlLevelCode']
                         except:
@@ -295,12 +298,8 @@ def parse_1_0_and_1_1(root):
                             master_data_values.update({dic: []})
 
                         v = element.text
-                        if v == nodata:
-                            value = None
-                            # x_value.append(n)
-                            # y_value.append(value)
+                        if float(v) == nodata:
                             v = None
-
                         else:
                             v = float(element.text)
                             # x_value.append(n)
@@ -331,28 +330,25 @@ def parse_1_0_and_1_1(root):
                                '.2f'))
                     min1 = float(format(min(master_data_values[item]), '.2f'))
                     max1 = float(format(max(master_data_values[item]), '.2f'))
+
                 master_stat[item].append(mean)
                 master_stat[item].append(median)
                 master_stat[item].append(max1)
                 master_stat[item].append(min1)
                 master_boxplot[item].append(1)
-                master_boxplot[item].append(
-                    min1)  # adding data for the boxplot
+                master_boxplot[item].append(min1)
                 master_boxplot[item].append(quar1)
                 master_boxplot[item].append(median)
                 master_boxplot[item].append(quar3)
                 master_boxplot[item].append(max1)
                 # print 'end parse'
                 # print time.ctime()
-                error =''
+                error = ''
             return [{
                 'site_name': site_name,
                 'variable_name': variable_name,
                 'units': units,
                 'meta_dic': meta_dic,
-                # 'organization': organization,
-                # 'quality': quality,
-                # 'method': method,
                 'status': 'success',
                 'datatype': datatype,
                 'valuetype': valuetype,
@@ -360,14 +356,12 @@ def parse_1_0_and_1_1(root):
                 'timeunit': timeunit,
                 'sourcedescription': sourcedescription,
                 'timesupport': timesupport,
-                # 'master_counter': master_counter,
                 'master_values': master_values,
                 'master_times': master_times,
                 'master_boxplot': master_boxplot,
                 'master_stat': master_stat,
-                # 'master_data_values': master_data_values
-            },
-                    error]
+                'gridded': False,
+            },error]
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
             # error_report(
@@ -380,6 +374,9 @@ def parse_1_0_and_1_1(root):
         #     "Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
         print data_error
         print e
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)
         return [None,data_error]
 
 
@@ -626,6 +623,8 @@ def unzip_waterml(request, res_id, src):
     file_type = None
     error = ''
     file_path = ''
+    data_for_chart = []
+    data_for_gridded = []
     # if not os.path.exists(temp_dir+"/id"):
     #     os.makedirs(temp_dir+"/id")
     if 'hydroshare' in src:
@@ -661,7 +660,8 @@ def unzip_waterml(request, res_id, src):
                                    unzip=True)
                     status = 'done'
                 except HydroShareNotAuthorized as e:
-                    print "Not authorized"
+                    print e
+
                     error = 'Current user does not have permission to view this resource'
                     # error = str(e)
                     break
@@ -705,9 +705,12 @@ def unzip_waterml(request, res_id, src):
                         elif '.sqlite' in file:
                             file_path = path
                             file_type = 'sqlite'
+                        elif file.endswith('.nc'):
+                            file_path = path
+                            file_type='netcdf'
                 if file_type == None:
-                    error = "No supported file type found. This app supports resource types HIS " \
-                            "Referenced Time Series, Time Series, and Generic with file extension .json.refts"
+                    error = "No supported file type found for resource "+res_id+". This app supports resource types of HIS " \
+                            "Referenced Time Series, Time Series, and Collection with file extension .refts.json"
             except Exception as e:
                 error = str(e)
     # Data from USGS and AHPS Gaugeviewer WML
@@ -769,7 +772,6 @@ def unzip_waterml(request, res_id, src):
             print error
             error = str(e)
 
-    data_for_chart = []
     # if we don't have the xml file, download and unzip it
     # file_number = int(file_meta['file_number'])
     # file_path = file_meta['file_path']
@@ -779,16 +781,18 @@ def unzip_waterml(request, res_id, src):
     if error == '':
         if file_type == 'waterml':
             # file_path = utilities.waterml_file_path(res_id,xml_id)
-            data_for_chart.append(Original_Checker(file_path)[0])
-            error = Original_Checker(file_path)[1]
+            chart_data = Original_Checker(file_path)
+            data_for_chart.append(chart_data[0])
+            error = chart_data[1]
         elif file_type == '.json.refts':
             for i in range(0, file_number):
                 # file_path = temp_dir+'/id/timeserieslayer'+str(i)+'.xml'
                 file_path = temp_dir+'/timeserieslayer'+str(i)+'.xml'
-                data_for_chart.append(Original_Checker(file_path)[0])
-                error = Original_Checker(file_path)[1]
+                chart_data = Original_Checker(file_path)
+                data_for_chart.append(chart_data[0])
+                error = chart_data[1]
         elif file_type == 'sqlite':
-
+            print "sqlite!!!!!!!!!!!!!!!!!!!!!!!!!"
             conn = sqlite3.connect(file_path)
             c = conn.cursor()
             c.execute('SELECT Results.ResultID FROM Results')
@@ -797,15 +801,401 @@ def unzip_waterml(request, res_id, src):
             for series in num_series:
                 str_series = str(series[0])
                 data_for_chart.append(parse_odm2(file_path, str_series))
+        elif file_type == 'netcdf':
+            dataset = Dataset(file_path)
+            try:
+                feature_id = dataset.variables['feature_id']
+                master_times = collections.OrderedDict()
+                dic = 'aaaa'
+                master_times.update({dic: []})
+                # feature_id = dataset.variables['feature_id']
+                dates = dataset.variables['time'][:]
+                for ele in dates:
+                    n = float(ele)
+                    n = n * 60  # time is is minutes not seconds
+                    master_times[dic].append(n)
+                for index, id in enumerate(feature_id):
+                    variable = dataset.variables.keys()
+                    for sub_var in variable:
 
-        if isinstance(data_for_chart[0],basestring)==True:
-            error = data_for_chart[0]
+                        sub_var_check = sub_var.encode('utf8')
+                        if 'streamflow' in sub_var_check or 'velocity' in sub_var_check:
+
+                            chart_data = parse_netcdf(index, id,
+                                                      dataset.variables[
+                                                          sub_var],
+                                                      master_times)
+                            data_for_chart.append(chart_data[0])
+                    # TODO fix error handling of sqlite and netcdf
+                    error = chart_data[1]
+            except:
+                print 'Gridded Data'
+                y_array = dataset.variables['y']
+                x_array = dataset.variables['x']
+                # todo put coordinate conversion here
+                for y_index, y in enumerate(y_array):
+                    for x_index, x in enumerate(x_array):
+                        chart_data = parse_grid(dataset, y_index, y, x_index, x)
+                        # for sub_time_series in chart_data:
+                        #
+                        #     data_for_gridded.append(sub_time_series)
+                        data_for_gridded.append(chart_data)
+            # try to see if resource is a gridded nwm resource
+
+    # try:
+    #     if isinstance(data_for_chart[0],basestring)==True:
+    #         error = data_for_chart[0]
+    # except:
+    #     error = 'No time series were found in the selected resource'
     if error is not '':
         error_report(error, res_id)
-    return {'data': data_for_chart, 'error': error}
-    # return {'file_number': file_number, "file_type": file_type,
-    # 'error': error,
-    #         'file_path': file_path}
+    return {'data': data_for_chart, 'error': error, 'gridded_data':data_for_gridded}
+
+
+def parse_grid(dataset, y_index, y, x_index, x):
+    # print dataset.variables['feature_id'][:]
+    master_times = collections.OrderedDict()
+    dic = 'aaaa'
+    master_times.update({dic: []})
+    # feature_id = dataset.variables['feature_id']
+    # print feature_id
+    dates = dataset.variables['time'][:]
+    for ele in dates:
+        n = float(ele)
+        dates = dataset.variables['time'][:]
+        n = n * 60  # time is is minutes not seconds
+        master_times[dic].append(n)
+
+    net_variable = dataset.variables.keys()
+    netcdf_var = ['PSFC', 'Q2D', 'RAINRATE', 'SWDOWN', 'T2D', 'U2D', 'V2D',
+                  'ACCET', 'FSNO', 'SNEQV', 'SNOWH', 'SNOWT_AVG', 'SOILSAT_TOP']
+    chart_data = []
+    for sub_var in net_variable:
+        sub_var_check = sub_var.encode('utf8')
+        # print sub_var
+        # print sub_var_check
+        if sub_var_check in netcdf_var:
+            chart_data.append(parse_netcdf_grid(x_index, x,
+                                           dataset.variables[sub_var],
+                                           master_times, y_index, y))
+        # elif 'RAINRATE' in sub_var_check:
+        #     print 'gir'
+
+    return chart_data
+
+
+def parse_netcdf(index, id, dataset, master_times):
+    # master_times = []
+    master_values = collections.OrderedDict()
+    # master_times = collections.OrderedDict()
+    site_name = None
+    variable_name = None
+    units = None
+    meta_dic = None
+    organization = None
+    quality = None
+    method = None
+    datatype = None
+    valuetype = None
+    samplemedium = None
+    timeunit = None
+    sourcedescription = None
+    timesupport = None
+    master_counter = True
+    meth_qual = []
+    master_boxplot = collections.OrderedDict()
+    master_stat = collections.OrderedDict()
+    master_data_values = collections.OrderedDict()
+    meta_dic = {'method': {}, 'quality': {}, 'source': {}, 'organization': {},
+                'quality_code': {}}
+    meth_qual = []  # List of all the quality, method, and source combinations
+    nodatavalue = None
+
+
+    site_name = str(id)
+
+
+    # dic = str(id) + 'aaaa'
+    dic = 'aaaa'
+    dic = dic.replace(" ", "")
+    if dic not in meth_qual:
+        meth_qual.append(dic)
+        master_values.update({dic: []})
+        # master_times.update({dic: []})
+        master_boxplot.update({dic: []})
+        master_stat.update({dic: []})
+        master_data_values.update({dic: []})
+    # units = dataset.variables['streamflow'].units
+    # nodatavalue =  dataset.variables['streamflow'].missing_value
+    # variable_name = dataset.variables['streamflow'].long_name
+    units = dataset.units
+    nodatavalue =  dataset.missing_value
+    variable_name = dataset.long_name
+
+    print nodatavalue
+    print variable_name
+
+
+    datatype = 'Average'
+    valuetype = 'Model Simulation Forecast'
+    samplemedium = 'SurfaceWater'
+
+    meta_dic['method'].update({'': 'Model Results'})
+    meta_dic['quality_code'].update({'': ''})
+    meta_dic['quality'].update({'': "Derived products"})
+    meta_dic['source'].update({'': 'NOAA: National Water Model Output'})
+    meta_dic['organization'].update({'':"NOAA"})
+
+    # data = dataset.variables['streamflow'][:]
+    data = dataset[:]
+    print '%%%%%%%%%%%%%'
+    print data
+    for ele in data:
+        try:
+            v = ele[index]
+        except:
+            v = ele
+            # v = ele[2]
+            # n = ele[1]
+            # n = ciso8601.parse_datetime(str(n))
+            # n = n.timetuple()
+            # n = mktime(n)
+            # if v == nodata:
+        if float(v) == float(nodatavalue):
+            v = None
+        else:
+            v = float(v)
+            # records only none null values for running statistics
+            master_data_values[dic].append(v)
+        master_values[dic].append(v)
+    # dates = dataset.variables['time'][:]
+    dates = dataset[:]
+
+    # for ele in dates:
+    #     print ele
+    #     n = float(ele)
+    #     n = n*60 # time is is minutes not seconds
+    #     master_times[dic].append(n)
+    first_date = master_times[dic][0]
+    second_date = master_times[dic][1]
+
+
+    timesupport = (second_date - first_date)/3600
+    timeunit = 'hour'
+    for item in master_data_values:
+        if len(master_data_values[item]) == 0:
+            mean = None
+            median = None
+            quar1 = None
+            quar3 = None
+            min1 = None
+            max1 = None
+        else:
+            mean = numpy.mean(master_data_values[item])
+            mean = float(format(mean, '.2f'))
+            median = float(
+                format(numpy.median(master_data_values[item]), '.2f'))
+            quar1 = float(
+                format(numpy.percentile(master_data_values[item], 25), '.2f'))
+            quar3 = float(
+                format(numpy.percentile(master_data_values[item], 75), '.2f'))
+            min1 = float(format(min(master_data_values[item]), '.2f'))
+            max1 = float(format(max(master_data_values[item]), '.2f'))
+
+        master_stat[item].append(mean)
+        master_stat[item].append(median)
+        master_stat[item].append(max1)
+        master_stat[item].append(min1)
+        master_boxplot[item].append(1)
+        master_boxplot[item].append(min1)  # adding data for the boxplot
+        master_boxplot[item].append(quar1)
+        master_boxplot[item].append(median)
+        master_boxplot[item].append(quar3)
+        master_boxplot[item].append(max1)
+        error = ''
+
+    return [{
+        'site_name': site_name,
+        'variable_name': variable_name,
+        'units': units,
+        'meta_dic': meta_dic,
+        'status': 'success',
+        'datatype': datatype,
+        'valuetype': valuetype,
+        'samplemedium': samplemedium,
+        'timeunit': timeunit,
+        'sourcedescription': sourcedescription,
+        'timesupport': timesupport,
+        'master_values': master_values,
+        'master_times': master_times,
+        'master_boxplot': master_boxplot,
+        'master_stat': master_stat,
+        'gridded': False,
+    },
+            error]
+
+
+def parse_netcdf_grid(x_index, x, dataset, master_times, y_index, y):
+    # master_times = []
+    master_values = collections.OrderedDict()
+    # master_times = collections.OrderedDict()
+    site_name = None
+    variable_name = None
+    units = None
+    meta_dic = None
+    organization = None
+    quality = None
+    method = None
+    datatype = None
+    valuetype = None
+    samplemedium = None
+    timeunit = None
+    sourcedescription = None
+    timesupport = None
+    master_counter = True
+    meth_qual = []
+    master_boxplot = collections.OrderedDict()
+    master_stat = collections.OrderedDict()
+    master_data_values = collections.OrderedDict()
+    meta_dic = {'method': {}, 'quality': {}, 'source': {}, 'organization': {},
+                'quality_code': {}}
+    meth_qual = []  # List of all the quality, method, and source combinations
+    nodatavalue = None
+
+    site_name = str(x)+ " "+str(y)
+
+    # dic = str(id) + 'aaaa'
+    dic = 'aaaa'
+    dic = dic.replace(" ", "")
+    if dic not in meth_qual:
+        meth_qual.append(dic)
+        master_values.update({dic: []})
+        # master_times.update({dic: []})
+        master_boxplot.update({dic: []})
+        master_stat.update({dic: []})
+        master_data_values.update({dic: []})
+    # units = dataset.variables['streamflow'].units
+    # nodatavalue =  dataset.variables['streamflow'].missing_value
+    # variable_name = dataset.variables['streamflow'].long_name
+    units = dataset.units
+    nodatavalue = dataset.missing_value
+    variable_name = dataset.long_name
+
+    # print variable_name
+
+    datatype = 'Average'
+    valuetype = 'Model Simulation Forecast'
+    samplemedium = 'SurfaceWater'
+
+    meta_dic['method'].update({'': 'Model Results'})
+    meta_dic['quality_code'].update({'': ''})
+    meta_dic['quality'].update({'': "Derived products"})
+    meta_dic['source'].update({'': 'NOAA: National Water Model Output'})
+    meta_dic['organization'].update({'': "NOAA"})
+
+    # data = dataset.variables['streamflow'][:]
+
+    data = dataset[:]
+    for ele in data:
+        try:
+            values_array = ele[y_index][x_index]
+        except:
+            values_array = ele
+
+
+
+        v = values_array
+
+        if float(v) == float(nodatavalue):
+            v = None
+        else:
+
+            v = float(v)
+            if not math.isnan(v):
+                # records only none null values for running statistics
+
+                master_data_values[dic].append(v)
+        # print v
+        # print type(v)
+        if math.isnan(v):
+            v = None
+        # print v
+        master_values[dic].append(v)
+
+    first_date = master_times[dic][0]
+    second_date = master_times[dic][1]
+
+    timesupport = (second_date - first_date) / 3600
+    timeunit = 'hour'
+    for item in master_data_values:
+        if len(master_data_values[item]) == 0:
+            mean = None
+            median = None
+            quar1 = None
+            quar3 = None
+            min1 = None
+            max1 = None
+        else:
+            mean = numpy.mean(master_data_values[item])
+            mean = float(format(mean, '.2f'))
+            median = float(
+                format(numpy.median(master_data_values[item]), '.2f'))
+            quar1 = float(
+                format(numpy.percentile(master_data_values[item], 25), '.2f'))
+            quar3 = float(
+                format(numpy.percentile(master_data_values[item], 75), '.2f'))
+            min1 = float(format(min(master_data_values[item]), '.2f'))
+            max1 = float(format(max(master_data_values[item]), '.2f'))
+
+        master_stat[item].append(mean)
+        master_stat[item].append(median)
+        master_stat[item].append(max1)
+        master_stat[item].append(min1)
+        master_boxplot[item].append(1)
+        master_boxplot[item].append(min1)  # adding data for the boxplot
+        master_boxplot[item].append(quar1)
+        master_boxplot[item].append(median)
+        master_boxplot[item].append(quar3)
+        master_boxplot[item].append(max1)
+
+        error = ''
+        forcing_proj4 = '+proj=lcc +lat_1=30 +lat_2=60 +lat_0=40 +lon_0=-97 +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs'
+        wkt_epsg = 4326
+        wkt_str = 'Point({} {})'.format(x, y)
+        x_transformed = wkt_str[1]
+        y_transformed = wkt_str[0]
+        reproject = reproject_wkt_gdal("proj4",
+                                                 forcing_proj4,
+                                                 "epsg",
+                                                 wkt_epsg,
+                                                 wkt_str)
+        reproject = ast.literal_eval(reproject)
+        # print reproject[0]
+        # print reproject[1]
+        # print reproject["coordinates"]
+        lon_lat = reproject["coordinates"]
+
+    return {
+        'site_name': str(lon_lat[1])+', '+ str(lon_lat[0]),
+        'latitude':lon_lat[1],
+        'longitude':lon_lat[0],
+        'lon_lat':lon_lat,
+        'variable_name': variable_name,
+        'units': units,
+        'meta_dic': meta_dic,
+        'status': 'success',
+        'datatype': datatype,
+        'valuetype': valuetype,
+        'samplemedium': samplemedium,
+        'timeunit': timeunit,
+        'sourcedescription': sourcedescription,
+        'timesupport': timesupport,
+        'master_values': master_values,
+        'master_times': master_times,
+        'master_boxplot': master_boxplot,
+        'master_stat': master_stat,
+        'gridded': True
+    }
 
 
 def waterml_file_path(res_id, xml_id):
@@ -861,7 +1251,6 @@ def view_counter(request):
 
 
 def parse_ts_layer(path):
-    print 'parsing !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     counter = 0
     error = ''
     response = None
@@ -869,16 +1258,12 @@ def parse_ts_layer(path):
         data = f.read()
     data = data.encode(encoding='UTF-8')
     data = data.replace("'", '"')
-    json_data = json.loads(data)
-    print json_data
-    print '@@@@@@@@@@@@@@@@@@@'
+    json_data = json.loads(data)    
     json_data = json_data["timeSeriesReferenceFile"]
     layer = json_data['referencedTimeSeries']
-    print layer
-    print "11111111111111111111111  "
+   
     for sub in layer:
-        print sub
-        print "####################"
+      
         ref_type = sub['requestInfo']['refType']
         service_type = sub['requestInfo']['serviceType']
         url = sub['requestInfo']['url']
@@ -887,14 +1272,10 @@ def parse_ts_layer(path):
         start_date = sub['beginDate']
         end_date = sub['endDate']
         auth_token = ''
-        print ref_type
-        print "!!!!!!!!!!!!!!!!!!!"
         if ref_type == 'WOF':
-            print 'wof'
             if service_type == 'SOAP':
                 print 'soap'
                 if 'nasa' in url:
-                    start_date = '2016-01-02T01:00:05+00:00'
                     headers = {'content-type': 'text/xml'}
                     body = """<?xml version="1.0" encoding="utf-8"?>
                         <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -991,6 +1372,8 @@ def parse_odm2(file_path, result_num):
         'WHERE Results.ResultID=' + result_num + ' '
                                                  'AND Results.UnitsID = Units.UnitsID AND Results.VariableID = Variables.VariableID')
     var_unit = c.fetchall()
+    print var_unit
+    print 'sqlite!!!'
     for unit in var_unit:
         variable_name = unit[0]
         units = unit[1]
@@ -1033,8 +1416,22 @@ def parse_odm2(file_path, result_num):
         'AND Affiliations.OrganizationID = Organizations.OrganizationID ')
     # c.execute('Select *')
     organizations = c.fetchall()
+    print 'methods'
+    print 'too many methods'
+    # print methods
+    print 'quality control'
+    print qualityControl
+    print 'organizations'
+    print organizations
+    dic = 'aaaa'
+    if organizations ==[]:
+        organizations = [(1,'No Data','No Data')]
+    if qualityControl == []:
+        qualityControl = [(1, 'No Data', 'No Data')]
+    if methods == []:
+        methods = [(1, 'No Data', 'No Data', 'No Data', 'No Data')]
     for meth, qual, org in zip(methods, qualityControl, organizations):
-
+        print 'looping meth q and o'
         result_id = str(meth[0])
         m_code = meth[1]
         m_des = meth[2]
@@ -1056,6 +1453,8 @@ def parse_odm2(file_path, result_num):
         meta_dic['organization'].update({s_code: o_org})
 
         dic = str(q_code) + 'aa' + str(m_code) + 'aa' + str(s_code)
+        print dic
+        print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!1dic"
         # dic = dic.replace(" ","")
         if dic not in meth_qual:
             # meth_qual.append(dic)
@@ -1140,6 +1539,7 @@ def parse_odm2(file_path, result_num):
         'master_times': master_times,
         'master_boxplot': master_boxplot,
         'master_stat': master_stat,
+        'gridded': False,
         'master_data_values': master_data_values
     }
 
@@ -1156,3 +1556,47 @@ def getOAuthHS(request):
     auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
     hs = HydroShare(auth=auth, hostname=hs_hostname)
     return hs
+
+
+def reproject_wkt_gdal(in_proj_type,
+                       in_proj_value,
+                       out_proj_type,
+                       out_proj_value,
+                       in_geom_wkt):
+
+    # try:
+        # if 'GDAL_DATA' not in os.environ:
+        #     raise Exception("Environment variable 'GDAL_DATA' not found!")
+
+    source = osr.SpatialReference()
+    if in_proj_type.lower() == "epsg":
+        source.ImportFromEPSG(int(in_proj_value))
+    elif in_proj_type.lower() == "proj4":
+        source.ImportFromProj4(in_proj_value)
+    elif in_proj_type.lower() == "esri":
+        source.ImportFromESRI([in_proj_value])
+
+
+    target = osr.SpatialReference()
+    if out_proj_type.lower() == "epsg":
+        target.ImportFromEPSG(out_proj_value)
+    elif out_proj_type.lower() == "proj4":
+        target.ImportFromProj4(out_proj_value)
+    elif out_proj_type.lower() == "esri":
+        target.ImportFromESRI([out_proj_value])
+        # raise Exception("unsupported projection type: " + out_proj_type)
+
+    transform = osr.CoordinateTransformation(source, target)
+
+    geom_gdal = ogr.CreateGeometryFromWkt(in_geom_wkt)
+
+    geom_gdal.Transform(transform)
+    return geom_gdal.ExportToJson()
+
+    # except Exception as ex:
+    #     # logger.error("in_proj_type: {0}".format(in_proj_type))
+    #     # logger.error("in_proj_value: {0}".format(in_proj_value))
+    #     # logger.error("out_proj_type: {0}".format(out_proj_type))
+    #     # logger.error("out_proj_value: {0}".format(out_proj_value))
+    #     # logger.error(str(type(ex)) + " " + ex.message)
+    #     raise ex

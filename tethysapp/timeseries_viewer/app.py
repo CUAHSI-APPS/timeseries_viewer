@@ -8,7 +8,7 @@ class TimeSeriesViewer(TethysAppBase):
 
     name = 'CUAHSI Data Series Viewer'
     index = 'timeseries_viewer:home'
-    icon = 'timeseries_viewer/images/viewer_icon2.gif'
+    icon = 'timeseries_viewer/images/viewer_icon2.png'
     package = 'timeseries_viewer'
     root_url = 'timeseries_viewer'
     # color = '#ffff4d'
@@ -51,9 +51,10 @@ class TimeSeriesViewer(TethysAppBase):
                     UrlMap(name='hydroshare',
                            url='hydroshare',
                            controller='timeseries_viewer.controllers.hydroshare'),
-                    UrlMap(name='test',
-                           url='test',
-                           controller='timeseries_viewer.controllers.test')
+
+                    UrlMap(name='get_hydroshare_res',
+                           url='get_hydroshare_res',
+                           controller='timeseries_viewer.controllers.get_hydroshare_res')
 
 
         )
