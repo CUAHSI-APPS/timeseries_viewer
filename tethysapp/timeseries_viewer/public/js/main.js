@@ -401,8 +401,8 @@ function addingseries(unit_off) {
                     json_data = json.data
                     nwm_data = json.gridded_data
                     if (json.gridded_data.length != 0){
-                        console.log('griddddddddddde data')
-                        $('#modalNWMMAP').modal('show')
+                        console.log('griddddddddddde data');
+                        $('#modalNWMMAP').modal('show');
 
                         setTimeout(function(){
                             loadMap(json.gridded_data);
@@ -410,17 +410,10 @@ function addingseries(unit_off) {
                             $(window).trigger("resize");
                         }, 800);
                     }
-                    var json_len = json_data.length
-                    end_of_resources = end_of_resources + json_len
-                    // console.log(json_len)
+                    var json_len = json_data.length;
+                    end_of_resources = end_of_resources + json_len;
                     for (series in json_data) {
-                        //number of res_ids
-                        console.log('start series')
-                        // if (res_id_counter == series_length){
-                        //     end_of_data = true
-                        // }
                         plot_data(res_id[id], unit_off, id_qms, json_data[series],json_data.length)
-                        // series_length = series_length+1
                     }
                 }
             },
@@ -436,7 +429,7 @@ function addingseries(unit_off) {
 
 
 function plot_data(res_id, unit_off,id_qms,data){
-    console.log(data)
+    // console.log(data)
     json = data
     var chart = $("#chartContainer").CanvasJSChart()
     var xtime = []
@@ -453,24 +446,25 @@ function plot_data(res_id, unit_off,id_qms,data){
     var val1=[];
 
     var counter =0;
+    // Each resource can have multiple subseries depending on the methonds and quality controls levels
     end_of_resources = Object.keys(master_values).length + end_of_resources -1
-    console.log(end_of_resources)
+    // console.log(end_of_resources)
     id_qms_a_split = id_qms.split('aa')//identifier based upon url parameters
     var counter1 = 0;
-    console.log(master_values);
+    // console.log(master_values);
 
     for (val in master_values)//this loop deals with any parameters that are not specified in the url query
     {
         meta1 = val.split("aa");// an identifier based upon data in file
         if (id_qms != 'not_cuahsi')
         {
-            if (id_qms_a_split[0] == '') {
+            if (id_qms_a_split[0] === '') {
                 meta1[0] = ''
             }
-            if (id_qms_a_split[1] == '') {
+            if (id_qms_a_split[1] === '') {
                 meta1[1] = ''
             }
-            if (id_qms_a_split[2] == '') {
+            if (id_qms_a_split[2] === '') {
                 meta1[2] = ''
             }
         }
@@ -492,44 +486,43 @@ function plot_data(res_id, unit_off,id_qms,data){
         bad_meta = true
     }
     for (val in master_values) {
-        console.log("looping through master values")
+        // console.log("looping through master values")
         if (bad_meta == true) {
             var arr=[]
             for (entry in val1){arr.push('')}
             val1 = arr
-
             id_qms_a = ''
         }
         if (id_qms_a == val1[counter] || id_qms_a == 'not_cuahsi') {
             //console.log(json)
-            var m_xval = []
-            var m_yval = []
+            var m_xval = [];
+            var m_yval = [];
             // var length_master = length_master + 1
             var meta = val.split("aa");
-            var code = meta_dic['quality_code'][meta[0]]
-            var quality = meta_dic['quality'][code]
-            var quality_code = [meta[0]]
+            var code = meta_dic['quality_code'][meta[0]];
+            var quality = meta_dic['quality'][code];
+            var quality_code = [meta[0]];
             var method = meta_dic['method'][meta[1]]
-            var sourcedescription = meta_dic['source'][meta[2]]
-            var organization = meta_dic['organization'][meta[2]]
-            var m_xval = master_times[val]
-            var boxplot = master_boxplot[val]
-            var mean = master_stat[val][0]
-            var median = master_stat[val][1]
-            var max = master_stat[val][2]
-            var min = master_stat[val][3]
-            var m_yval = master_values[val]
-            var count = m_xval.length
-            var site_name = json.site_name
-            var variable_name = json.variable_name
-            var unit = json.units
+            var sourcedescription = meta_dic['source'][meta[2]];
+            var organization = meta_dic['organization'][meta[2]];
+            var m_xval = master_times[val];
+            var boxplot = master_boxplot[val];
+            var mean = master_stat[val][0];
+            var median = master_stat[val][1];
+            var max = master_stat[val][2];
+            var min = master_stat[val][3];
+            var m_yval = master_values[val];
+            var count = m_xval.length;
+            var site_name = json.site_name;
+            var variable_name = json.variable_name;
+            var unit = json.units;
             var units = json.units;
-            var datatype = json.datatype
-            var valuetype = json.valuetype
-            var samplemedium = json.samplemedium
-            var timesupport = json.timesupport
-            var timeunit = json.timeunit
-            var boxplot_count = number
+            var datatype = json.datatype;
+            var valuetype = json.valuetype;
+            var samplemedium = json.samplemedium;
+            var timesupport = json.timesupport;
+            var timeunit = json.timeunit;
+            var boxplot_count = number;
             if (site_name == null) {
                 site_name = "N/A"
             }
@@ -569,10 +562,10 @@ function plot_data(res_id, unit_off,id_qms,data){
             if (units != null) {
                 units = units.replace(/\s+/g, '==');//removes any spaces in the units
             }
-            var unit_off_bool = false
+            var unit_off_bool = false;
             var y_title = null;//tracks which variable to use for the yaxis title
-            var temp_date = new Date()
-            var utc_offset = temp_date.getTimezoneOffset()*1000*60
+            var temp_date = new Date();
+            var utc_offset = temp_date.getTimezoneOffset()*1000*60;
             for (i = 0; i < m_xval.length; i++)//formats values and times for the graph
             {
                 var date_value = m_xval[i]
@@ -584,68 +577,67 @@ function plot_data(res_id, unit_off,id_qms,data){
                 xtime.push({x:actual_date , y: yval})
             }
 
-            var all_null = true
+            var all_null = true;
             for (i = 0; i < m_yval.length; i++) {
                 if (m_yval[i] != null) {
-                    all_null = false
+                    all_null = false;
                     break
                 }
-                else {
-                    console.log('null')
-                }
             }
-            counter_all =counter_all+1
+            counter_all =counter_all+1;
             if(all_null){
-                console.log(end_of_resources)
-                end_of_resources = end_of_resources - 1
-                console.log(end_of_resources)
-                console.log(counter_all)
-                console.log('everything is null')
+                console.log(end_of_resources);
+                // end_of_resources = end_of_resources - 1;
+                console.log(end_of_resources);
+                console.log(counter_all);
+                console.log('everything is null');
                 if (0==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
                 {
                     display_table_chart(number)
+
                 }
                 else{return}
+                return
             }
 
-            data1 = xtime
-            if (unit_off == '') //unit_off stores the unit being turned off if there are more than 2 unit types
+            data1 = xtime;
+            if (unit_off === '') //unit_off stores the unit being turned off if there are more than 2 unit types
             {
                 if (unit1 == null) {
-                    unit1 = units
+                    unit1 = units;
                     y_title = 0
                 }
-                else if (unit1 == units){
+                else if (unit1 === units){
                     y_title = 0
                 }
-                else if (unit1 != units)//checks the first unit type agaisnt the current unit
+                else if (unit1 !== units)//checks the first unit type agaisnt the current unit
                 {
                     if (unit2 == null) {
-                        y_title = 1
+                        y_title = 1;
                         unit2 = units //this tracks the second unit type if there is one
                     }
 
-                    else if (unit2 == units){
+                    else if (unit2 === units){
                         y_title = 1
                     }
-                    else if (units != unit2) {
-                        y_title = 3
+                    else if (units !== unit2) {
+                        y_title = 3;
                         unit_off_bool = true
                     }
                 }
             }
             else {
-                if (units != unit_off) {
-                    if (units == unit1) {
-                        y_title = 0
+                if (units !== unit_off) {
+                    if (units === unit1) {
+                        y_title = 0;
                         unit_off_bool = false
                     }
-                    else if (units == unit2) {
-                        y_title = 1
+                    else if (units === unit2) {
+                        y_title = 1;
                         unit_off_bool = false
                     }
                     else{
-                        y_title = 3
+                        y_title = 3;
                         unit_off_bool = true
                     }
                 }
@@ -720,7 +712,7 @@ function plot_data(res_id, unit_off,id_qms,data){
                     dataPoints: data1
                 };
             }
-            console.log('push data to master list')
+            // console.log('push data to master list')
             series_tracker.push(newSeries)
 
             xtime = []
@@ -789,6 +781,7 @@ function plot_data(res_id, unit_off,id_qms,data){
         console.log(counter_all)
         if (0==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
         {
+            console.log("Display Resources")
             display_table_chart(number)
         }
 
@@ -797,6 +790,7 @@ function plot_data(res_id, unit_off,id_qms,data){
 }
 // Take all data and display it in the table and graph
 function display_table_chart(number){
+    console.log("Adding data to Table")
     var chart = $("#chartContainer").CanvasJSChart()
     var table = $('#data_table').DataTable();//defines the primary table
         // console.log(row_tracker)

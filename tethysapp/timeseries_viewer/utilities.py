@@ -1400,11 +1400,12 @@ def parse_odm2(file_path, result_num):
     methods = c.fetchall()  # Returns Result id method id and method description for each result
     # Quality Control
     c.execute(
-        'SELECT ProcessingLevels.ProcessingLevelCode, ProcessingLevels.Explanation '
+        'SELECT ProcessingLevels.ProcessingLevelCode, ProcessingLevels.Explanation, ProcessingLevels.Definition '
         'FROM Results, ProcessingLevels ' +
         'WHERE Results.ResultID=' + result_num + ' '
                                                  'AND Results.ProcessingLevelID = ProcessingLevels.ProcessingLevelID')
     qualityControl = c.fetchall()
+
     c.execute(
         'SELECT Organizations.OrganizationID,Organizations.OrganizationName,Organizations.OrganizationName '
         'FROM Organizations,Affiliations,ActionBy,Actions,FeatureActions,Results ' +
@@ -1414,8 +1415,11 @@ def parse_odm2(file_path, result_num):
         'AND Actions.ActionID=ActionBy.ActionID ' +
         'AND ActionBy.AffiliationID = Affiliations.AffiliationID ' +
         'AND Affiliations.OrganizationID = Organizations.OrganizationID ')
+
     # c.execute('Select *')
     organizations = c.fetchall()
+    print 'result number'
+    print result_num
     print 'methods'
     print 'too many methods'
     # print methods
@@ -1425,8 +1429,8 @@ def parse_odm2(file_path, result_num):
     print organizations
     dic = 'aaaa'
     if organizations ==[]:
-        organizations = [(1,'No Data','No Data')]
-    if qualityControl == []:
+        organizations = [(1, 'No Data', 'No Data')]
+    if qualityControl == [] or qualityControl =='':
         qualityControl = [(1, 'No Data', 'No Data')]
     if methods == []:
         methods = [(1, 'No Data', 'No Data', 'No Data', 'No Data')]
@@ -1439,7 +1443,10 @@ def parse_odm2(file_path, result_num):
         valuetype = meth[4]
 
         q_code = qual[0]
-        q_des = qual[1]
+        if qual[1] == '':
+            q_des = qual[2]
+        else:
+            q_des = qual[1]
 
         s_code = org[0]
         o_org = org[1]
