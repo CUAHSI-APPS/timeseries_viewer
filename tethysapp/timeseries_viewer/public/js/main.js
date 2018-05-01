@@ -15,11 +15,12 @@ var counter_all =0;
 var end_of_resources = 0;
 var unit3 = '';
 var res = null;
+var counter_max = 5000;
 // here we set up the configuration of the CanvasJS chart
 // 269 maximally distinct colors
 var color_selection = [ "#FF4A46", "#008941", "#006FA6", "#A30059","#000000", "#FFFF00", "#1CE6FF", "#FF34FF",
         "#FFDBE5", "#7A4900", "#0000A6", "#63FFAC", "#B79762", "#004D43", "#8FB0FF", "#997D87",
-        "#5A0007", "#809693", "#FEFFE6", "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
+        "#5A0007", "#809693",  "#1B4400", "#4FC601", "#3B5DFF", "#4A3B53", "#FF2F80",
         "#61615A", "#BA0900", "#6B7900", "#00C2A0", "#FFAA92", "#FF90C9", "#B903AA", "#D16100",
         "#DDEFFF", "#000035", "#7B4F4B", "#A1C299", "#300018", "#0AA6D8", "#013349", "#00846F",
         "#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2", "#C2FF99", "#001E09",
@@ -114,10 +115,11 @@ var nwm_data = null;
 $(document).ready(function (callback) {
     console.log("ready");
     var table = $('#data_table').DataTable({
-        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
+        "lengthMenu": [[10, 25, 50], [10, 25, 50]],
+        "deferRender":true,
 
         "createdRow": function (row, data, dataIndex) {
-            var col_counter = 0
+            var col_counter = 0;
             columns =
             this.api().columns().every( function () {
                 if (col_counter >1){
@@ -190,6 +192,7 @@ $(document).ready(function (callback) {
         ],
         "order": [[1, 'asc']]
     });
+
     //Add event listener for opening and closing details
     $('#data_table tbody').on('click', 'td.details-control', function () {
         var tr = $(this).closest('tr');
@@ -270,7 +273,7 @@ $(document).ready(function (callback) {
             //         this.setAttribute('title', quality_title);
             // });
             //console.log({"data": "quality"})
-            var table = $('#hs_resource_table').DataTable()
+            var table = $('#hs_resource_table').DataTable();
             table.$('td').tooltip({
                 selector: '[data-toggle="tooltip"]',
                 container: 'body',
@@ -318,13 +321,10 @@ $(document).ready(function (callback) {
 
 function addingseries(unit_off) {
     var src = find_query_parameter("src");
-    var series_counter =0;
     var source = find_query_parameter('Source');
-    var chart = $("#chartContainer").CanvasJSChart();
     var counter = 0;
     var res_id =null;
     var xml_rest_id=null;
-    var sources = [];
     CanvasJS.addColorSet("greenShades",color_selection);
     $("#chartContainer").CanvasJSChart(chart_options);
 
@@ -341,7 +341,7 @@ function addingseries(unit_off) {
     }
     else if (src=='xmlrest'){
         res_id = find_query_parameter("res_id");
-        res_id = res_id[0].split(',')
+        res_id = res_id[0].split(',');
         xml_rest_id = res_id
         res_id ='xmlrest'
     }
@@ -350,11 +350,12 @@ function addingseries(unit_off) {
         unit_off = ''
     }
     //Create an array of same dimension of res_id with sources
-    sources = res_id.slice()
-    sources = sources.fill(src)
+    sources = res_id.slice();
+    sources = sources.fill(src);
     //Add selected hs resources to resource list
-    res_id =res_id.concat(add_hs_res)
-
+    res_id =res_id.concat(add_hs_res);
+    console.log(res_id.length)
+    end_of_resources = end_of_resources + res_id.length;
     for (var id in res_id){
         src = sources[id]
         if (src == undefined){
@@ -378,13 +379,12 @@ function addingseries(unit_off) {
         }
         counter = counter + 1
 
-        length_master= 0
+        length_master= 0;
         var current_url = location.href;
         var index = current_url.indexOf("timeseries-viewer");
         var base_url = current_url.substring(0, index);
         var csrf_token = getCookie('csrftoken');
         var data_url = base_url + 'timeseries-viewer/chart_data/' + res_id[id] + '/' + src + '/';
-        var res_id_counter = 0
         $.ajax({
             type:"POST",
             headers:{'X-CSRFToken':csrf_token},
@@ -401,9 +401,7 @@ function addingseries(unit_off) {
                     json_data = json.data
                     nwm_data = json.gridded_data
                     if (json.gridded_data.length != 0){
-                        console.log('griddddddddddde data');
                         $('#modalNWMMAP').modal('show');
-
                         setTimeout(function(){
                             loadMap(json.gridded_data);
                             // console.log('resize')
@@ -411,16 +409,25 @@ function addingseries(unit_off) {
                         }, 800);
                     }
                     var json_len = json_data.length;
-                    end_of_resources = end_of_resources + json_len;
+                    console.log(json_len);
+                    end_of_resources = end_of_resources + json_len-1;
+                    console.log('return');
                     for (series in json_data) {
-                        plot_data(res_id[id], unit_off, id_qms, json_data[series],json_data.length)
+                        if (counter_all > counter_max){
+                            display_table_chart(counter_max);
+                            alert("This application only supports 5000 time series");
+                            break
+                        }
+                        else{
+                            plot_data(res_id[id], unit_off, id_qms, json_data[series],json_data.length)
+                        }
                     }
                 }
             },
             error: function (xhr,status,error) {
-                console.log(xhr)
-                console.log(status)
-                console.log(error)
+                console.log(xhr);
+                console.log(status);
+                console.log(error);
                 show_error("Error loading time series from " + res_id);
             }
         });
@@ -429,14 +436,10 @@ function addingseries(unit_off) {
 
 
 function plot_data(res_id, unit_off,id_qms,data){
-    // console.log(data)
-    json = data
-    var chart = $("#chartContainer").CanvasJSChart()
-    var xtime = []
-    var end_of_subresources =false
-
+    json = data;
+    var chart = $("#chartContainer").CanvasJSChart();
+    var xtime = [];
     var master_values = json.master_values;
-    //var master_counter = json.master_counter;
     var master_times = json.master_times;
     var meta_dic = json.meta_dic;
     var master_boxplot = json.master_boxplot;
@@ -490,14 +493,10 @@ function plot_data(res_id, unit_off,id_qms,data){
         if (bad_meta == true) {
             var arr=[]
             for (entry in val1){arr.push('')}
-            val1 = arr
+            val1 = arr;
             id_qms_a = ''
         }
         if (id_qms_a == val1[counter] || id_qms_a == 'not_cuahsi') {
-            //console.log(json)
-            var m_xval = [];
-            var m_yval = [];
-            // var length_master = length_master + 1
             var meta = val.split("aa");
             var code = meta_dic['quality_code'][meta[0]];
             var quality = meta_dic['quality'][code];
@@ -594,7 +593,6 @@ function plot_data(res_id, unit_off,id_qms,data){
                 if (0==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
                 {
                     display_table_chart(number)
-
                 }
                 else{return}
                 return
@@ -642,7 +640,7 @@ function plot_data(res_id, unit_off,id_qms,data){
                     }
                 }
                 else{
-                    y_title = 3
+                    y_title = 3;
                     unit_off_bool = true
                 }
             }
@@ -656,10 +654,8 @@ function plot_data(res_id, unit_off,id_qms,data){
                 }
                 var newSeries =
                 {
-                    //type: "scatter",
                     type: "line",
                     axisYType: "primary",
-                    //axisYType:"secondary",
                     xValueType: "dateTime",
                     xValueFormatString: "MMM DD, YYYY: HH:mm",
                     showInLegend: false,
@@ -672,7 +668,8 @@ function plot_data(res_id, unit_off,id_qms,data){
                 chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
                 chart.options.axisY.titleWrap = true
             }
-            else if (y_title == 1) {//sets the y-axis 2 title and flags that the data is graphed on the secondary axis
+            else if (y_title == 1) {
+                //sets the y-axis 2 title and flags that the data is graphed on the secondary axis
                 // unit_off_bool = true
                 if (max > y2max) {
                     y2max = max
@@ -683,7 +680,6 @@ function plot_data(res_id, unit_off,id_qms,data){
                 var newSeries =
                 {
                     type: "line",
-                    //axisYType:"primary",
                     axisYType: "secondary",
                     xValueType: "dateTime",
                     xValueFormatString: "MMM DD, YYYY: HH:mm",
@@ -691,7 +687,7 @@ function plot_data(res_id, unit_off,id_qms,data){
                     indexLabelFontSize: 1,
                     variable: units,
                     visible: true,
-                    name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
+                    name: 'Site: ' + site_name + '<br/>Variable:' + json.variable_name + '<br/> Value: ',
                     dataPoints: data1
                 };
                 chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
@@ -701,7 +697,6 @@ function plot_data(res_id, unit_off,id_qms,data){
                 var newSeries =
                 {
                     type: "line",
-                    //axisYType:"primary",
                     axisYType: "primary",
                     xValueType: "dateTime",
                     showInLegend: false,
@@ -737,7 +732,7 @@ function plot_data(res_id, unit_off,id_qms,data){
                 quality_title = "N/A"
             }
             else {
-                quality_title = quality //string representing the contents of the tooltip
+                quality_title = quality; //string representing the contents of the tooltip
                 if (quality.length > 20) {
                     quality = '(' + quality_code + ') ' + quality.substring(0, quality.indexOf(' ') + 1) + '...'
                 }
@@ -783,9 +778,8 @@ function plot_data(res_id, unit_off,id_qms,data){
         {
             console.log("Display Resources")
             display_table_chart(number)
+            return
         }
-
-
     }
 }
 // Take all data and display it in the table and graph
@@ -793,65 +787,57 @@ function display_table_chart(number){
     console.log("Adding data to Table")
     var chart = $("#chartContainer").CanvasJSChart()
     var table = $('#data_table').DataTable();//defines the primary table
-        // console.log(row_tracker)
-        // var table = $('#data_table').DataTable();
-        table
-            .clear()
-            .draw();
-        // Adding data row to data for each series
-        for (row in row_tracker){
-            // console.log(row_tracker[row])
-            table.row.add(row_tracker[row]).draw();
+    table
+        .clear()
+        .draw();
+    // Adding data row to data for each series
+    for (row in row_tracker){
+        table.row.add(row_tracker[row]);
+    }
+    table.draw();
+    console.log('adding data to chart');
+    if (ymax == ymin){
+        ymax = ymin +1
+    }
+     if (y2max == y2min){
+        y2max = y2min +1
+    }
+    chart.options.data = series_tracker;
+    chart.options.axisY.titleFontSize = 15;
+    chart.options.axisY2.titleFontSize = 15;
+    chart.options.axisX.titleFontSize = 15;
 
-        }
-        console.log('adding data to chart')
-        // console.log(series_tracker)
-        // console.log(ymax)
-        // console.log(ymin)
-        if (ymax == ymin){
-            ymax = ymin +1
-        }
-         if (y2max == y2min){
-            y2max = y2min +1
-        }
-        chart.options.data = series_tracker
-        chart.options.axisY.titleFontSize = 15
-        chart.options.axisY2.titleFontSize = 15
-        chart.options.axisX.titleFontSize = 15
+    grid_values = gridlines(y2max,y2min);
+    chart.options.axisY2.viewportMaximum = grid_values.maxview;
+    chart.options.axisY2.viewportMinimum = grid_values.minview;
+    chart.options.axisY2.interval = grid_values.interval;
+    chart.options.axisY2.maximum = grid_values.maxview;
+    chart.options.axisY2.minimum = grid_values.minview;
 
-        grid_values = gridlines(y2max,y2min)
-        chart.options.axisY2.viewportMaximum = grid_values.maxview
-        chart.options.axisY2.viewportMinimum = grid_values.minview
-        chart.options.axisY2.interval = grid_values.interval
-        chart.options.axisY2.maximum = grid_values.maxview
-        chart.options.axisY2.minimum = grid_values.minview
+    grid_values = gridlines(ymax,ymin)
+    chart.options.axisY.viewportMaximum = grid_values.maxview;
+    chart.options.axisY.maximum = grid_values.maxview;
+    chart.options.axisY.viewportMinimum = grid_values.minview;
+    chart.options.axisY.minimum = grid_values.minview;
+    chart.options.axisY.interval = grid_values.interval;
 
-        grid_values = gridlines(ymax,ymin)
-        chart.options.axisY.viewportMaximum = grid_values.maxview
-        chart.options.axisY.maximum = grid_values.maxview
-        chart.options.axisY.viewportMinimum = grid_values.minview
-        chart.options.axisY.minimum = grid_values.minview
-        chart.options.axisY.interval = grid_values.interval
-
-        if (title == 1) {
-            //chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
-            // chart.options.title.texft = "CUAHSI Data Series Viewer*"
-            // chart.render();
-        }
-        else {
-            //chart.setTitle({ text: "CUAHSI Data Series Viewer" });
-            chart.options.title.text = "CUAHSI Data Series Viewer"
-            chart.render();
-        }
-        $('#data_table tbody tr:eq(0) td:eq(1)').click()
-        $('#data_table tbody tr:eq(0) td:eq(1)').click()
-        for (i = 0; i < number; i++) {
-            $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
-            $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click()
-        }
-        finishloading();
-
-
+    if (title == 1) {
+        //chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
+        // chart.options.title.text = "CUAHSI Data Series Viewer*"
+        // chart.render();
+    }
+    else {
+        //chart.setTitle({ text: "CUAHSI Data Series Viewer" });
+        chart.options.title.text = "CUAHSI Data Series Viewer"
+        chart.render();
+    }
+    $('#data_table tbody tr:eq(0) td:eq(1)').click();
+    $('#data_table tbody tr:eq(0) td:eq(1)').click();
+    for (i = 0; i < number; i++) {
+        $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click();
+        $('#data_table tbody tr:eq(' + i + ') td:eq(1)').click();
+    }
+    finishloading();
 }
 
 function roundUp(x){
@@ -875,17 +861,17 @@ function roundUp(x){
 function roundDown(x){
     var negative = false;
     if(x<10 && x>=0){
-        x = 0
+        x = 0;
 
         return x
     }
     else if(x <1 && x>=-1){
-        x=1
+        x=1;
         negative = true
     }
     else if(x < 0) {
         if(x<0 &&x >= -10){
-            x = -10
+            x = -10;
             return x
         }
         else{
@@ -921,48 +907,30 @@ function series_visiblity_toggle(id, name) {
     var table = $('#data_table').DataTable()
 
     //units = units.replace(/\s+/g, '==')
+    $('#loading').show();
     if (name == "master_chk") {
         if (document.getElementById("master_chk").checked==true){
             //turn on everything
             for (series in chart1.options.data){
-                console.log(series)
-                console.log(unit1)
-                console.log(unit2)
-
-
-
-                row_up = table.rows().data()[series]
-                legend = row_up.legend
-                chk_unit = row_up.chk_units
-                console.log(chk_unit)
-
-                // table.fnUpdate(row_up,series,undefined,false);
-
-                // var chk_unit = document.getElementById(series).name;
+                row_up = table.rows().data()[series];
+                legend = row_up.legend;
+                chk_unit = row_up.chk_units;
                 if (chk_unit == unit1 || chk_unit == unit2){
-                    row_up.legend = legend.replace('unchecked','checked')
-
-                    chart1.options.data[series].visible = true
-                    // document.getElementById(series).checked = true
+                    row_up.legend = legend.replace('unchecked','checked');
+                    chart1.options.data[series].visible = true;
                     table.row(series).data(row_up).draw()
-
                 }
-
             }
         }
         else{
-            console.log('turn off')
             //turn off everything
             for (series in chart1.options.data){
-                row_up = table.rows().data()[series]
+                row_up = table.rows().data()[series];
                 legend = row_up.legend
-                row_up.legend = legend.replace('checked','unchecked')
-                console.log(series)
-                chart1.options.data[series].visible = false
-                // document.getElementById(series).checked = false
-                row_up.legend = legend.replace('checked','unchecked')
+                // row_up.legend = legend.replace('checked','unchecked');
+                chart1.options.data[series].visible = false;
+                row_up.legend = legend.replace('checked','unchecked');
                 table.row(series).data(row_up).draw()
-
             }
         }
         chart1.render();
@@ -997,6 +965,7 @@ function series_visiblity_toggle(id, name) {
             }
         }
     }
+    $('#loading').hide();
 }
 
 
@@ -1535,13 +1504,23 @@ function show_error(error_message) {
 }
 function get_screenshot() {
     var myDiv = document.getElementById('app-content-wrapper');
+    var table = $('#data_table').DataTable();
+    var table_len = table.page.len();
+
     myDiv.scrollTop = 0;
-    $("tfoot").hide()
-    console.log(screen.width)
+    $("tfoot").hide();
+    console.log(screen.width);
+    console.log(counter_all);
+    if (counter_all > 100){
+        alert ("Only the current table view and graph will be captured in this screenshot")
+    }
+    else{
+        table.page.len(-1);
+        table.draw()
+    }
     html2canvas(document.body, {
         onrendered: function (canvas) {
-            console.log(canvas)
-            canvas.setAttribute("id", "canvas_print")
+            canvas.setAttribute("id", "canvas_print");
 
             var print = document.getElementById('print_div');
             print.innerHTML =""
@@ -1550,13 +1529,13 @@ function get_screenshot() {
             myDiv.scrollTop = 0;
             print.appendChild(canvas);
             var canvas = document.getElementById("canvas_print");
-            console.log(link)
             link.href = canvas.toDataURL("image/png");
             // link.href    = canvas.toDataURL();
-            link.download = 'data_series_viewer.png'
-            console.log(link)
-            $("#download")[0].click()
-            $("tfoot").show()
+            link.download = 'data_series_viewer.png';
+            $("#download")[0].click();
+            $("tfoot").show();
+            table.page.len(table_len);
+            table.draw()
         },
         width: $(document).width(),
         height:$('#app-content-wrapper')[0].scrollHeight

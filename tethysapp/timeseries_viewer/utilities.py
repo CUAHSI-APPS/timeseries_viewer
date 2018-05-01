@@ -138,7 +138,6 @@ def parse_1_0_and_1_1(root):
             # lists to store the time-series data
 
             # iterate through xml document and read all values
-            print root_tag
             for element in root.iter():
                 bracket_lock = -1
                 if '}' in element.tag:
@@ -225,7 +224,6 @@ def parse_1_0_and_1_1(root):
                             meta_dic['source'].update({m_code: m_des})
                             meta_dic['organization'].update({m_code: m_org})
                         if "qualitycontrollevel" == tag.lower():
-                            print tag
                             try:
                                 qlc = element.attrib['qualityControlLevelID']
                             except:
@@ -237,7 +235,6 @@ def parse_1_0_and_1_1(root):
                                         'qualityControlLevelID']
                                     m_code = m_code.replace(" ", "")
                                 if 'qualitycontrollevelcode' in subele.tag.lower():
-                                    print subele.text
                                     m_code1 = subele.text
                                     if m_code1 ==None:
                                         m_code1 = m_code
@@ -250,7 +247,6 @@ def parse_1_0_and_1_1(root):
                                     m_des = subele.text
                             meta_dic['quality'].update({m_code: m_des})
                             meta_dic['quality_code'].update({m_code1: m_code})
-                            # print meta_dic
                     elif 'value' == tag:
                         n = element.attrib['dateTime']
                         n = ciso8601.parse_datetime(n)
@@ -770,13 +766,8 @@ def unzip_waterml(request, res_id, src):
 
         except Exception as e:
             print error
+            print "generic error"
             error = str(e)
-
-    # if we don't have the xml file, download and unzip it
-    # file_number = int(file_meta['file_number'])
-    # file_path = file_meta['file_path']
-    # file_type = file_meta['file_type']
-    # error = file_meta['error']
 
     if error == '':
         if file_type == 'waterml':
@@ -792,7 +783,6 @@ def unzip_waterml(request, res_id, src):
                 data_for_chart.append(chart_data[0])
                 error = chart_data[1]
         elif file_type == 'sqlite':
-            print "sqlite!!!!!!!!!!!!!!!!!!!!!!!!!"
             conn = sqlite3.connect(file_path)
             c = conn.cursor()
             c.execute('SELECT Results.ResultID FROM Results')
@@ -829,7 +819,6 @@ def unzip_waterml(request, res_id, src):
                     # TODO fix error handling of sqlite and netcdf
                     error = chart_data[1]
             except:
-                print 'Gridded Data'
                 y_array = dataset.variables['y']
                 x_array = dataset.variables['x']
                 # todo put coordinate conversion here
@@ -932,8 +921,6 @@ def parse_netcdf(index, id, dataset, master_times):
     nodatavalue =  dataset.missing_value
     variable_name = dataset.long_name
 
-    print nodatavalue
-    print variable_name
 
 
     datatype = 'Average'
@@ -948,8 +935,6 @@ def parse_netcdf(index, id, dataset, master_times):
 
     # data = dataset.variables['streamflow'][:]
     data = dataset[:]
-    print '%%%%%%%%%%%%%'
-    print data
     for ele in data:
         try:
             v = ele[index]
@@ -1216,7 +1201,7 @@ def error_report(text, res_id):
         file_temp = open(file_temp_name, 'a')
         file_temp.write('Error Reports: ')
         file_temp.close()
-    with  open(file_temp_name, 'a') as file_temp:
+    with open(file_temp_name, 'a') as file_temp:
         # time = datetime.now()
         time2 = strftime("%Y-%m-%d %H:%M:%S", gmtime())
         data = dict(Date_Time_UTC=time2, Error_text=text, Resource_ID=res_id)
@@ -1274,7 +1259,6 @@ def parse_ts_layer(path):
         auth_token = ''
         if ref_type == 'WOF':
             if service_type == 'SOAP':
-                print 'soap'
                 if 'nasa' in url:
                     headers = {'content-type': 'text/xml'}
                     body = """<?xml version="1.0" encoding="utf-8"?>
@@ -1293,7 +1277,6 @@ def parse_ts_layer(path):
                     response = requests.post(url, data=body, headers=headers)
                     response = response.content
                 else:
-                    print 'connecting to soap'
                     client = connect_wsdl_url(url)
                     try:
                         response = client.service.GetValues(site_code,
@@ -1372,8 +1355,6 @@ def parse_odm2(file_path, result_num):
         'WHERE Results.ResultID=' + result_num + ' '
                                                  'AND Results.UnitsID = Units.UnitsID AND Results.VariableID = Variables.VariableID')
     var_unit = c.fetchall()
-    print var_unit
-    print 'sqlite!!!'
     for unit in var_unit:
         variable_name = unit[0]
         units = unit[1]
@@ -1418,15 +1399,7 @@ def parse_odm2(file_path, result_num):
 
     # c.execute('Select *')
     organizations = c.fetchall()
-    print 'result number'
-    print result_num
-    print 'methods'
-    print 'too many methods'
-    # print methods
-    print 'quality control'
-    print qualityControl
-    print 'organizations'
-    print organizations
+
     dic = 'aaaa'
     if organizations ==[]:
         organizations = [(1, 'No Data', 'No Data')]
@@ -1435,7 +1408,6 @@ def parse_odm2(file_path, result_num):
     if methods == []:
         methods = [(1, 'No Data', 'No Data', 'No Data', 'No Data')]
     for meth, qual, org in zip(methods, qualityControl, organizations):
-        print 'looping meth q and o'
         result_id = str(meth[0])
         m_code = meth[1]
         m_des = meth[2]
@@ -1460,8 +1432,6 @@ def parse_odm2(file_path, result_num):
         meta_dic['organization'].update({s_code: o_org})
 
         dic = str(q_code) + 'aa' + str(m_code) + 'aa' + str(s_code)
-        print dic
-        print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!1dic"
         # dic = dic.replace(" ","")
         if dic not in meth_qual:
             # meth_qual.append(dic)
