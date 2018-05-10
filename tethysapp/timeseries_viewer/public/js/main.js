@@ -345,11 +345,17 @@ function addingseries(unit_off) {
         xml_rest_id = res_id
         res_id ='xmlrest'
     }
+    else {
+         $('#help-modal').modal('show');
+        $("#loading").hide()
+        return
+    }
 
     if (unit_off == null) {
         unit_off = ''
     }
     //Create an array of same dimension of res_id with sources
+
     sources = res_id.slice();
     sources = sources.fill(src);
     //Add selected hs resources to resource list
