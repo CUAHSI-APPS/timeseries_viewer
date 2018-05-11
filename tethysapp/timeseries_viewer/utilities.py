@@ -23,17 +23,11 @@ import uuid
 import ciso8601
 from hs_restclient import HydroShare, HydroShareAuthOAuth2, \
     HydroShareNotAuthorized, HydroShareNotFound
-import hs_restclient as hs_r
 from django.conf import settings
 from time import gmtime, strftime
 from time import mktime as mktime
-from tethys_services.backends.hs_restclient_helper import get_oauth_hs
 from netCDF4 import Dataset
 import sys
-import shapely.wkt
-import shapely.geometry
-import shapely.ops
-# import pyproj
 from osgeo import ogr
 from osgeo import osr
 import ast
