@@ -7,23 +7,10 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
 import os
-import requests
 import utilities
-import uuid
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
-import sqlite3
 from wsgiref.util import FileWrapper
-import ast as ast
-import json
-import netCDF4
-from selenium import webdriver
-import shapely.wkt
-import shapely.geometry
-import shapely.ops
-# import pyproj
-from osgeo import ogr
-from osgeo import osr
 # from PyQt4.QtCore import QTimer
 use_hs_client_helper = True
 # Backwards compatibility with older versions of Tethys
