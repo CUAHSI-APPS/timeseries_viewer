@@ -111,6 +111,7 @@ var hs_res_list_loaded = false;
 var add_hs_res = [];
 var selected_features = null;
 var nwm_data = null;
+var title = null;
 
 $(document).ready(function (callback) {
     console.log("ready");
@@ -214,7 +215,7 @@ $(document).ready(function (callback) {
                 ' Variable:' + row.data().variable,
                 data: [],
                 groupPadding: 0,
-            }
+            };
             // creating and formatting the boxplot for each time series
             series.data = [row.data().boxplot.map(Number)];
             var name_plot = '#container' + row.data().boxplot_count
@@ -346,7 +347,7 @@ function addingseries(unit_off) {
         res_id ='xmlrest'
     }
     else {
-         $('#help-modal').modal('show');
+        $('#help-modal').modal('show');
         $("#loading").hide()
         return
     }
@@ -417,7 +418,6 @@ function addingseries(unit_off) {
                     var json_len = json_data.length;
                     console.log(json_len);
                     end_of_resources = end_of_resources + json_len-1;
-                    console.log('return');
                     for (series in json_data) {
                         if (counter_all > counter_max){
                             display_table_chart(counter_max);
@@ -567,6 +567,10 @@ function plot_data(res_id, unit_off,id_qms,data){
             if (units != null) {
                 units = units.replace(/\s+/g, '==');//removes any spaces in the units
             }
+            console.log(units)
+            if (units == null){
+                units = "N/A"
+            }
             var unit_off_bool = false;
             var y_title = null;//tracks which variable to use for the yaxis title
             var temp_date = new Date();
@@ -671,7 +675,7 @@ function plot_data(res_id, unit_off,id_qms,data){
                     name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
                     dataPoints: data1
                 };
-                chart.options.axisY.title = json.variable_name + ' (' + json.units + ')'
+                chart.options.axisY.title = json.variable_name + ' (' + units + ')'
                 chart.options.axisY.titleWrap = true
             }
             else if (y_title == 1) {
@@ -696,7 +700,7 @@ function plot_data(res_id, unit_off,id_qms,data){
                     name: 'Site: ' + site_name + '<br/>Variable:' + json.variable_name + '<br/> Value: ',
                     dataPoints: data1
                 };
-                chart.options.axisY2.title = json.variable_name + ' (' + json.units + ')'
+                chart.options.axisY2.title = json.variable_name + ' (' + units + ')'
                 chart.options.axisY2.titleWrap = true
             }
             else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
@@ -780,7 +784,7 @@ function plot_data(res_id, unit_off,id_qms,data){
         // console.log(end_of_resources - counter_all)
         console.log(end_of_resources)
         console.log(counter_all)
-        if (0==end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
+        if (0== end_of_resources - counter_all)//checks to see if all the data is loaded before displaying
         {
             console.log("Display Resources")
             display_table_chart(number)
@@ -827,7 +831,10 @@ function display_table_chart(number){
     chart.options.axisY.minimum = grid_values.minview;
     chart.options.axisY.interval = grid_values.interval;
 
-    if (title == 1) {
+    if(title== null){
+        alert('There are no valid data for these time series.')
+    }
+    else if (title == 1) {
         //chart.setTitle({ text: "CUAHSI Data Series Viewer*" });
         // chart.options.title.text = "CUAHSI Data Series Viewer*"
         // chart.render();
@@ -1052,6 +1059,7 @@ function box(number) {
                 step: 1
             }
         },
+        exporting:{enabled:false},
         title: {
             align: 'center'
         },
@@ -1210,13 +1218,18 @@ function gridlines(ymax,ymin){
         interval = (maxview - minview) / 11
         minview = (Math.ceil((minview / interval)) * interval)
     }
-    //console.log(maxview)
-    //console.log(minview)
-    //console.log(interval)
 
     if (maxview <ymax || minview>ymin){
        interval = Math.ceil(maxview - minview) / 11
     }
+    interval = parseFloat(interval.toFixed(5));
+    // Fix: if interval and maxview exactly line the top value on graph won't display
+    maxview = maxview + 0.00000001 * maxview;
+    // console.log(maxview)
+    // console.log(minview)
+    // console.log(interval)
+    // console.log(ymax)
+    // console.log(ymin)
     //if (5 < Math.abs(maxview)){
     ////    maxview = Math.round(maxview*100)/100
     ////    minview = Math.round(minview*100)/100
@@ -1422,6 +1435,7 @@ function get_hs_res(){
     $('#stat_div').hide();
     $('#multiple_units').hide();
     series_counter = add_hs_res.length
+    console.log(add_hs_res)
     for (id in add_hs_res){
         length_master= 0
         current_url = location.href;
@@ -1429,6 +1443,8 @@ function get_hs_res(){
         base_url = current_url.substring(0, index);
         var csrf_token = getCookie('csrftoken');
         data_url = base_url + 'timeseries-viewer/chart_data/' + add_hs_res[id] + '/' + src + '/';
+        console.log(data_url)
+        end_of_resources = end_of_resources + 1
         $.ajax({
             type:"POST",
             headers:{'X-CSRFToken':csrf_token},
@@ -1449,24 +1465,21 @@ function get_hs_res(){
                 var res_id_counter = 0
                 if (error != ''){show_error(error)}
                 else {
+                    end_of_resources = end_of_resources + len-1;
                     console.log(json_data[series])
                     var series_length = series_counter
-                    if (json.gridded_data != null){
-                        console.log(json)
-                        $('#modalNWMMAP').modal('show')
-                        setTimeout(function(){
-                    // loadMap();
-                            nwm = loadMap(json.gridded_data);
-                            console.log('resize')
-                            $(window).trigger("resize");
-                        }, 800);
-                    }
+                    // if (json.gridded_data != []){
+                    //     console.log(json)
+                    //     $('#modalNWMMAP').modal('show')
+                    //     setTimeout(function(){
+                    // // loadMap();
+                    //         nwm = loadMap(json.gridded_data);
+                    //         console.log('resize')
+                    //         $(window).trigger("resize");
+                    //     }, 800);
+                    // }
                     for (series in json_data) {
                         console.log('start series')
-                        res_id_counter = res_id_counter + 1
-                        console.log(res_id_counter)
-                        res_id_counter = res_id_counter + 1
-
                         plot_data(add_hs_res[id], unit_off, id_qms, json_data[series])
                     }
                 }

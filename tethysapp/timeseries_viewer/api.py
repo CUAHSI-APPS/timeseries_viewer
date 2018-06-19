@@ -75,7 +75,7 @@ def list_apps(request):
             'icon': base_url + 'static/hydroshare_resource_creator/images/tool.svg',
             }
     app3 = {'name': 'Recession Analyzer',
-            'url': base_url +'apps/recession-analyzer/',
+            'url': base_url + 'apps/recession-analyzer/',
             'description': 'Creates a HydroShare resource from selected time series',
             'min_series': 1,
             'max_series': 10,

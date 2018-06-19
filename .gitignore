@@ -7,6 +7,5 @@
 .idea/*
 .build/*
 workspaces/
-tethysapp_timeseries_viewer.egg-info/
-tethysapp_ts_converter.egg-info/
+.egg-info/*
 *.swp

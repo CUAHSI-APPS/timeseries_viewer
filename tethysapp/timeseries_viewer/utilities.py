@@ -161,6 +161,7 @@ def parse_1_0_and_1_1(root):
                                 organization = element.attrib['agencyCode']
                             except:
                                 organization = element.text
+
                         if 'definition' == tag or 'qualifierDescription' == tag:
                             quality = element.text
                         if 'methodDescription' == tag or 'MethodDescription' == tag:
@@ -215,8 +216,12 @@ def parse_1_0_and_1_1(root):
                                     m_des = subele.text
                                 if 'organization' in subele.tag.lower():
                                     m_org = subele.text
-                            meta_dic['source'].update({m_code: m_des})
-                            meta_dic['organization'].update({m_code: m_org})
+                                if m_code == '':
+                                    meta_dic['source'].update({organization: organization})
+                                    meta_dic['organization'].update({organization: organization})
+                                else:
+                                    meta_dic['source'].update({m_code: m_des})
+                                    meta_dic['organization'].update({m_code: m_org})
                         if "qualitycontrollevel" == tag.lower():
                             try:
                                 qlc = element.attrib['qualityControlLevelID']
@@ -257,6 +262,11 @@ def parse_1_0_and_1_1(root):
                             quality1 = ''
                         if quality == '' and quality1 != '':
                             quality = quality1
+                        # Custom parsing for USGS composite quality codes
+                        if quality == 'A e':
+                            quality = 'A'
+                        elif quality == 'P e':
+                            quality = 'P'
                         try:
                             method = element.attrib['methodCode']
                         except:
@@ -277,6 +287,8 @@ def parse_1_0_and_1_1(root):
                             source1 = ''
                         if source == '' and source1 != '':
                             source = source1
+                        elif source == '' and source1 == '':
+                            source = organization
                         dic = quality + 'aa' + method + 'aa' + source
                         dic = dic.replace(" ", "")
                         if dic not in meth_qual:
@@ -299,6 +311,9 @@ def parse_1_0_and_1_1(root):
                         master_values[dic].append(v)
                         master_times[dic].append(n)
 
+            if meta_dic['organization'] == {}:
+                meta_dic['source'].update({organization: organization})
+                meta_dic['organization'].update({organization: organization})
             for item in master_data_values:
                 if len(master_data_values[item]) == 0:
                     mean = None
@@ -868,6 +883,7 @@ def parse_grid(dataset, y_index, y, x_index, x):
 
 
 def parse_netcdf(index, id, dataset, master_times):
+    print "parsing netcdf"
     # master_times = []
     master_values = collections.OrderedDict()
     # master_times = collections.OrderedDict()
@@ -934,18 +950,31 @@ def parse_netcdf(index, id, dataset, master_times):
             v = ele[index]
         except:
             v = ele
+
+        if v == '--':
+            v=None
             # v = ele[2]
             # n = ele[1]
             # n = ciso8601.parse_datetime(str(n))
             # n = n.timetuple()
             # n = mktime(n)
             # if v == nodata:
-        if float(v) == float(nodatavalue):
-            v = None
         else:
-            v = float(v)
-            # records only none null values for running statistics
-            master_data_values[dic].append(v)
+            try:
+                val_float = float(v)
+                if val_float == float(nodatavalue):
+                    v = None
+                elif math.isnan(val_float):
+                    v=None
+                else:
+                    v = val_float
+
+                    master_data_values[dic].append(v)
+            except:
+                print "not a number"
+                v = None
+                # records only none null values for running statistics
+        print v
         master_values[dic].append(v)
     # dates = dataset.variables['time'][:]
     dates = dataset[:]
@@ -1306,7 +1335,10 @@ def connect_wsdl_url(wsdl_url):
         raise Exception(
             'Invalid url')  # ought to be a 400, but no page implemented for that
     except SAXParseException:
-        raise Exception("The correct url format ends in '.asmx?WSDL'.")
+        try:
+            client = Client(wsdl_url+'?WSDL')
+        except SAXParseException:
+            raise Exception("The correct url format ends in '.asmx?WSDL'.")
     except:
         raise Exception("Unexpected error")
     return client

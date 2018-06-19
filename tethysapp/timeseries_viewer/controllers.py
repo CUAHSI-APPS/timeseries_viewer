@@ -106,6 +106,24 @@ def get_hydroshare_res(request):
                       update=update,
                       resource_id=hs_res_id)
         hs_list.append(hs_dic)
+        resource_list = hs.getResourceList(full_text_search="#{%Application%Data Series Viewer%}")
+    for resource in resource_list:
+        # if resource.resource_type ==''
+        print resource
+        hs_res_id = resource['resource_id']
+        legend = "<div style='text-align:center'><input class = 'checkbox' name = 'res_hydroshare' id =" + hs_res_id + " type='checkbox' onClick ='check_box(this.id);' status ='unchecked'>" + "</div>"
+        title = resource['resource_title']
+        type = resource['resource_type']
+        author = resource['creator']
+        update = resource['date_last_updated']
+        hs_dic = dict(legend=legend,
+                      title=title,
+                      type=type,
+                      author=author,
+                      update=update,
+                      resource_id=hs_res_id)
+        hs_list.append(hs_dic)
+
     hs_response = dict(error='', data=hs_list)
     return JsonResponse(hs_response)
 
