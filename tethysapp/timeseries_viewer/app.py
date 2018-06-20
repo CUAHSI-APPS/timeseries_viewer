@@ -6,7 +6,7 @@ class TimeSeriesViewer(TethysAppBase):
     Tethys app class for time series viewer
     """
 
-    name = 'CUAHSI Data Series Viewer'
+    name = 'Time Series Viewer'
     index = 'timeseries_viewer:home'
     icon = 'timeseries_viewer/images/viewer_icon2.png'
     package = 'timeseries_viewer'
