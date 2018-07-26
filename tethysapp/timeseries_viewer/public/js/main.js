@@ -494,6 +494,7 @@ function plot_data(res_id, unit_off,id_qms,data){
     if (bad_meta_counter == Object.keys(master_values).length) {
         bad_meta = true
     }
+    console.log(val1)
     for (val in master_values) {
         // console.log("looping through master values")
         if (bad_meta == true) {
@@ -502,7 +503,8 @@ function plot_data(res_id, unit_off,id_qms,data){
             val1 = arr;
             id_qms_a = ''
         }
-        if (id_qms_a == val1[counter] || id_qms_a == 'not_cuahsi') {
+        if (String(id_qms_a) == String(val1[counter_all]) || id_qms_a == 'not_cuahsi') {
+            console.log('series matches')
             var meta = val.split("aa");
             var code = meta_dic['quality_code'][meta[0]];
             var quality = meta_dic['quality'][code];
@@ -564,10 +566,10 @@ function plot_data(res_id, unit_off,id_qms,data){
             if (samplemedium == null) {
                 samplemedium = "N/A"
             }
+            display_units = units
             if (units != null) {
                 units = units.replace(/\s+/g, '==');//removes any spaces in the units
             }
-            console.log(units)
             if (units == null){
                 units = "N/A"
             }
@@ -675,7 +677,7 @@ function plot_data(res_id, unit_off,id_qms,data){
                     name: 'Site: ' + site_name + ' <br/> Variable: ' + json.variable_name + '<br/> Value: ',
                     dataPoints: data1
                 };
-                chart.options.axisY.title = json.variable_name + ' (' + units + ')'
+                chart.options.axisY.title = json.variable_name + ' (' + unit + ')'
                 chart.options.axisY.titleWrap = true
             }
             else if (y_title == 1) {
@@ -700,7 +702,7 @@ function plot_data(res_id, unit_off,id_qms,data){
                     name: 'Site: ' + site_name + '<br/>Variable:' + json.variable_name + '<br/> Value: ',
                     dataPoints: data1
                 };
-                chart.options.axisY2.title = json.variable_name + ' (' + units + ')'
+                chart.options.axisY2.title = json.variable_name + ' (' + unit + ')'
                 chart.options.axisY2.titleWrap = true
             }
             else if (y_title == 3) {//sets the y-axis 2 title and flags that data should not be visible
@@ -776,6 +778,9 @@ function plot_data(res_id, unit_off,id_qms,data){
             row_tracker.push(dataset)
             number = number + 1;
             // console.log(number)
+        }
+        else{
+            counter_all = counter_all + 1;
         }
 
         // console.log(end_of_resources)
