@@ -503,7 +503,7 @@ function plot_data(res_id, unit_off,id_qms,data){
             val1 = arr;
             id_qms_a = ''
         }
-        if (String(id_qms_a) == String(val1[counter_all]) || id_qms_a == 'not_cuahsi') {
+        if (String(id_qms_a) == String(val1[counter_all]) || id_qms_a == 'not_cuahsi' || String(id_qms_a) == '') {
             console.log('series matches')
             var meta = val.split("aa");
             var code = meta_dic['quality_code'][meta[0]];
