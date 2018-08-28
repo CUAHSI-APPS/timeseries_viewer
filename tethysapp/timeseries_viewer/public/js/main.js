@@ -385,7 +385,6 @@ function addingseries(unit_off) {
             id_qms="not_cuahsi"
         }
         counter = counter + 1
-
         length_master= 0;
         var current_url = location.href;
         var index = current_url.indexOf("timeseries-viewer");
@@ -396,7 +395,7 @@ function addingseries(unit_off) {
             type:"POST",
             headers:{'X-CSRFToken':csrf_token},
             dataType: 'json',
-            data:{'url_xml':xml_rest_id},
+            data:{'url_xml':xml_rest_id, 'res_id':res_id[id], 'id_qms':id_qms},
             url: data_url,
             success: function (json) {
                 var dseries =[]
@@ -425,7 +424,7 @@ function addingseries(unit_off) {
                             break
                         }
                         else{
-                            plot_data(res_id[id], unit_off, id_qms, json_data[series],json_data.length)
+                            plot_data(json.res_id, unit_off, json.id_qms, json_data[series],json_data.length)
                         }
                     }
                 }
@@ -1455,7 +1454,7 @@ function get_hs_res(){
             headers:{'X-CSRFToken':csrf_token},
             dataType: 'json',
             //timeout: 5000,
-            data:{'url_xml':xml_rest_id},
+            data:{'url_xml':xml_rest_id, 'res_id': add_hs_res[id], 'id_qms': id_qms},
             url: data_url,
             success: function (json) {
                 //console.log(json)
@@ -1485,7 +1484,7 @@ function get_hs_res(){
                     // }
                     for (series in json_data) {
                         console.log('start series')
-                        plot_data(add_hs_res[id], unit_off, id_qms, json_data[series])
+                        plot_data(json.res_id, unit_off, json.id_qms, json_data[series])
                     }
                 }
 

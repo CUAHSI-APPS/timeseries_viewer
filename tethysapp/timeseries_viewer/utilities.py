@@ -847,7 +847,7 @@ def unzip_waterml(request, res_id, src):
     #     error = 'No time series were found in the selected resource'
     if error is not '':
         error_report(error, res_id)
-    return {'data': data_for_chart, 'error': error, 'gridded_data':data_for_gridded}
+    return {'data': data_for_chart, 'error': error, 'gridded_data':data_for_gridded, 'res_id':request.POST.get('res_id'),'id_qms':request.POST.get('id_qms')}
 
 
 def parse_grid(dataset, y_index, y, x_index, x):
