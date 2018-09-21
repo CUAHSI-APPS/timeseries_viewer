@@ -460,7 +460,6 @@ function plot_data(res_id, unit_off,id_qms,data){
     id_qms_a_split = id_qms.split('aa')//identifier based upon url parameters
     var counter1 = 0;
     // console.log(master_values);
-
     for (val in master_values)//this loop deals with any parameters that are not specified in the url query
     {
         meta1 = val.split("aa");// an identifier based upon data in file
@@ -502,7 +501,7 @@ function plot_data(res_id, unit_off,id_qms,data){
             val1 = arr;
             id_qms_a = ''
         }
-        if (String(id_qms_a) == String(val1[counter_all]) || id_qms_a == 'not_cuahsi' || String(id_qms_a) == '') {
+        if (String(id_qms_a) == String(val1[counter_all]) || id_qms_a == 'not_cuahsi' || String(id_qms_a) == '' || String(val1[counter_all]) == 'undefined') {
             console.log('series matches')
             var meta = val.split("aa");
             var code = meta_dic['quality_code'][meta[0]];
