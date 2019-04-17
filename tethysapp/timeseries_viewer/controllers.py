@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
 import os
-import utilities
+from . import utilities
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
 from wsgiref.util import FileWrapper
@@ -16,7 +16,7 @@ use_hs_client_helper = True
 # Backwards compatibility with older versions of Tethys
 try:
     from tethys_services.backends.hs_restclient_helper import get_oauth_hs
-except Exception as ex:
+except:
     use_hs_client_helper = False
 
 
@@ -32,8 +32,8 @@ def temp_waterml(request, id):
 
 def home(request):
     message = request.GET.getlist('WofUri')
-    print "!!!!!!!!!!!!!1"
-    print message
+    print("!!!!!!!!!!!!!1")
+    print(message)
     """Home controller if page is launched from HydroShare"""
     # utilities.view_counter(request)
     # forcing_proj4 = '+proj=lcc +lat_1=30 +lat_2=60 +lat_0=40 +lon_0=-97 +x_0=0 +y_0=0 +a=6370000 +b=6370000 +units=m +no_defs'
@@ -75,13 +75,13 @@ def chart_data(request, res_id, src):
 
     file_meta = utilities.unzip_waterml(request, res_id, src)
 
-    print "done with python"
+    print("done with python")
     return JsonResponse(file_meta)
 
 
 def get_hydroshare_res(request):
     hs_list = []
-    print "getting hydroshare list"
+    print("getting hydroshare list")
     if use_hs_client_helper:
         hs = get_oauth_hs(request)
     else:
@@ -92,7 +92,7 @@ def get_hydroshare_res(request):
     resource_list = hs.getResourceList(types =resource_types)
     for resource in resource_list:
         # if resource.resource_type ==''
-        print resource
+        print(resource)
         hs_res_id = resource['resource_id']
         legend = "<div style='text-align:center'><input class = 'checkbox' name = 'res_hydroshare' id =" + hs_res_id+" type='checkbox' onClick ='check_box(this.id);' status ='unchecked'>" + "</div>"
         title = resource['resource_title']
@@ -109,7 +109,7 @@ def get_hydroshare_res(request):
         resource_list = hs.getResourceList(full_text_search="#{%Application%Data Series Viewer%}")
     for resource in resource_list:
         # if resource.resource_type ==''
-        print resource
+        print(resource)
         hs_res_id = resource['resource_id']
         legend = "<div style='text-align:center'><input class = 'checkbox' name = 'res_hydroshare' id =" + hs_res_id + " type='checkbox' onClick ='check_box(this.id);' status ='unchecked'>" + "</div>"
         title = resource['resource_title']

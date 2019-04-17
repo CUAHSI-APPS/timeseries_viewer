@@ -29,7 +29,7 @@ def parse_1_0_and_1_1(root):
     threshold = 50000000
     try:
         if 'timeseriesresponse' in root_tag or 'timeseries' in root_tag or "envelope" in root_tag or 'timeSeriesResponse' in root_tag:
-            print root_tag
+            print(root_tag)
             # lists to store the time-series data
 
             # iterate through xml document and read all values
@@ -204,15 +204,15 @@ def parse_1_0_and_1_1(root):
         else:
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
             error_report("Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series")
-            print parse_error
+            print(parse_error)
             return {
                 'status': parse_error
             }
     except Exception, e:
         data_error = "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
         error_report("Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
-        print data_error
-        print e
+        print(data_error)
+        print(e)
         return {
             'status': data_error
         }

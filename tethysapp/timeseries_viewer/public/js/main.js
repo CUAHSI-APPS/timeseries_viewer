@@ -412,7 +412,7 @@ function addingseries(unit_off) {
                             loadMap(json.gridded_data);
                             // console.log('resize')
                             $(window).trigger("resize");
-                        }, 800);
+                        }, 8000);
                     }
                     var json_len = json_data.length;
                     console.log(json_len);

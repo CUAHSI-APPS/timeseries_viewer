@@ -3,19 +3,15 @@
 # Created by Matthew Bayles, 2016
 from lxml import etree
 import numpy
-import urllib2
-import urllib
 import math
 from .app import TimeSeriesViewer
-import StringIO
+import io
 import time
 import zipfile
 import os
-import controllers
+from . import controllers
 import collections
 import json
-from suds.transport import TransportError
-from suds.client import Client
 from xml.sax._exceptions import SAXParseException
 import requests
 import sqlite3
@@ -97,9 +93,6 @@ def parse_1_0_and_1_1(root):
     master_stat'
     master_data_values
     """
-
-    # print 'begin parse'
-    # print time.ctime()
     root_tag = root.tag.lower()
     boxplot = []
     master_values = collections.OrderedDict()
@@ -135,7 +128,6 @@ def parse_1_0_and_1_1(root):
             for element in root.iter():
                 bracket_lock = -1
                 if '}' in element.tag:
-                    # print element.tag
                     bracket_lock = element.tag.index(
                         '}')  # The namespace in the tag is enclosed in {}.
                     tag = element.tag[
@@ -143,13 +135,11 @@ def parse_1_0_and_1_1(root):
 
                     if 'value' != tag:
                         # in the xml there is a unit for the value, then for time. just take the first
-                        # print tag
                         if 'unitName' == tag or 'units' == tag or 'UnitName' == tag or 'unitCode' == tag:
                             if not unit_is_set:
                                 units = element.text
 
                                 unit_is_set = True
-                        # print units
                         if 'nodatavalue' == tag.lower():
                             nodata = float(element.text)
                         if 'siteName' == tag:
@@ -165,7 +155,6 @@ def parse_1_0_and_1_1(root):
                         if 'definition' == tag or 'qualifierDescription' == tag:
                             quality = element.text
                         if 'methodDescription' == tag or 'MethodDescription' == tag:
-                            # print element.attrib['methodID']
                             method = element.text
                         if 'dataType' == tag:
                             datatype = element.text
@@ -346,8 +335,6 @@ def parse_1_0_and_1_1(root):
                 master_boxplot[item].append(median)
                 master_boxplot[item].append(quar3)
                 master_boxplot[item].append(max1)
-                # print 'end parse'
-                # print time.ctime()
                 error = ''
             return [{
                 'site_name': site_name,
@@ -371,22 +358,17 @@ def parse_1_0_and_1_1(root):
             parse_error = "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series"
             # error_report(
             #     "Parsing error: The WaterML document doesn't appear to be a WaterML 1.0/1.1 time series")
-            print parse_error
             return [None,parse_error]
-    except Exception, e:
+    except Exception as e:
         data_error = "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
         # error_report(
         #     "Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
-        print data_error
-        print e
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        print(exc_type, fname, exc_tb.tb_lineno)
         return [None,data_error]
 
 
 def parse_2_0(root):  # waterml 2 has not been implemented in the viewer at this time
-    print "running parse_2"
     root_tag = root.tag.lower()
     boxplot = []
     master_values = collections.OrderedDict()
@@ -508,7 +490,6 @@ def parse_2_0(root):  # waterml 2 has not been implemented in the viewer at this
                             for a in e.attrib:
                                 if 'title' in a:
                                     method = e.attrib[a]
-                print element.tag
                 if 'organization' in element.tag:
                     organization = element.text
                 if 'definition' in element.tag:
@@ -580,12 +561,10 @@ def parse_2_0(root):  # waterml 2 has not been implemented in the viewer at this
                     'values': vals
                     }
         else:
-            print "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"
             # error_report(
             #     "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series")
             return "Parsing error: The waterml document doesn't appear to be a WaterML 2.0 time series"
     except:
-        print "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
         # error_report(
         #     "Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
         return "Parsing error: The Data in the Url, or in the request, was not correctly formatted."
@@ -603,12 +582,10 @@ def Original_Checker(xml_file):
 
         elif wml_version == '2.0':
             return parse_2_0(root)
-    except ValueError, e:
-        print e
+    except ValueError as e:
 
         return read_error_file(xml_file)
     except Exception as e:
-        print e
 
         return read_error_file(xml_file)
 
@@ -637,7 +614,6 @@ def unzip_waterml(request, res_id, src):
         cwd = os.path.realpath(
             os.path.join(os.getcwd(), os.path.dirname(__file__)))
         # if controllers.use_hs_client_helper:
-        #     print 'GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG'
         #     hs = controllers.get_oauth_hs(request)
         # else:
 
@@ -665,22 +641,17 @@ def unzip_waterml(request, res_id, src):
                                    unzip=True)
                     status = 'done'
                 except HydroShareNotAuthorized as e:
-                    print e
 
                     error = 'Current user does not have permission to view this resource'
                     # error = str(e)
                     break
                 except HydroShareNotFound as e:
-                    print "Resource not found"
                     error = 'Resource was not found. Please try again in a few moments'
                     # error = str(e)
                     time.sleep(2)
                     delay = delay + 1
 
                 except Exception as e:
-                    print e
-                    print type(e).__name__
-                    print e.__class__.__name__
                     error = str(e)
                     status = 'running'
                     time.sleep(2)
@@ -691,9 +662,9 @@ def unzip_waterml(request, res_id, src):
             try:
                 root_dir = file_path_id + '/' + res_id
                 data_dir = root_dir + '/' + res_id + '/data/contents/'
-                for subdir, dirs, files in os.walk(root_dir):
+                for subdir, dirs, files in os.walk(data_dir):
                     for file in files:
-                        path = data_dir + file
+                        path = subdir + "/" + file
                         if 'wml_1_' in file:
                             file_type = 'waterml'
                             with open(path, 'r') as f:
@@ -744,7 +715,8 @@ def unzip_waterml(request, res_id, src):
             url_zip = 'http://data.cuahsi.org/CUAHSI/HydroClient/WaterOneFlowArchive/' + res_id + '/zip'
         try:
             r = requests.get(url_zip, verify=False)
-            z = zipfile.ZipFile(StringIO.StringIO(r.content))
+            f = io.BytesIO(r.content)
+            z = zipfile.ZipFile(f)
             file_list = z.namelist()
             try:
                 for file in file_list:
@@ -758,24 +730,18 @@ def unzip_waterml(request, res_id, src):
             # error handling
             # checks to see if data is an xml
             except etree.XMLSyntaxError as e:
-                print "Error:Not XML"
                 error = "Error:Not XML"
             # checks to see if Url is valid
-            except ValueError, e:
-                print "Error:invalid Url"
+            except ValueError as e:
                 error = "Error:invalid Url"
             # checks to see if xml is formatted correctly
-            except TypeError, e:
+            except TypeError as e:
                 error = "Error:string indices must be integers not str"
-                print "Error:string indices must be integers not str"
         # check if the zip file is valid
         except zipfile.BadZipfile as e:
             error = "Bad Zip File"
-            print error
 
         except Exception as e:
-            print error
-            print "generic error"
             error = str(e)
 
     if error == '':
@@ -851,12 +817,10 @@ def unzip_waterml(request, res_id, src):
 
 
 def parse_grid(dataset, y_index, y, x_index, x):
-    # print dataset.variables['feature_id'][:]
     master_times = collections.OrderedDict()
     dic = 'aaaa'
     master_times.update({dic: []})
     # feature_id = dataset.variables['feature_id']
-    # print feature_id
     dates = dataset.variables['time'][:]
     for ele in dates:
         n = float(ele)
@@ -870,20 +834,16 @@ def parse_grid(dataset, y_index, y, x_index, x):
     chart_data = []
     for sub_var in net_variable:
         sub_var_check = sub_var.encode('utf8')
-        # print sub_var
-        # print sub_var_check
         if sub_var_check in netcdf_var:
             chart_data.append(parse_netcdf_grid(x_index, x,
                                            dataset.variables[sub_var],
                                            master_times, y_index, y))
         # elif 'RAINRATE' in sub_var_check:
-        #     print 'gir'
 
     return chart_data
 
 
 def parse_netcdf(index, id, dataset, master_times):
-    print "parsing netcdf"
     # master_times = []
     master_values = collections.OrderedDict()
     # master_times = collections.OrderedDict()
@@ -971,16 +931,13 @@ def parse_netcdf(index, id, dataset, master_times):
 
                     master_data_values[dic].append(v)
             except:
-                print "not a number"
                 v = None
                 # records only none null values for running statistics
-        print v
         master_values[dic].append(v)
     # dates = dataset.variables['time'][:]
     dates = dataset[:]
 
     # for ele in dates:
-    #     print ele
     #     n = float(ele)
     #     n = n*60 # time is is minutes not seconds
     #     master_times[dic].append(n)
@@ -1089,8 +1046,6 @@ def parse_netcdf_grid(x_index, x, dataset, master_times, y_index, y):
     nodatavalue = dataset.missing_value
     variable_name = dataset.long_name
 
-    # print variable_name
-
     datatype = 'Average'
     valuetype = 'Model Simulation Forecast'
     samplemedium = 'SurfaceWater'
@@ -1123,11 +1078,8 @@ def parse_netcdf_grid(x_index, x, dataset, master_times, y_index, y):
                 # records only none null values for running statistics
 
                 master_data_values[dic].append(v)
-        # print v
-        # print type(v)
         if math.isnan(v):
             v = None
-        # print v
         master_values[dic].append(v)
 
     first_date = master_times[dic][0]
@@ -1178,9 +1130,6 @@ def parse_netcdf_grid(x_index, x, dataset, master_times, y_index, y):
                                                  wkt_epsg,
                                                  wkt_str)
         reproject = ast.literal_eval(reproject)
-        # print reproject[0]
-        # print reproject[1]
-        # print reproject["coordinates"]
         lon_lat = reproject["coordinates"]
 
     return {
@@ -1264,7 +1213,6 @@ def parse_ts_layer(path):
     response = None
     with open(path, 'r') as f:
         data = f.read()
-    data = data.encode(encoding='UTF-8')
     data = data.replace("'", '"')
     json_data = json.loads(data)    
     json_data = json_data["timeSeriesReferenceFile"]
@@ -1282,40 +1230,35 @@ def parse_ts_layer(path):
         auth_token = ''
         if ref_type == 'WOF':
             if service_type == 'SOAP':
-                if 'nasa' in url:
-                    headers = {'content-type': 'text/xml'}
-                    body = """<?xml version="1.0" encoding="utf-8"?>
-                        <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-                          <soap:Body>
-                            <GetValuesObject xmlns="http://www.cuahsi.org/his/1.0/ws/">
-                              <location>""" + site_code + """</location>
-                              <variable>""" + variable_code + """</variable>
-                              <startDate>""" + start_date + """</startDate>
-                              <endDate>""" + end_date + """</endDate>
-                              <authToken></authToken>
-                            </GetValuesObject>
-                          </soap:Body>
-                        </soap:Envelope>"""
-                    body = body.encode('utf-8')
-                    response = requests.post(url, data=body, headers=headers)
-                    response = response.content
+
+                if "nasa" in url:
+                    wml_version = "1.0"
                 else:
-                    client = connect_wsdl_url(url)
-                    try:
-                        response = client.service.GetValues(site_code,
-                                                                  variable_code,
-                                                                  start_date,
-                                                                  end_date,
-                                                                  auth_token)
-                    except:
-                        error = "unable to connect to HydroSever"
-                        print error
+                    wml_version = "1.0"
+
+                response = requests.post(
+                    url=url,
+                    headers={
+                        "SOAPAction": "http://www.cuahsi.org/his/" + wml_version + "/ws/GetValuesObject",
+                        "Content-Type": "text/xml; charset=utf-8"
+                    },
+                    data = '<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">' + \
+                          '<soap-env:Body>' + \
+                            '<ns0:GetValuesObject xmlns:ns0="http://www.cuahsi.org/his/' + wml_version + '/ws/">' + \
+                              '<ns0:location>' + site_code + '</ns0:location>' + \
+                              '<ns0:variable>' + variable_code + '</ns0:variable>' + \
+                              '<ns0:startDate>' + start_date + '</ns0:startDate>' + \
+                              '<ns0:endDate>' + end_date + '</ns0:endDate>' + \
+                              '<ns0:authToken></ns0:authToken>' + \
+                            '</ns0:GetValuesObject>' + \
+                          '</soap-env:Body>' + \
+                        '</soap-env:Envelope>'
+                )
+
+                response = str(response.content)
+
                 temp_dir = get_workspace()
                 file_path = temp_dir + '/timeserieslayer' + str(counter) + '.xml'
-                try:
-                    response = response.encode('utf-8')
-                except:
-                    response = response
                 with open(file_path, 'w') as outfile:
                     outfile.write(response)
             if (service_type == 'REST'):
@@ -1329,8 +1272,6 @@ def parse_ts_layer(path):
 def connect_wsdl_url(wsdl_url):
     try:
         client = Client(wsdl_url)
-    except TransportError:
-        raise Exception('Url not found')
     except ValueError:
         raise Exception(
             'Invalid url')  # ought to be a 400, but no page implemented for that
