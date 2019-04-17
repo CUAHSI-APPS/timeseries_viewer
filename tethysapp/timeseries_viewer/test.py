@@ -208,7 +208,7 @@ def parse_1_0_and_1_1(root):
             return {
                 'status': parse_error
             }
-    except Exception, e:
+    except Exception as e:
         data_error = "Parsing error: The Data in the Url, or in the request, was not correctly formatted for water ml 1."
         error_report("Parsing error: The Data in the Url, or in the request, was not correctly formatted.")
         print(data_error)
