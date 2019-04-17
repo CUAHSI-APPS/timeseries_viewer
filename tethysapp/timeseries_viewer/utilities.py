@@ -24,8 +24,8 @@ from time import gmtime, strftime
 from time import mktime as mktime
 from netCDF4 import Dataset
 import sys
-from osgeo import ogr
-from osgeo import osr
+#from osgeo import ogr
+#from osgeo import osr
 import ast
 
 def get_workspace():
@@ -1124,13 +1124,13 @@ def parse_netcdf_grid(x_index, x, dataset, master_times, y_index, y):
         wkt_str = 'Point({} {})'.format(x, y)
         x_transformed = wkt_str[1]
         y_transformed = wkt_str[0]
-        reproject = reproject_wkt_gdal("proj4",
-                                                 forcing_proj4,
-                                                 "epsg",
-                                                 wkt_epsg,
-                                                 wkt_str)
-        reproject = ast.literal_eval(reproject)
-        lon_lat = reproject["coordinates"]
+        #reproject = reproject_wkt_gdal("proj4",
+        #                                         forcing_proj4,
+        #                                         "epsg",
+        #                                         wkt_epsg,
+        #                                         wkt_str)
+        #reproject = ast.literal_eval(reproject)
+        #lon_lat = reproject["coordinates"]
 
     return {
         'site_name': str(lon_lat[1])+', '+ str(lon_lat[0]),
@@ -1501,7 +1501,7 @@ def getOAuthHS(request):
     hs = HydroShare(auth=auth, hostname=hs_hostname)
     return hs
 
-
+'''
 def reproject_wkt_gdal(in_proj_type,
                        in_proj_value,
                        out_proj_type,
@@ -1544,3 +1544,4 @@ def reproject_wkt_gdal(in_proj_type,
     #     # logger.error("out_proj_value: {0}".format(out_proj_value))
     #     # logger.error(str(type(ex)) + " " + ex.message)
     #     raise ex
+'''
