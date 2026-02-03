@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 
+from tethys_sdk.routing import controller
 
+@controller(name='api', url='api')
 def home(request):
     """
     Controller for the app home page.
@@ -9,7 +11,7 @@ def home(request):
     context = {}
     return render(request, 'timeseries_viewer/api_home.html', context)
 
-
+@controller(name='api_list_apps_help', url='api/list_apps_help')
 def list_apps_help(request):
     """
     Controller for the list_apps_help page.
@@ -17,7 +19,7 @@ def list_apps_help(request):
     context = {}
     return render(request, 'timeseries_viewer/api_list_apps.html', context)
 
-
+@controller(name='api_list_apps', url='api/list_apps')
 def list_apps(request):
     """
     Controller for the list_apps page.
@@ -35,10 +37,16 @@ def list_apps(request):
         base_url = 'https://hs-apps-dev.hydroshare.org/'
         production = False
     elif 'apps.hydroshare.org' in app_host:
-        base_url = 'http://apps.hydroshare.org/'
+        base_url = 'https://apps.hydroshare.org/'
+        production = True
+    elif 'cloudapp.azure.com' in app_host:
+        base_url = 'https://tethys4.eastus.cloudapp.azure.com/'
+        production = True
+    elif 'azurewebsites.net' in app_host:
+        base_url = 'https://tethys4.eastus.cloudapp.azure.com/'
         production = True
     else:
-        base_url = 'http://127.0.0.1:8000/'
+        base_url = 'https://127.0.0.1:8000/'
         production = False
     # Data Series Viewer App
     app1 = {'name': 'Time Series Viewer',
@@ -58,7 +66,7 @@ def list_apps(request):
             }
     # Recession Analyzer App
     app3 = {'name': 'Recession Analyzer',
-            'url': base_url + 'apps/recession-analyzer/',
+            'url': base_url + 'apps/recession-analyzer',
             'description': 'Creates a HydroShare resource from selected time series',
             'min_series': 1,
             'max_series': 10,
@@ -66,7 +74,7 @@ def list_apps(request):
             }
     # Time Series Manager App
     app4 = {'name': 'Time Series Manager',
-            'url': base_url + 'apps/hydroshare-timeseries-manager/',
+            'url': base_url + 'apps/hydroshare-timeseries-manager',
             'description': 'Import and edit HydroShare timeseries data',
             'min_series': 1,
             'max_series': 100,

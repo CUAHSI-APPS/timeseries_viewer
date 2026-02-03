@@ -613,16 +613,19 @@ def unzip_waterml(request, res_id, src):
         # Get file location of python scripts
         cwd = os.path.realpath(
             os.path.join(os.getcwd(), os.path.dirname(__file__)))
-        # if controllers.use_hs_client_helper:
-        #     hs = controllers.get_oauth_hs(request)
-        # else:
 
-        if controllers.use_hs_client_helper:
+        logged_in_through_hydroshare = False
+        try:
+            logged_in_through_hydroshare = request.user.social_auth.filter(provider='hydroshare').exists()
+        except:
+            pass
+
+        if controllers.use_hs_client_helper and logged_in_through_hydroshare:
             hs = controllers.get_oauth_hs(request)
         else:
             hs = getOAuthHS(request)
-            # hs = get_oauth_hs(request)
-        # hs = getOAuthHS(request)
+
+
         # file_path_id = get_workspace() + '/id'
         file_path_id = get_workspace()
         status = 'running'
@@ -641,7 +644,6 @@ def unzip_waterml(request, res_id, src):
                                    unzip=True)
                     status = 'done'
                 except HydroShareNotAuthorized as e:
-
                     error = 'Current user does not have permission to view this resource'
                     # error = str(e)
                     break
@@ -704,6 +706,7 @@ def unzip_waterml(request, res_id, src):
         file_temp.write(file_data)
         file_temp.close()
     elif src == 'cuahsi':
+       
         # get the URL of the remote zipped WaterML resource
         file_type = 'waterml'
         app_host =request.META['HTTP_HOST']
@@ -1489,16 +1492,20 @@ def parse_odm2(file_path, result_num):
 
 
 def getOAuthHS(request):
-    # hs_instance_name = "www"
-    hs_instance_name = "beta"
-    client_id = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_KEY", None)
-    client_secret = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_SECRET", None)
-    # this line will throw out from django.core.exceptions.ObjectDoesNotExist if current user is not signed in via HydroShare OAuth
-    token = request.user.social_auth.get(provider='hydroshare').extra_data[
+    try:
+        # hs_instance_name = "www"
+        hs_instance_name = "beta"
+        client_id = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_KEY", None)
+        client_secret = getattr(settings, "SOCIAL_AUTH_HYDROSHARE_SECRET", None)
+        hs_hostname = "{0}.hydroshare.org".format(hs_instance_name)
+        # this line will throw out from django.core.exceptions.ObjectDoesNotExist if current user is not signed in via HydroShare OAuth
+        token = request.user.social_auth.get(provider='hydroshare').extra_data[
         'token_dict']
-    hs_hostname = "{0}.hydroshare.org".format(hs_instance_name)
-    auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
-    hs = HydroShare(auth=auth, hostname=hs_hostname)
+        auth = HydroShareAuthOAuth2(client_id, client_secret, token=token)
+        hs = HydroShare(auth=auth, hostname=hs_hostname)
+    except Exception as e:
+        hs = HydroShare(prompt_auth=False)
+
     return hs
 
 '''

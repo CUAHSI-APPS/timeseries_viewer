@@ -161,7 +161,7 @@ $(document).ready(function (callback) {
             //console.log({"data": "quality"})
             var table = $('#data_table').DataTable()
             table.$('td').tooltip({
-                selector: '[data-toggle="tooltip"]',
+                selector: '[data-bs-toggle="tooltip"]',
                 container: 'body',
                 "delay": 0,
                 "track": true,
@@ -276,7 +276,7 @@ $(document).ready(function (callback) {
             //console.log({"data": "quality"})
             var table = $('#hs_resource_table').DataTable();
             table.$('td').tooltip({
-                selector: '[data-toggle="tooltip"]',
+                selector: '[data-bs-toggle="tooltip"]',
                 container: 'body',
                 "delay": 0,
                 "track": true,
@@ -391,6 +391,7 @@ function addingseries(unit_off) {
         var base_url = current_url.substring(0, index);
         var csrf_token = getCookie('csrftoken');
         var data_url = base_url + 'timeseries-viewer/chart_data/' + res_id[id] + '/' + src + '/';
+
         $.ajax({
             type:"POST",
             headers:{'X-CSRFToken':csrf_token},
@@ -401,7 +402,7 @@ function addingseries(unit_off) {
                 var dseries =[]
                 console.log(json)
                 error = json.error
-                if (error != ''){show_error(error)}
+                if (error != ''){show_error("Error: " + error)}
                 else {
                     var chart = $("#chartContainer").CanvasJSChart()
                     json_data = json.data
@@ -433,7 +434,8 @@ function addingseries(unit_off) {
                 console.log(xhr);
                 console.log(status);
                 console.log(error);
-                show_error("Error loading time series from " + res_id);
+                show_error("Error loading time series from " + res_id + "\nError: " + json.error);
+                
             }
         });
     }
@@ -1253,7 +1255,7 @@ function loadMap (graph_data) {
         e.preventDefault(); // cancel the link behaviour
         var selText = $(this).text();
         $("#dropdownMenu1").text("")
-        $("#dropdownMenu1").append(selText+'<span class="caret"></span>');
+        $("#dropdownMenu1").append(selText);
     });
 
     var icon_features = []
@@ -1394,7 +1396,7 @@ function get_list_hs_res(){
                 error = json.error
                 //console.log(json.error)
                 if (error != '') {
-                    show_error(error)
+                    show_error("Error: " + error)
                 }
                 else {
 
@@ -1466,7 +1468,7 @@ function get_hs_res(){
                 len = json_data.length
                 nwm_data = json.gridded_data
                 var res_id_counter = 0
-                if (error != ''){show_error(error)}
+                if (error != ''){show_error("Error: " + error)}
                 else {
                     end_of_resources = end_of_resources + len-1;
                     console.log(json_data[series])

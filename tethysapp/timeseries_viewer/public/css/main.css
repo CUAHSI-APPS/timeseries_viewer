@@ -52,7 +52,6 @@ display:none !important;
 #app-header .tethys-app-header .icon-wrapper img
 {
     height:50px;
-    width:250px;
     border-radius: 0!important;
 	background: rgba(211, 211, 211, 1) !important;
 }
@@ -77,16 +76,24 @@ display:none !important;
     float: left;
     position: absolute;
     bottom: 8px;
+	margin-right: 250px;
 }
 #byu-logo-container img {
     float: left;
     height: 50px;
     width: 50px;
+	margin-top:24px;
+	margin-left:20px;
 }
 #byu-logo-container span {
     position: relative;
-    top: 25px;
+    /* top: 25px; */
     margin-left: 10px;
+}
+
+#byu-label {
+	display: block;
+	text-align: right;
 }
 
 #images_container{
@@ -351,7 +358,9 @@ input:checked + .slider:before {
 
 
 
-
+#close-help-modal-button {
+	margin-right:20px;
+}
 
 
 

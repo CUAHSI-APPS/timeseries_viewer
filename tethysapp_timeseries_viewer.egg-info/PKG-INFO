@@ -1,10 +1,7 @@
-Metadata-Version: 1.0
-Name: tethysapp-timeseries-viewer
+Metadata-Version: 2.1
+Name: tethysapp-timeseries_viewer
 Version: 1.0
 Summary: Displays time series data and basic statistics
-Home-page: UNKNOWN
+Home-page: 
 Author: Matthew Bayles
 Author-email: mmbayles@gmail.com
-License: UNKNOWN
-Description: UNKNOWN
-Platform: UNKNOWN

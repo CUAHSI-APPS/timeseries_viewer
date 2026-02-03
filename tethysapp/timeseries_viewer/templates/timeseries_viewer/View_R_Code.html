@@ -4,10 +4,10 @@
 {% block app_navigation_items %}
 <form method="post">
 {% csrf_token %}
-<p><a href="{% url 'timeseries_viewer:home' %} " class = "btn btn-default">Home</a></p>
+<p><a href="{% url 'timeseries_viewer:home' %} " class = "btn btn-outline-secondary">Home</a></p>
 
 
-<a href = "{{ my_url}}" class = "btn btn-default">Download R Script</a>
+<a href = "{{ my_url}}" class = "btn btn-outline-secondary">Download R Script</a>
 
 </form>
 {% endblock %}
@@ -24,7 +24,7 @@
 
 
 {% block app_actions %}
-  <a href="" class="btn btn-default">Next</a>
-  <a href="" class="btn btn-default">Back</a>
+  <a href="" class="btn btn-outline-secondary">Next</a>
+  <a href="" class="btn btn-outline-secondary">Back</a>
 
 {% endblock %}

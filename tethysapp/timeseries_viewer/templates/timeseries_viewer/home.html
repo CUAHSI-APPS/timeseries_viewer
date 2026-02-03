@@ -1,5 +1,5 @@
 {% extends "timeseries_viewer/base.html" %}
-{% load staticfiles%}
+{% load static%}
 
 
 {%block title%}
@@ -13,7 +13,7 @@ CUAHSI Time Series Viewer
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="btn-close" id="close-help-modal-button" data-bs-dismiss="modal"></button>
                 <h4 class="modal-title">Welcome to the CUAHSI Data Series Viewer!</h4>
             </div>
             <div class="modal-body">
@@ -30,16 +30,18 @@ CUAHSI Time Series Viewer
                         <h6>3. Launch the Data Series Viewer</h6>
                         <p>In your workspace, select the time series for visualization, choose Date Series Viewer, and launch tool.</p>
                         <!--<a class="btn btn-default" href='http://bcc-hiswebclient.azurewebsites.net'>Go to CUAHSI HydroClient website</a>-->
-                        <a class="btn btn-default" href='http://data.cuahsi.org/'>Go to CUAHSI HydroClient website</a>
+                        <a class="btn btn-outline-secondary" href='http://data.cuahsi.org/'>Go to CUAHSI HydroClient website</a>
                     </ol>
                 </div>
             </div>
             <div class="modal-footer">
                 <div id="byu-logo-container">
-                    <img src="{% static 'timeseries_viewer/images/byu-medallion.png' %}"/><span><i>Developed at the BYU Hydroinformatics Lab</i></span>
+                    <img src="{% static 'timeseries_viewer/images/byu-medallion.png' %}"/>
+                    <span><i id="byu-label">Developed at the BYU Hydroinformatics Lab</i></span>
+                    
                 </div>
-                <a href="https://github.com/CUAHSI/timeseries_viewer" type="button" class="btn btn-default" target="_blank" >Source Code</a>
-                <button type="button" class="btn btn-default" id="close-popup" data-dismiss="modal" >Close</button>
+                <a href="https://github.com/CUAHSI/timeseries_viewer" type="button" class="btn btn-outline-secondary" target="_blank" >Source Code</a>
+                <button type="button" class="btn btn-outline-secondary" id="close-popup" data-bs-dismiss="modal" >Close</button>
             </div>
         </div>
     </div>
@@ -53,13 +55,11 @@ CUAHSI Time Series Viewer
                 <h4 class="modal-title">This application only displays two different units types at a time.</h4>
             </div>
             <div class="modal-body">
-                <div id="unit_selector_info">
-
-                </div>
+                <div id="unit_selector_info"></div>
             </div>
             <div class="modal-footer">
 
-                <button type="button" class="btn btn-default" id="close-popup1" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-outline-secondary" id="close-popup1" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -72,7 +72,7 @@ CUAHSI Time Series Viewer
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal">&times;</button>
                     <h4 class="modal-title">Add HydroShare Resource</h4>
                 </div>
                 <div class="modal-body">
@@ -111,7 +111,7 @@ CUAHSI Time Series Viewer
                 </div>
                 <div class="modal-footer">
                     <div class="button-group flex1-0">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="btn-upload-res" class="btn btn-success btn-upload" onClick = "get_hs_res()" >Add</button>
                     </div>
                 </div>
@@ -126,16 +126,15 @@ CUAHSI Time Series Viewer
             <!-- Modal content-->
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal">&times;</button>
                     <h4 class="modal-title">Add HydroShare Resource</h4>
                 </div>
                 <div class="modal-body">
                     <div id="map" class="map"></div>
                     <p></p>
                     <div id = "nwm_table" class="dropdown">
-                      <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                      <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="dropdownMenu1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                         Variable
-                        <span class="caret"></span>
                       </button>
                       <ul id = "nwm_variable" class="dropdown-menu" aria-labelledby="dropdownMenu1">
                         <!--<li><a href="#">Action</a></li>-->
@@ -149,7 +148,7 @@ CUAHSI Time Series Viewer
                 </div>
                 <div class="modal-footer">
                     <div class="button-group flex1-0">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="button" id="btn-NWM-selection" class="btn btn-success btn-upload" onClick = "add_nwm_grid()" >Add</button>
                     </div>
                 </div>
@@ -164,7 +163,6 @@ CUAHSI Time Series Viewer
 
 {% block app_content %}
 
-<!--
 <!--<div id = chart_cont>-->
 <!--<div id ='chartDiv'></div>-->
 <div id = "map2"></div>
@@ -182,16 +180,16 @@ CUAHSI Time Series Viewer
     <!--<button type="button" class="btn btn-info "  data-toggle="modal" data-target="#modalLoadRes" style="float: left; position:relative" onClick = "get_list_hs_res()">-->
         <!--<span id = 'get_hs_resource' data-toggle="tooltip" data-placement="bottom" title = "Add a HydroShare Resource" >Add HydroShare Resource</span>-->
     <!--</button>-->
-    <button id = 'screenshot' type="button" class="btn btn-info "  data-toggle="modal"  style="float: left; position:relative" onClick = "get_screenshot()">
-        <span id = 'download_screenshot' data-toggle="tooltip" data-placement="bottom"  >Download as PNG</span>
+    <button id = 'screenshot' type="button" class="btn btn-info "  data-bs-toggle="modal"  style="float: left; position:relative" onClick = "get_screenshot()">
+        <span id = 'download_screenshot' data-bs-toggle="tooltip" data-bs-placement="bottom"  >Download as PNG</span>
     </button>
 
     <!--<button id = 'map_btn' type="button" class="btn btn-info "  data-toggle="modal"  data-target="#modalNWMMAP" style="float: left; position:relative">-->
         <!--<span id = 'map_span' data-toggle="tooltip" data-placement="bottom"  >Display map in model</span>-->
     <!--</button>-->
 
-    <button type="button" class="btn btn-info "  data-toggle="modal" data-target="#help-modal" style="float: left; position:relative">
-        <span id = 'get_data_span' data-toggle="tooltip" data-placement="bottom" title = "Get Data for New Selection" class="glyphicon glyphicon-question-sign"></span>
+    <button type="button" class="btn btn-info "  data-bs-toggle="modal" data-bs-target="#help-modal" style="float: left; position:relative">
+        <span id = 'get_data_span' data-bs-toggle="tooltip" data-bs-placement="bottom" title = "Get Data for New Selection" class="bi bi-question-circle"></span>
     </button>
     <a id="download" style="display:none">Download as image</a>
     <!--<div>*All times are displayed in local time</div>-->
@@ -248,9 +246,12 @@ CUAHSI Time Series Viewer
 {% block app_actions %}
 {% endblock %}
 {% block scripts %}
-<script src="/static/tethys_gizmos/vendor/highcharts/js/highcharts.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/highcharts-more.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+<!-- <script src="/static/tethys_gizmos/vendor/highcharts/js/highcharts.js"></script>
 <script src="/static/tethys_gizmos/vendor/highcharts/js/highcharts-more.js"></script>
-<script src="/static/tethys_gizmos/vendor/highcharts/js/modules/exporting.js"></script>
+<script src="/static/tethys_gizmos/vendor/highcharts/js/modules/exporting.js"></script> -->
 
 <script src="{% static 'timeseries_viewer/js/main.js' %}"></script>
 

@@ -3,10 +3,14 @@
 # Created by Matthew Bayles, 2016
 from django.http import JsonResponse
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.urls import reverse
+from django.shortcuts import render, redirect
+from tethys_portal.views.accounts import login_view
+from django.http import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.admin.views.decorators import staff_member_required
 import os
+import re
 from . import utilities
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.cache import never_cache
@@ -19,8 +23,11 @@ try:
 except:
     use_hs_client_helper = False
 
+from tethys_sdk.routing import controller
 
 # helper controller for fetching the WaterML file
+# @login_required()
+@controller(name='temp_waterml', url='temp_waterml/{id}', app_workspace=True)
 def temp_waterml(request, id):
     # base_path = utilities.get_workspace() + "/id"
     base_path = utilities.get_workspace()
@@ -29,10 +36,10 @@ def temp_waterml(request, id):
                             content_type='application/xml')
     return response
 
-
+@login_required()
+@controller(name='home', url='home')
 def home(request):
     message = request.GET.getlist('WofUri')
-    print("!!!!!!!!!!!!!1")
     print(message)
     """Home controller if page is launched from HydroShare"""
     # utilities.view_counter(request)
@@ -47,8 +54,10 @@ def home(request):
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
 
+# @login_required()
 @csrf_exempt
 @never_cache
+@controller(url='chart_data/{res_id}/{src}')
 def chart_data(request, res_id, src):
     """
     Get data for each site
@@ -72,20 +81,40 @@ def chart_data(request, res_id, src):
     This site data is formatted differently then the main site data.
 
     """
+    try:
+        file_meta = utilities.unzip_waterml(request, res_id, src)
 
-    file_meta = utilities.unzip_waterml(request, res_id, src)
-
-    print("done with python")
-    return JsonResponse(file_meta)
-
-
+        print("done with python")
+        return JsonResponse(file_meta)
+    
+    except Exception as e:
+        match = re.search(r"Exception\('(.*)'\)", str(e))
+        if match:
+            error_message = match.group(1)
+        else:
+            error_message = str(e)
+        
+        return JsonResponse({"error": error_message})
+    
+# @login_required()
+@controller(name='get_hydroshare_res', url='get_hydroshare_res')
 def get_hydroshare_res(request):
     hs_list = []
     print("getting hydroshare list")
-    if use_hs_client_helper:
+    logged_in_through_hydroshare = False
+    try:
+        loggedin_through_hydroshare = request.user.social_auth.filter(provider='hydroshare').exists()
+    except:
+        pass
+
+    if use_hs_client_helper and logged_in_through_hydroshare:
         hs = get_oauth_hs(request)
     else:
-        hs = utilities.getOAuthHS(request)
+        try:
+            hs = utilities.getOAuthHS(request)
+        except Exception as e:
+            return JsonResponse({"error": str(e)})
+        
     # resource_types = ['CompositeResource','NetcdfResource','TimeSeriesResource']
     resource_types = ['TimeSeriesResource']
     # resource_types = ['CompositeResource']
@@ -129,7 +158,8 @@ def get_hydroshare_res(request):
 
 # seperate handler for request originating from hydroshare.org
 @csrf_exempt
-@login_required()
+# @login_required()
+@controller(name='hydroshare', ur='hydroshare')
 def hydroshare(request):
     """Home controller if page is launched from HydroShare"""
     utilities.view_counter(request)
@@ -137,7 +167,8 @@ def hydroshare(request):
     context = {}
     return render(request, 'timeseries_viewer/home.html', context)
 
-
+# @login_required()
+@controller(name='view_counter', url='view_counter')
 def view_counter(request):
     temp_dir = utilities.get_workspace()
     file_path = temp_dir + '/timeseries_viewer_view_counter.txt'
@@ -152,6 +183,8 @@ def view_counter(request):
 
 # @user_passes_test(lambda u: u.is_superuser)
 @staff_member_required
+# @login_required()
+@controller(name='error_report', url='error_report')
 def error_report(request):
     content = None
     e = None
